@@ -7,10 +7,11 @@ clear;
 
 %load participant structure:  (Edit the function to adjust it to your
 %particular data structure.
-[participants, datapath] = SA_load_participant_info_longreg('Nov2013_NIFDcontrols');
+[participants, datapath] = SA_load_participant_info_longreg('casestudy1');
 
 %regular expression that would grab your single timepoint image file:
-filenameregexp = '^\d+_\d.{4}\d.{2}\d.{2}MP-LAS_\w+(.img|.nii)';% e.g "6764_2012-06-18_MP-LAS_NIFD077X1.nii" 
+%filenameregexp = '^\d+_\d.{4}\d.{2}\d.{2}MP-LAS_\w+(.img|.nii)';% e.g "6764_2012-06-18_MP-LAS_NIFD077X1.nii" 
+filenameregexp = '^MP-LAS_\w+(.img|.nii)';
 
 %path to images:
 %datapath= fullfile(SAreturnDriveMap('R'),'groups','rosen','gene_carrier_imaging_all','VBM','sa_longitudinal', 'images','images_dir');
@@ -22,19 +23,18 @@ jobspath =fullfile(SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','job
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %set steps you want to re-run:
 jobstorun.inputfiles = 1;
-jobstorun.longitudinalregistration =0;
-jobstorun.segmentation = 0;
-jobstorun.multiplysegmentmaps = 0;
-
+jobstorun.longitudinalregistration =1;
+jobstorun.segmentation = 1;
+jobstorun.multiplysegmentmaps = 1;
 
 %%%%%%%%%stop here. 
-jobstorun.DARTELregistration_to_existing =0;
-jobstorun.DARTELnormalise_to_MNI =0;
-jobstorun.smooth =0; %ran on wc*jd and wc*dv 
-jobstorun.time1and2segmentation = 0;
+jobstorun.DARTELregistration_to_existing =1;
+jobstorun.DARTELnormalise_to_MNI =1;
+jobstorun.smooth =1; %ran on wc*jd and wc*dv 
+jobstorun.time1and2segmentation = 1;
 %%%%%%%%%%%%%%%%%%%%% all previous steps have been run as of 11/8/13
 
-jobstorun.DARTELtimepoint_to_MNI =0; %ran on T1s
+jobstorun.DARTELtimepoint_to_MNI =1; %ran on T1s
 
 
 %% initialize input data files (scans, subjectID, delta T. etc)
@@ -42,7 +42,7 @@ jobstorun.DARTELtimepoint_to_MNI =0; %ran on T1s
 %ideal for multiple time points
 %build input file for pairwise longitudinal (file name 1, file name 2, time)
 
-if jobstorun.inputfiles == 1
+if jobstorun.inputfiles == 1 %this loop should be combined with the previous function call
     input.t1={};
     input.t2={};
     input.subjectdir = {};
