@@ -23,14 +23,14 @@ jobspath =fullfile(SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','job
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %set steps you want to re-run:
 jobstorun.inputfiles = 1;
-jobstorun.longitudinalregistration =1;
-jobstorun.segmentation = 1;
-jobstorun.multiplysegmentmaps = 1;
+jobstorun.longitudinalregistration =0;
+jobstorun.segmentation = 0;
+jobstorun.multiplysegmentmaps = 0;
 
 %%%%%%%%%stop here. 
-jobstorun.DARTELregistration_to_existing =1;
+jobstorun.DARTELregistration_to_existing =0;
 jobstorun.DARTELnormalise_to_MNI =1;
-jobstorun.smooth =1; %ran on wc*jd and wc*dv 
+jobstorun.smooth =0; %ran on wc*jd and wc*dv 
 jobstorun.time1and2segmentation = 1;
 %%%%%%%%%%%%%%%%%%%%% all previous steps have been run as of 11/8/13
 
@@ -188,7 +188,7 @@ if jobstorun.DARTELnormalise_to_MNI ==1
     %build input file of average file:
     for n = 1:size(prefixes,2)
         
-        files = cell(38,1);
+        files = cell(size(input.subjectdir,1),1);
         for i = 1:size(input.subjectdir,1)
             
             file = SAdir(input.subjectdir{i}, ['^' prefixes{n} '_.*nii$'] );
