@@ -1,12 +1,32 @@
-%Script to run longitudinal registration pipeline for several subjects 
+%% Script to run longitudinal registration pipeline for several subjects 
 % it assumes the following structure for your pair of time 1 and time 2 images:
 % /imagesdir/PIDN/yyyy-mm-dd/**.img/nii
+% Based on Richard Binney's original scripts and "pipelined" by Suneth Attygalle 11/2013.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%PROCESSING STEPS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1)    Rough alignment- the toolbox is very robust, but it occasionally fails. 
+%       Sometimes this can be due to initial alignment and you can always straighten 
+%       up images and orient to AC-PC to give it a helping hand. 
+% 2)    Run longitudinal toolbox. SPM12b pairwise longitudinal registration 
+%       Outputs a mean image and two images which are estimates of longitudinal change 
+%       called �dv_*� and �jd_*� (in mean image space; the difference between the two is 
+%       explained in the help section of the GUI but is minimal)
+% 3)    Segment the mean image (generating c1, rc1, rc2)
+% 4)    multiply the longitudinal image by the Grey matter segment. using Imacalc
+% 5)    Estimate inter-subject registration of mean images using DARTEL, aligning the rc1 and rc2 images from all subjects together.
+%       if you use DARTEL, I would suggest using a pre-existing template. Jen Y has a good one, and Richard Binney have one. 
+%       There are a number of discussion points around DARTEL vs. not-DARTEL, who comprises the template, etc but that is for another day perhaps.
+% 6)    Transform longitudinal images to group/MNI space.
+% 7)    Smooth (6mm). (Normalise and smooth the c1.*jd images)
+% 8)    Stats (NOT PERFORMED BY THIS SCRIPT)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% initialize
 clear;
 
-%load participant structure:  (Edit the function to adjust it to your
-%particular data structure.
+%load participant structure:  (Edit the called function to adjust it to your
+%particular data format structure.
 [participants, datapath] = SA_load_participant_info_longreg('casestudy1');
 
 %regular expression that would grab your single timepoint image file:
@@ -22,19 +42,17 @@ jobspath =fullfile(SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','job
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %set steps you want to re-run:
-jobstorun.inputfiles = 1;
-jobstorun.longitudinalregistration =0;
-jobstorun.segmentation = 0;
-jobstorun.multiplysegmentmaps = 0;
-
-%%%%%%%%%stop here. 
-jobstorun.DARTELregistration_to_existing =0;
-jobstorun.DARTELnormalise_to_MNI =1;
+jobstorun.inputfiles = 1; %initialize data structure 
+jobstorun.longitudinalregistration =0; % Run longitudinal registration 
+jobstorun.segmentation = 0; % segment mean images from longitudinal toolbox 
+jobstorun.multiplysegmentmaps = 0; % multiply segmented mean images with longitudinal change maps
+jobstorun.DARTELregistration_to_existing =0; % register 
+jobstorun.DARTELnormalise_to_MNI =0;
 jobstorun.smooth =0; %ran on wc*jd and wc*dv 
-jobstorun.time1and2segmentation = 1;
-%%%%%%%%%%%%%%%%%%%%% all previous steps have been run as of 11/8/13
+jobstorun.time1and2segmentation = 0;
+jobstorun.DARTELtimepoint_to_MNI =0; %ran on T1s
 
-jobstorun.DARTELtimepoint_to_MNI =1; %ran on T1s
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %% initialize input data files (scans, subjectID, delta T. etc)
@@ -284,68 +302,4 @@ for n = 4%:size(prefixes,2)
 
 end
 end
-
-
-
-
-
-
-
-
-
-
-
-%% Notes
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-% 1)      Rough alignment � the toolbox is very robust, but it occasionally fails. Sometimes this can be due to initial alignment and you can always straighten up images and orient to AC-PC to give it a helping hand. 
-% 2)      Run longitudinal toolbox. Outputs a mean image and two images which are estimates of longitudinal change called �dv_*� and �jd_*� (in mean image space; the difference between the two is explained in the help section of the GUI but is minimal)
-% 3)      Segment the mean image
-% 4)      Optional (Howie can discuss this with you)� multiply the longitudinal image by the Grey matter segment.
-% 5)      Estimate inter-subject registration of mean images � if you use DARTEL, I would suggest using a pre-existing template. Jen Y has a good one, and I have one. There are a number of discussion points around DARTEL vs. not-DARTEL, who comprises the template, etc but that is for another day perhaps.
-% 6)      Transform longitudinal images to group/MNI space.
-% 7)      Smooth (6mm).
-% 8)      Stats 
-
-% 1.) Run the SPM12b pairwise longitudinal registration to generate the
-% > subject average and Jacobian difference (jd)
-% >
-% >  2.) Segment the subject average, generating c1, rc1, rc2
-% >
-% >  3.) Use ImCalc to compute c1.*jd (possibly dividing the result by the time
-% > difference to give the rate of atrophy)
-% >
-% >  4.) Run DARTEL, aligning the rc1 and rc2 images from all subjects together
-% >
-% >  5.) Normalise and smooth the c1.*jd images
-% >
-% >  6.) Run stats.
-
-%% OLD Run DARTEL Normalise to MNI with Zero Smoothing and no modulation (all subjects at once)
-% %  OLD VERSION THAT DIDNT USE DIR  to get file names (deprecated 11/7/13)
-% % prefixes = {'u_rc1avg','avg','mavg','c1avg','c2avg'};
-% % inputs = cell(size(prefixes,2)+1,1);
-% % inputs{1, 1} = {fullfile(SAreturnDriveMap('R'),'users','sattygalle','Matlab','longitudinal','Template_binney','Template_6.nii')};% Group-specific DARTEL template
-% %     
-% % %build input file of average file: %% use DIR instead of assuming names 
-% %         %change to suffix to .nii:
-% %         inputseg = cellfun(@(x) strrep(x, 'img', 'nii'), input.t1, 'UniformOutput', false);
-% %         %find last backslash for all images:
-% %         idx = regexp(inputseg,filesep);
-% %       
-% % for n = 1:size(prefixes,2)
-% %         %insert prefix into image name.
-% %             files = cell(size(inputseg,1),1);
-% %             for i = 1:size(inputseg,1)
-% %                 files{i,1}=  [inputseg{i}(1:idx{i}(end)) prefixes{n} '_' inputseg{i}(idx{i}(end)+1:end)];
-% %             end       
-% %             inputs{n+1,1} = files;
-% % end
-% % 
-% % spm('defaults', 'PET');
-% % spm_jobman('initcfg');
-% % spm_jobman('run', fullfile( jobspath, 'SPM12_applydeformations_to_MNI_job.m'), inputs{:});
-
 
