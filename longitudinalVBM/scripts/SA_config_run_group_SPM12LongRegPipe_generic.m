@@ -48,11 +48,13 @@ jobstorun.inputfiles = 1; %initialize data structure (usually always 1 except wh
 jobstorun.longitudinalregistration =0; % Run longitudinal registration 
 jobstorun.segmentation = 0; % segment mean images from longitudinal toolbox 
 jobstorun.multiplysegmentmaps = 0; % multiply segmented mean images with longitudinal change maps
-jobstorun.DARTELregistration_to_existing =0; % register 
-jobstorun.DARTELnormalise_to_MNI =0;
-jobstorun.smooth =0; %ran on wc*jd and wc*dv 
-jobstorun.time1and2segmentation = 0;
-jobstorun.DARTELtimepoint_to_MNI =0; %ran on T1s
+
+
+jobstorun.DARTELregistration_to_existing =0; % inter-subject registration of mean images using Dartel (requires template)
+jobstorun.DARTELnormalise_to_MNI =0; % Transform longitudinal images to group/MNI space
+jobstorun.smooth =0; %smooth 'wc1jd','wc1dv','wc2jd','wc2dv'  for stats later
+jobstorun.time1and2segmentation = 0; %segment time 1 data (will eventually also segment time 2 data)
+jobstorun.DARTELtimepoint_to_MNI =0; %transform time1 data to mni using intermediate longitudinal image
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
