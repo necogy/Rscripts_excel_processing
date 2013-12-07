@@ -26,6 +26,7 @@ function  SAmultiply2Images(file1, file2, outfile )
 % Created 11/4/13
 % 
 % Revisions:
+% 12/6/13 - removed dependance on job file
 
 inputs = cell(3,1);
 inputs{1, 1} = {file1, file2};% c1 dv
@@ -34,10 +35,20 @@ inputs{3, 1} = 'i1.*i2';
 
 spm('defaults', 'PET');
 spm_jobman('initcfg');
-jobspath =fullfile(SAreturnDriveMap('R'),'users','sattygalle','Matlab','longitudinal','jobs');
+%jobspath =fullfile(SAreturnDriveMap('R'),'users','sattygalle','Matlab','longitudinal','jobs');
 
-spm_jobman('run', fullfile( jobspath, 'SPM12_imcalc_job.m'), inputs{:});
+matlabbatch{1}.spm.util.imcalc.input = inputs{1, 1};
+matlabbatch{1}.spm.util.imcalc.output = inputs{2, 1};
+matlabbatch{1}.spm.util.imcalc.outdir = {''};
+matlabbatch{1}.spm.util.imcalc.expression = inputs{3, 1};
+matlabbatch{1}.spm.util.imcalc.var = struct('name', {}, 'value', {});
+matlabbatch{1}.spm.util.imcalc.options.dmtx = 0;
+matlabbatch{1}.spm.util.imcalc.options.mask = 0;
+matlabbatch{1}.spm.util.imcalc.options.interp = 1;
+matlabbatch{1}.spm.util.imcalc.options.dtype = 16;
 
+%spm_jobman('run', fullfile( jobspath, 'SPM12_imcalc_job.m'), inputs{:});
+spm_jobman('run',matlabbatch);
 
 end
 
