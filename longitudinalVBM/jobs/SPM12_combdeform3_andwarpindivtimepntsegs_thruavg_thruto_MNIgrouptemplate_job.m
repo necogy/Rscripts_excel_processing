@@ -6,7 +6,7 @@
 matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.dartel.flowfield = '<UNDEFINED>';
 matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.dartel.times = [1 0];
 matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.dartel.K = 6;
-matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.dartel.template ={dartelpath};
+matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.dartel.template ={fullfile(dartelpath , 'Template_6.nii')};
 matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.def = '<UNDEFINED>';
 matlabbatch{1}.spm.util.defs.comp{1}.inv.space = '<UNDEFINED>';
 matlabbatch{1}.spm.util.defs.out{1}.savedef.ofname = '<UNDEFINED>';

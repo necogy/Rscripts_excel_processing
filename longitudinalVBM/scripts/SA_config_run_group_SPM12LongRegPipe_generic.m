@@ -44,7 +44,7 @@ jobspath =fullfile(SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','job
 spmpath =fullfile(SAreturnDriveMap('R'),'users','sattygalle','Matlab','spm12b');
 
 %path to dartel template
-dartelpath= fullfile(SAreturnDriveMap('R'),'users','sattygalle','Matlab','longitudinal','Template_binney', 'Template_6.nii');
+dartelpath= fullfile(SAreturnDriveMap('R'),'users','sattygalle','Matlab','longitudinal','Template_binney');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %set steps you want to re-run:
