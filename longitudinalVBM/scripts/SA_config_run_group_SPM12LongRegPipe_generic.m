@@ -53,7 +53,7 @@ jobstorun.inputfiles = 1; %initialize data structure (usually always 1 except wh
 
 jobstorun.longitudinalregistration =0; % Run longitudinal registration 
 jobstorun.segmentation = 0; % segment mean images from longitudinal toolbox 
-jobstorun.multiplysegmentmaps =1; % multiply segmented mean images with longitudinal change maps
+jobstorun.multiplysegmentmaps =0; % multiply segmented mean images with longitudinal change maps
 
 
 jobstorun.DARTELregistration_to_existing =0; % inter-subject registration of mean images using Dartel (requires template)
@@ -109,4 +109,18 @@ if jobstorun.inputfiles == 1 %this loop should be combined with the previous fun
     end
 end
 
+
+
+%% Run steps
+stepfields(1,:) = fieldnames(jobstorun)';
+
+for i = 1:size(stepfieldnames,1)
+    stepfields{2,i} = jobstorun.(stepfields{1,i});
+end
+
+dialogmessage = sprintf('\n %s = %d \n',stepfields{:} )
+    
+button = questdlg(['Run the following steps and overwrite existing data?' dialogmessage] ,'Confirm steps before running') ;
+if strcmp(button,'Yes')
 SA_run_group_SPM12LongRegPipe_generic %<- convert this to a function taking in "input" structure and "jobstorun"
+end
