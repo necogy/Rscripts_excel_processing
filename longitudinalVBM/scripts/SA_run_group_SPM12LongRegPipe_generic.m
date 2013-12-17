@@ -19,33 +19,25 @@ end
 
 if jobstorun.segmentation == 1
     
-    %build input file of average file:
-    
-        %change to suffix to .nii:
-        inputseg = cellfun(@(x) strrep(x, 'img', 'nii'), input.t1, 'UniformOutput', false);
+    %build input file of average file, first selecting t1 images because
+    %avg files use t1 in their filename
+    inputfiles = cellfun(@(x) strrep(x, 'img', 'nii'), input.t1, 'UniformOutput', false);%change to suffix to .nii 
         
-        %insert "avg_" into avg image name.
-        avgfiles = cell(size(inputseg,1),1);
-        for i = 1:size(inputseg,1)
-            [pathstr, name, ext] = fileparts(inputseg{i}) ;
-            avgfiles{i}=  fullfile(pathstr, ['avg_' name ext] );
-        end
-    
+    %insert "avg_" into avg image name.
+    stringtoinsert = 'avg_';
+    avgfiles = SAinsertStr2Paths(inputfiles, stringtoinsert);
+        
     %Run SPM12 segmentation
     spm('defaults', 'PET');
     spm_jobman('initcfg');
     spm_jobman('run',  fullfile( jobspath, 'SPM12_segmentanddartelimport_job.m'), avgfiles);
 end 
 
-%%% do following:
 
 %% Run imcalc to create c1.*jd/dv and c2.*jd/dv images (looped by subject) (on average imges)
 if jobstorun.multiplysegmentmaps == 1
       mapstring = {'dv','dv','jd','jd'};
       cstring = {'c1', 'c2','c1','c2'};
-            
-    %for each subject set
-    %idx = regexp(input.t1,filesep)
     
     for i = 1:size(input.t1,1)
         for n = 1:4      
