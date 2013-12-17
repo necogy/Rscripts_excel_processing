@@ -114,13 +114,14 @@ end
 %% Run steps
 stepfields(1,:) = fieldnames(jobstorun)';
 
-for i = 1:size(stepfieldnames,1)
+for i = 1:size(stepfields,2)
     stepfields{2,i} = jobstorun.(stepfields{1,i});
 end
 
-dialogmessage = sprintf('\n %s = %d \n',stepfields{:} )
+dialogmessage = sprintf('\n %s = %d \n',stepfields{:} );
     
 button = questdlg(['Run the following steps and overwrite existing data?' dialogmessage] ,'Confirm steps before running') ;
+
 if strcmp(button,'Yes')
 SA_run_group_SPM12LongRegPipe_generic %<- convert this to a function taking in "input" structure and "jobstorun"
 end

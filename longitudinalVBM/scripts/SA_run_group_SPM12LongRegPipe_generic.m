@@ -23,14 +23,12 @@ if jobstorun.segmentation == 1
     
         %change to suffix to .nii:
         inputseg = cellfun(@(x) strrep(x, 'img', 'nii'), input.t1, 'UniformOutput', false);
-
-        %find last backslash for all images:
-        idx = regexp(inputseg,filesep);
-        avgfiles = cell(size(inputseg,1),1);
         
         %insert "avg_" into avg image name.
+        avgfiles = cell(size(inputseg,1),1);
         for i = 1:size(inputseg,1)
-            avgfiles{i}=  [inputseg{i}(1:idx{i}(end)) 'avg_' inputseg{i}(idx{i}(end)+1:end)];
+            [pathstr, name, ext] = fileparts(inputseg{i}) ;
+            avgfiles{i}=  fullfile(pathstr, ['avg_' name ext] );
         end
     
     %Run SPM12 segmentation
