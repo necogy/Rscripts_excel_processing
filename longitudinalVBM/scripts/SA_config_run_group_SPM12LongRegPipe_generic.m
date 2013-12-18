@@ -58,9 +58,12 @@ jobstorun.multiplysegmentmaps =0; % multiply segmented mean images with longitud
 
 jobstorun.DARTELregistration_to_existing =0; % inter-subject registration of mean images using Dartel (requires template)
 jobstorun.DARTELnormalise_to_MNI =0; % Transform longitudinal images to group/MNI space
-jobstorun.smooth =0; %smooth 'wc1jd','wc1dv','wc2jd','wc2dv'  for stats later
-jobstorun.time1and2segmentation = 0; %segment time 1 data (will eventually also segment time 2 data)
-jobstorun.DARTELtimepoint_to_MNI =0; %transform time1 data to mni using intermediate longitudinal image
+
+jobstorun.time1and2segmentation = 0; %segment time 1 and time 2 data 
+jobstorun.t1DARTELtimepoint_to_MNI =0; %transform time1 data to mni using intermediate longitudinal image
+jobstorun.t2DARTELtimepoint_to_MNI =0; %transform time1 data to mni using intermediate longitudinal image
+
+jobstorun.smooth =0; %smooth individual participant 'wc1jd','wc1dv','wc2jd','wc2dv' images for stats 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -120,7 +123,7 @@ end
 
 dialogmessage = sprintf('\n %s = %d \n',stepfields{:} );
     
-button = questdlg(['Run the following steps and overwrite existing data?' dialogmessage] ,'Confirm steps before running') ;
+button = questdlg(['Run the following steps and overwrite existing data? ' dialogmessage] ,'Confirm steps before running') ;
 
 if strcmp(button,'Yes')
 SA_run_group_SPM12LongRegPipe_generic %<- convert this to a function taking in "input" structure and "jobstorun"

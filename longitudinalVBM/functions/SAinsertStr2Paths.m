@@ -1,4 +1,4 @@
-%SAinsertstr- inserts a string into a filename path cell array
+%SAinsertstr- inserts a string into a filename path cell array or string
 %inserts the string before the filename while retaining full path
 %
 % Syntax: cellarraywithinsertions = SAinsertstr(originalcellaray, stringtoinsert)
@@ -27,11 +27,20 @@
 % Revisions:
 
 function cellarraywithinsertions = SAinsertStr2Paths(originalcellarray, stringtoinsert)
+
 cellarraywithinsertions = cell(size(originalcellarray,1),1);
 
+
+if size(originalcellarray,1) >1
 for i = 1:size(originalcellarray,1)
     [pathstr, name, ext] = fileparts(originalcellarray{i}) ;
     cellarraywithinsertions{i}=  fullfile(pathstr, [stringtoinsert name ext] );
 end
+
+else
+    [pathstr, name, ext] = fileparts(originalcellarray) ;
+    cellarraywithinsertions=  fullfile(pathstr, [stringtoinsert name ext] );
+end
+
 
 end

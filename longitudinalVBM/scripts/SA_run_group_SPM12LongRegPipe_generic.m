@@ -64,19 +64,16 @@ end
 if jobstorun.DARTELregistration_to_existing == 1
     
      %build input file of average file:
-     inputseg = cellfun(@(x) strrep(x, 'img', 'nii'), input.t1, 'UniformOutput', false);
-     
-        %find last backslash for all images:
-        idx = regexp(inputseg,filesep);
-        rc1files = cell(size(idx,1),1);
-        rc2files = cell(size(idx,1),1);
+     inputfiles = cellfun(@(x) strrep(x, 'img', 'nii'), input.t1, 'UniformOutput', false);
+            
+        %insert "rc1/2avg_" into avg image name.
+        stringtoinsert = 'rc1avg_';
+        rc1files = SAinsertStr2Paths(inputfiles, stringtoinsert);
         
-        %insert "avg_" into avg image name.
-        for i = 1:size(idx,1)
-            rc1files{i}=  [inputseg{i}(1:idx{i}(end)) 'rc1avg_' inputseg{i}(idx{i}(end)+1:end)];
-            rc2files{i}=  [inputseg{i}(1:idx{i}(end)) 'rc2avg_' inputseg{i}(idx{i}(end)+1:end)];
-        end
-    
+        stringtoinsert = 'rc2avg_';
+        rc2files = SAinsertStr2Paths(inputfiles, stringtoinsert);
+        
+        
     inputs = cell(2,1);
     inputs{1,1} = rc1files; %rc1avg
     inputs{2,1} = rc2files; %rc2avg
@@ -95,7 +92,7 @@ if jobstorun.DARTELnormalise_to_MNI ==1
     prefixes = {'u_rc1avg','avg','mavg','c1avg','c2avg', 'c1jd','c1dv','c2jd','c2dv' };
    % prefixes = {'u_rc1avg','c1jd','c1dv','c2jd','c2dv' };
     inputs = cell(size(prefixes,2)+1,1);
-    inputs{1, 1} = {fullfile(SAreturnDriveMap('R'),'users','sattygalle','Matlab','longitudinal','Template_binney','Template_6.nii')};% Group-specific DARTEL template
+    inputs{1, 1} = {fullfile(dartelpath, 'Template_6.nii')};% Group-specific DARTEL template
     
     %build input file of average file:
     for n = 1:size(prefixes,2)
@@ -130,55 +127,79 @@ if jobstorun.time1and2segmentation== 1
 end 
 
 %% Run DARTEL Normalise to MNI from original time point using combined deformation
-if jobstorun.DARTELtimepoint_to_MNI ==1 %tthis is only running on t1 right now
+if jobstorun.DARTELt1timepoint_to_MNI ==1 %tthis is only running on t1 right now
     for i = 1:size(input.t1,1) % for each subject
-      
-       % prefixes = {'u_rc1avg','y','','toAVGtoMNI_InvForPush','.','c1','c2','c3','wavg' };
-        
+        % prefixes = {'u_rc1avg','y','','toAVGtoMNI_InvForPush','.','c1','c2','c3','wavg' };
         inputseg = input.t1{i};
-        
         inputs = cell(7,1);
         inputs{3,1}= cellstr( inputseg); % Image to base inverse on for PUSH warp (raw timepoint image)
-        inputseg = strrep(inputseg,'img','nii')   ;%change to suffix to .nii:
-     
-        %find last backslash for all images:
-        idx = regexp(inputseg,filesep); 
-        %avgfiles = cell(size(inputseg,1));
+        inputseg = strrep(inputseg,'img','nii');%change to suffix to .nii:
+             
+        inputs{1,1}=  cellstr(SAinsertStr2Paths(inputseg, 'u_rc1avg_'));% DARTEL flowfield from AVG
+        inputs{2,1}=  cellstr(SAinsertStr2Paths(inputseg, 'y_rc1avg_'));% Timepoint's deform field to AVG (Y)
+        inputs{4,1}=  cellstr(SAinsertStr2Paths(inputseg, 'toAVGtoMNI_InvForPush_'));% output name for NEW deformation field
+        inputs{5,1}=  cellstr(fileparts(inputseg));% output directory for deform field
         
-        inputs{1,1}=  cellstr([inputseg(1:idx(end)) 'u_rc1avg_' inputseg(idx(end)+1:end)]);% DARTEL flowfield from AVG
-        inputs{2,1}=  cellstr([inputseg(1:idx(end)) 'y_avg_' inputseg(idx(end)+1:end)]);% Timepoint's deform field to AVG (Y)
-        inputs{4,1}= [inputseg(1:idx(end)) 'toAVGtoMNI_InvForPush_' inputseg(idx(end)+1:end)];% output name for NEW deformation field
-        inputs{5,1}=  cellstr([input.subjectdir{i}]);% output directory for deform field
-    
-        inputs{6,1} =  { [inputseg(1:idx(end)) 'c1' inputseg(idx(end)+1:end)]
-            [inputseg(1:idx(end)) 'c2' inputseg(idx(end)+1:end)]
-           [inputseg(1:idx(end)) 'c3' inputseg(idx(end)+1:end)]
-            
-        };  % Images to apply to: c1 and c2 and c3 of timepoint
+        % Images to apply to: c1 and c2 and c3 of timepoint
+        inputs{6,1} =  { SAinsertStr2Paths(inputseg, 'c1'), ...
+            SAinsertStr2Paths(inputseg, 'c2'), ...
+            SAinsertStr2Paths(inputseg, 'c3'), ...
+            };
         
-        
-        inputs{7,1} = cellstr([inputseg(1:idx(end)) 'wavg_' inputseg(idx(end)+1:end)]);% defines voxel dims (warped avg for subject)
+        inputs{7,1} = cellstr(SAinsertStr2Paths(inputseg, 'wavg_'));% defines voxel dims (warped avg for subject)
 
-        %inputscell = cellfun(@cellstr,inputs, 'UniformOutput', 0)
+        %%%%%%%%%%%%%%%%s
         
-%%%%%%%%%%%%%%%%s
-    
-    spm('defaults', 'PET');
-    spm_jobman('initcfg');
-    spm_jobman('run', fullfile( jobspath, 'SPM12_combdeform3_andwarpindivtimepntsegs_thruavg_thruto_MNIgrouptemplate_job.m'), inputs{:});
-    
-    
+        spm('defaults', 'PET');
+        spm_jobman('initcfg');
+        spm_jobman('run', fullfile( jobspath, 'SPM12_combdeform3_andwarpindivtimepntsegs_thruavg_thruto_MNIgrouptemplate_job.m'), inputs{:});
+        
+        
     end
     
 end
 
+%% Run DARTEL Normalise to MNI from original time point using combined deformation
+if jobstorun.t2DARTELt1timepoint_to_MNI ==1 %tthis is only running on t1 right now
+    for i = 1:size(input.t1,1) % for each subject
+        % prefixes = {'u_rc1avg','y','','toAVGtoMNI_InvForPush','.','c1','c2','c3','wavg' };
+        inputseg = input.t1{i};
+        inputsegt2 = input.t2{i};
+        inputs = cell(7,1);
+       % inputs{3,1}= cellstr( inputseg); % Image to base inverse on for PUSH warp (raw timepoint image)
+        inputseg = strrep(inputseg,'img','nii');%change to suffix to .nii:
+        inputsegt2 = strrep(inputsegt2,'img','nii');
+             
+        inputs{1,1}=  cellstr(SAinsertStr2Paths(inputseg, 'u_rc1avg_'));% DARTEL flowfield from AVG
+        inputs{2,1}=  cellstr(SAinsertStr2Paths(inputseg, 'y_rc1avg_'));% Timepoint's deform field to AVG (Y)
+        inputs{4,1}=  cellstr(SAinsertStr2Paths(inputsegt2, 'toAVGtoMNI_InvForPush_'));% output name for NEW deformation field
+        inputs{5,1}=  cellstr(fileparts(inputsegt2));% output directory for deform field
+        
+        % Images to apply to: c1 and c2 and c3 of timepoint
+        inputs{6,1} =  { SAinsertStr2Paths(inputsegt2, 'c1'), ...
+            SAinsertStr2Paths(inputsegt2, 'c2'), ...
+            SAinsertStr2Paths(inputsegt2, 'c3'), ...
+            };
+        
+        inputs{7,1} = cellstr(SAinsertStr2Paths(inputseg, 'wavg_'));% defines voxel dims (warped avg for subject)
+
+        %%%%%%%%%%%%%%%%s
+        
+        spm('defaults', 'PET');
+        spm_jobman('initcfg');
+        spm_jobman('run', fullfile( jobspath, 'SPM12_combdeform3_andwarpindivtimepntsegs_thruavg_thruto_MNIgrouptemplate_job.m'), inputs{:});
+        
+        
+    end
+    
+end
 
 
 %% Smooth c*jd and c*dv
 if jobstorun.smooth == 1
 prefixes = {'wc1jd','wc1dv','wc2jd','wc2dv' };
 
-for n = 4%:size(prefixes,2)
+for n = 1:size(prefixes,2)
     
     files = cell(38,1);
     
