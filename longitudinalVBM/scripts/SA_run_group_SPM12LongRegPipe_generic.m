@@ -126,7 +126,7 @@ if jobstorun.time1and2segmentation== 1
     spm_jobman('run',  fullfile( jobspath, 'SPM12_segment_nativeonly_forsingleimgvolumes_job.m'), uniqueinputs);
 end 
 
-%% Run DARTEL Normalise to MNI from original time point using combined deformation
+%% Run DARTEL Normalise to MNI from original time point using combined deformation for t1
 if jobstorun.DARTELt1timepoint_to_MNI ==1 %tthis is only running on t1 right now
     for i = 1:size(input.t1,1) % for each subject
         % prefixes = {'u_rc1avg','y','','toAVGtoMNI_InvForPush','.','c1','c2','c3','wavg' };
@@ -159,8 +159,8 @@ if jobstorun.DARTELt1timepoint_to_MNI ==1 %tthis is only running on t1 right now
     
 end
 
-%% Run DARTEL Normalise to MNI from original time point using combined deformation
-if jobstorun.t2DARTELt1timepoint_to_MNI ==1 %tthis is only running on t1 right now
+%% Run DARTEL Normalise to MNI from original time point using combined deformation for t2
+if jobstorun.t2DARTELt1timepoint_to_MNI ==1 
     for i = 1:size(input.t1,1) % for each subject
         % prefixes = {'u_rc1avg','y','','toAVGtoMNI_InvForPush','.','c1','c2','c3','wavg' };
         inputseg = input.t1{i};
