@@ -12,7 +12,7 @@ function [ keep ] = SAgetBestLongDataFromLava( varargin )
 % 12/23/2013;
 
 % To do:
-% specificatoins for excel sheet
+% add specificatoins for excel sheet
 
 %------------- BEGIN CODE --------------%
 
