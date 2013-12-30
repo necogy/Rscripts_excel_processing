@@ -1,4 +1,4 @@
-function [ keep ] = SAgetBestLongDataFromLava( varargin )
+function SAgetBestLongDataFromLava( varargin )
 %FUNCTION_NAME - takes an Lava Worksheet and finds the best rows to use for
 %longitudinal data and optionally makes a new sheet compiling all sheets into one.
 %
@@ -12,7 +12,7 @@ function [ keep ] = SAgetBestLongDataFromLava( varargin )
 % 12/23/2013;
 
 % To do:
-% add specificatoins for excel sheet
+% specificatoins for excel sheet
 
 %------------- BEGIN CODE --------------%
 
@@ -33,9 +33,25 @@ badcodes = [-9,-7,-5,-2,-1];
 %read file and get names of sheets
 [status,sheets] = xlsfinfo( (fullfile(PathName,FileName)) );
 
-%loop through sheets
-sheetnum = 5;
-[num,txt,raw] = xlsread(fullfile(PathName, FileName), sheetnum);
+if size(sheets,2) == 1
+   error('Only one sheet found, please check if correct sheet was selected or that it is formatted correctly.')
+end
+
+   filepath =  fullfile(PathName, FileName);
+   
+for n = 2:size(sheets,2) %loop through sheets
+    sheetnum = n;
+    processSingleWorksheet(filepath, badcodes, sheetnum)  ;
+end
+
+%SAmergeXLSsheets(pathsofsheets, newfilename)
+
+end
+%end
+
+function keep = processSingleWorksheet(filepath, badcodes, sheetnum)
+
+ [num,txt,raw] = xlsread(filepath, sheetnum);
 
 linkID.col = strcmpi('linkID', txt(1,:));
 linkID.daydiffcol = strcmpi('daydiff', txt(1,:));
@@ -98,17 +114,10 @@ while i <= size(linkID.vals,1)
     end
       
 end
-
 keeplog = logical([1 keep]);
-
-xlswrite([FileName(1:end-4) '_5refined.xls'], raw(keeplog,:))
-
-
-
-
-
+[~, name, ext] = fileparts(filepath)
+xlswrite([name '_' num2str(sheetnum) 'refinedTEST.xls'], raw(keeplog,:))  
 end
-%end
 
 function minrow = getmin(displaystring)
 
@@ -140,58 +149,4 @@ if all(counts==1) % no duplicates
     return
 end
 
-% % % [minval, minind] = min(abs(displaystring),[],2);
-% % % 
-% % % if all(minind == minind(1)) %all cols the same
-% % %     %success (found both minimum DayDiff and minimium error code)
-% % %     minrow = minind;
-% % %     return
-% % % else %check if  duplicated values
-% % %     dayDupes= hist(displaystring(1,:),unique(displaystring(1,:)));
-% % %     errorDupes = hist(displaystring(2,:),unique(displaystring(2,:)));
-% % %     
-% % %     %find smallest with days < 180 but with day diff difference less
-% % %     %than threshold
-% % %     badcodethreshold = 15;
-% % %     %find num bad codes <15
-% % %     badcodeind = abs(displaystring(2,:))<badcodethreshold;
-% % %     baddaythreshold = 180;
-% % %     %find smallest with days <180
-% % %     daydiffind = abs(displaystring(1,:))<baddaythreshold;
-% % %     
-% % %     dayDupes(
-% % %     
-% % %     
-% % %     
-% % %                      
-% % %     if any(errorDupes>1) % if errors were the same, pick one with lower daydiff
-% % %         [minval, minind]=   min(abs(displaystring(1,:)));
-% % %         minrow=minind;
-% % %         return
-% % %     else  
-% % %         
-% % %         %failed to find minimum
-% % %         
-% % %       
-% % %         
-% % %         if numel(find(badcodeind)==1)
-% % %         minind = badcodeind  & daydiffind; %find union
-% % %         elseif numel(find(badcodeind)>1)
-% % %        
-% % %          
-% % %         end
-% % %         %[minval, minind] = min(abs(displaystring(2,newind)));
-% % %         if numel(find(minind))==1
-% % %             minrow=find(minind) ;
-% % %         else
-% % %             
-% % %             %if both under bad code threshold then just pick smallest day.
-% % %             
-% % %             
-% % %             
-% % %             warning('failed to find minimum')
-% % %             minrow = NaN;
-% % %         end
-% % %     end
-% % % end
 end
