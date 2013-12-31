@@ -28,7 +28,7 @@ if nargin == 0
     % end
 end
 
-badcodes = [-9,-7,-5,-2,-1];
+badcodes = [-9,-7,-5,-2,-1]; % bad data codes in Lava sheet
 
 %read file and get names of sheets
 [status,sheets] = xlsfinfo( (fullfile(PathName,FileName)) );
@@ -39,8 +39,7 @@ end
 
    filepath =  fullfile(PathName, FileName);
    
-for n = 2:size(sheets,2) %loop through sheets
-    sheetnum = n;
+for sheetnum = 2:size(sheets,2) %loop through sheets (ignore first sheet since it's just the PIDN link info
     processSingleWorksheet(filepath, badcodes, sheetnum)  ;
 end
 
@@ -95,8 +94,12 @@ while i <= size(linkID.vals,1)
             unsuccesstring = '?????';
             
             [displaystringcell{3,1:size(displaystringcell,2)}] = deal(unsuccesstring);
-            
+            error('not sure which one to pick')
             % find minimum of error codes for dates less than 60 days away.
+            %prompt = 'please type a number to pick one of the rows above to use.'
+           % result = input(prompt)
+
+            
             
         end
         if ~isnan(minrow)
@@ -120,7 +123,6 @@ xlswrite([name '_' num2str(sheetnum) 'refinedTEST.xls'], raw(keeplog,:))
 end
 
 function minrow = getmin(displaystring)
-
 %check no data codes > 30
 baddataind = displaystring(2,:)>30;
 %check no dates > 180
@@ -137,8 +139,18 @@ totals = sum(abs(displaystring),1);
 
 %check for duplicate values   
 counts = hist(totals,unique(totals));
-if any(counts>1)
+
+
+
+
+if any(counts>3)
     minrow =NaN;
+    return
+elseif numel(find(counts==2)==1)
+    minrow  = 1;
+    return
+elseif any(counts>2)
+    minrow=NaN;
     return
 end
 
