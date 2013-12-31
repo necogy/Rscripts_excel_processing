@@ -1,4 +1,4 @@
-function SAgetBestLongDataFromLava( varargin )
+function mergedarray = SAgetBestLongDataFromLava( varargin )
 %FUNCTION_NAME - takes an Lava Worksheet and finds the best rows to use for
 %longitudinal data and optionally makes a new sheet compiling all sheets into one.
 %
@@ -34,23 +34,27 @@ badcodes = [-9,-7,-5,-2,-1]; % bad data codes in Lava sheet
 [status,sheets] = xlsfinfo( (fullfile(PathName,FileName)) );
 
 if size(sheets,2) == 1
-   error('Only one sheet found, please check if correct sheet was selected or that it is formatted correctly.')
+    error('Only one sheet found, please check if correct sheet was selected or that it is formatted correctly.')
+elseif isempty(status)
+    error('Could not read excel sheet-- check if file is correct')
 end
 
-   filepath =  fullfile(PathName, FileName);
-   
-for sheetnum = 2:size(sheets,2) %loop through sheets (ignore first sheet since it's just the PIDN link info
-    processSingleWorksheet(filepath, badcodes, sheetnum)  ;
+filepath =  fullfile(PathName, FileName);
+
+for sheetnum = 1:size(sheets,2) %loop through sheets (ignore first sheet since it's just the PIDN link info
+    newfilename{sheetnum}=processSingleWorksheet(filepath, badcodes, sheetnum, sheets)  
 end
 
-%SAmergeXLSsheets(pathsofsheets, newfilename)
+pathsofsheets = cellfun(@(x) fullfile(PathName,x), newfilename(2:end), 'UniformOutput', false);
+mergedarray = SAmergeXLSsheets(pathsofsheets, fullfile(PathName,[FileName(1:end-5) '_merged.xlsx']));
 
 end
 %end
 
-function keep = processSingleWorksheet(filepath, badcodes, sheetnum)
+%% Subfunctions:
+function newfilename = processSingleWorksheet(filepath, badcodes, sheetnum, sheets)
 
- [num,txt,raw] = xlsread(filepath, sheetnum);
+[num,txt,raw] = xlsread(filepath, sheetnum);
 
 linkID.col = strcmpi('linkID', txt(1,:));
 linkID.daydiffcol = strcmpi('daydiff', txt(1,:));
@@ -69,14 +73,13 @@ keep= zeros(1,size(linkID.vals,1));
 i=1;
 %generate logical index for Num that returns no duplicate links
 while i <= size(linkID.vals,1)
-%for i = 1:size(linkID.repeated,1)
+    %for i = 1:size(linkID.repeated,1)
     
     if ~ismember(linkID.vals(i), linkID.repeated)
-    keep(i) = 1;
-    i= i+1;
-      
-    else    
+        keep(i) = 1;
+        i= i+1;
         
+    else
         n= ismember(linkID.repeated,linkID.vals(i));
         currentlinkID = linkID.repeated(n);
         rowstocompare =(linkID.vals==currentlinkID);
@@ -97,15 +100,13 @@ while i <= size(linkID.vals,1)
             error('not sure which one to pick')
             % find minimum of error codes for dates less than 60 days away.
             %prompt = 'please type a number to pick one of the rows above to use.'
-           % result = input(prompt)
-
-            
+            % result = input(prompt)
             
         end
         if ~isnan(minrow)
-        keep(i+(minrow-1)) = 1;
+            keep(i+(minrow-1)) = 1;
         end
-        i = i+ size(displaystring,2);
+        i = i+ size(displaystring,2)
         
         fprintf('LinkID: %d ', currentlinkID)
         fprintf('PIDN: %s \n', num2str(num(rowstocompare,1)'))
@@ -113,13 +114,15 @@ while i <= size(linkID.vals,1)
         fprintf(' ')
         fprintf('\n')
         
-        
     end
-      
+    
 end
-keeplog = logical([1 keep]);
-[~, name, ext] = fileparts(filepath)
-xlswrite([name '_' num2str(sheetnum) 'refinedTEST.xls'], raw(keeplog,:))  
+keeplog = logical([1 keep])
+[~, name, ext] = fileparts(filepath);
+newfilename = [name '_unique_' sheets{sheetnum} '.xls'];
+
+
+xlswrite(newfilename, raw(keeplog,:))
 end
 
 function minrow = getmin(displaystring)
@@ -137,11 +140,8 @@ acceptableinds(acceptableinds==0) = NaN;
 
 totals = sum(abs(displaystring),1);
 
-%check for duplicate values   
+%check for duplicate values
 counts = hist(totals,unique(totals));
-
-
-
 
 if any(counts>3)
     minrow =NaN;
@@ -155,7 +155,6 @@ elseif any(counts>2)
 end
 
 if all(counts==1) % no duplicates
-      
     [minval, minind ]=min(totals.*acceptableinds);
     minrow=minind;
     return

@@ -15,6 +15,7 @@ function mergedarray = SAmergeXLSsheets(pathsofsheets, newfilename)
 % 12/30/2013;
 
 % To do:
+% add validation of sheets to make sure PIDN/LINKID match
 
 %------------- BEGIN CODE --------------%
 allraw = {};
@@ -32,9 +33,9 @@ end
 
 allraw = [raw{:}];
 
-mergedarray = allraw
+mergedarray = allraw;
 %write excel sheet
 
-[status,message ] = xlswrite(newfilename, allraw)
+[status,message ] = xlswrite(newfilename, allraw);
 %cell2csv(newfilename,allraw,[],[],[])
 
