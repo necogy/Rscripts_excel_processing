@@ -45,7 +45,7 @@ for sheetnum = 1:size(sheets,2) %loop through sheets (ignore first sheet since i
     newfilename{sheetnum}=processSingleWorksheet(filepath, badcodes, sheetnum, sheets)  
 end
 
-pathsofsheets = cellfun(@(x) fullfile(PathName,x), newfilename(2:end), 'UniformOutput', false);
+pathsofsheets = cellfun(@(x) fullfile(PathName,x), newfilename(1:end), 'UniformOutput', false);
 mergedarray = SAmergeXLSsheets(pathsofsheets, fullfile(PathName,[FileName(1:end-5) '_merged.xlsx']));
 
 end
@@ -106,7 +106,7 @@ while i <= size(linkID.vals,1)
         if ~isnan(minrow)
             keep(i+(minrow-1)) = 1;
         end
-        i = i+ size(displaystring,2)
+        i = i+ size(displaystring,2);
         
         fprintf('LinkID: %d ', currentlinkID)
         fprintf('PIDN: %s \n', num2str(num(rowstocompare,1)'))
