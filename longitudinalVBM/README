@@ -2,3 +2,5 @@ Dartel templates are at h:/suneth/longitudinalVBM/darteltemplates
 Unzipped SPM12b folder is at h:/suneth/longitudinalVBM/spm12b
 
 Add these paths as well as this current folder to your matlab path before running.
+
+tests
