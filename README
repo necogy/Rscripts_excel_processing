@@ -2,4 +2,5 @@ This is the repository for UCSF MAC imaging-core related scripts and functions.
 Please create a new folder for each new imaging-core project.
 
 Projects being tracked:
-	Longitudinal VBM processing
+	Longitudinal VBM processing using SPM 12b (Suneth Attygalle, Richard Binney)
+	Image_finder.sh - script for pulling images from I drive (Jon Elofson)
