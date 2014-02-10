@@ -245,6 +245,57 @@ legendtitles = {'non-binarized c1', 'c1>0.3', 'c1>0.5'}
   
 
 
+%% get average maps
+    prefixes = {'^wPROPc1jd_\d*.nii','^wPROPc1jd\w*30percent','^wPROPc1jd\w*50percent'};
+    titles = {'^wPROPc1jd','^wPROPc1jd30percent','^wPROPc1jd50percent'};
+    clear inputs
+    inputs = cell(1,1)
+    for n = 2:size(prefixes,2)
+        for p =1:size(paths,2) %for each subject, for each threshold (0, 30 , 50 ) and for each roi , extract change
+            path = paths{p};
+            d = SAdir(path,'\d');
+            for i = 1:size(d,1)
+                if ismember(str2num(d(i).name ), LSDPIDNS)
+                   % labels(i) = str2num(d(i).name);
+                    getfile =SAdir(fullfile(path,d(i).name), [ prefixes{n} ]);
+                    file2 = fullfile(path, d(i).name, getfile.name) ;% dv
+                    inputs = [inputs file2];
+                    
+                    
+                    
+                end
+            end
+        end
+        inputs(1) = [];
+        clear matlabbatch
+        spm('defaults', 'PET');
+        spm_jobman('initcfg');
+        images = {}
+        for j =1:size(inputs(1:end),2)
+          images{j} = cellstr(inputs{j});
+        end
+                
+        matlabbatch{1}.spm.util.imcalc.input = inputs';
+        matlabbatch{1}.spm.util.imcalc.output = ['mean_' titles{n}(2:end)];
+        matlabbatch{1}.spm.util.imcalc.outdir = {'R:\groups\rosen\longitudinalVBM'}; 
+        matlabbatch{1}.spm.util.imcalc.expression = 'mean(X)';
+      matlabbatch{1}.spm.util.imcalc.var = struct('name', {}, 'value', {});
+        matlabbatch{1}.spm.util.imcalc.options.dmtx = 1;
+        matlabbatch{1}.spm.util.imcalc.options.mask = 0;
+        matlabbatch{1}.spm.util.imcalc.options.interp = 1;
+        matlabbatch{1}.spm.util.imcalc.options.dtype = 16;
+        spm_jobman('run',matlabbatch)
+
+
+        
+        
+        
+    end
+ 
+       
+ 
+               
+
 
 
 
