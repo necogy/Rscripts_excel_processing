@@ -22,7 +22,11 @@ function directorystructure = SAdir(path, regexptomatch)
 %
 % To Do:
 %   Add ability to specify files or folders only
-%   Change to varargin to 
+%   Change to varargin if no regexp specified 
+%   add field to return full file path
+%   add error checking to warn if no file found
+%   add optional argument to specify number of files that should be found
+%   and give error if too many/too few found.
 %
 % Author: Suneth Attygalle
 % Created 10/29/13

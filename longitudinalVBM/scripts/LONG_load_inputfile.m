@@ -30,7 +30,10 @@ datapath = fullfile(scandatafolder);
 
 d=SAdir(fullfile(datapath), '\d');
 
+clear allparticipants
+clear ans
 for i = 1:size(d,1)
     allparticipants(i) = LONG_participant(d(i).name, datapath);
 end
-
+allparticipants(1)
+allparticipants(2)
