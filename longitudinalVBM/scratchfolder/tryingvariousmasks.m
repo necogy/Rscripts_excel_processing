@@ -250,7 +250,7 @@ legendtitles = {'non-binarized c1', 'c1>0.3', 'c1>0.5'}
     titles = {'^wPROPc1jd','^wPROPc1jd30percent','^wPROPc1jd50percent'};
     clear inputs
     inputs = cell(1,1)
-    for n = 2:size(prefixes,2)
+    for n = 1%:size(prefixes,2)
         for p =1:size(paths,2) %for each subject, for each threshold (0, 30 , 50 ) and for each roi , extract change
             path = paths{p};
             d = SAdir(path,'\d');

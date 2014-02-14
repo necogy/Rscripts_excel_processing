@@ -25,9 +25,27 @@
 %% initialize
 clear;
 
-%load participant structure:  (Edit the called function to adjust it to your
-%particular data format structure.
-[participants, datapath] = SA_load_participant_info_longreg('casestudy1');
+% Set folder where data is stored: 
+%(Images should be pullsed using image_finder.sh)
+
+imagepath = 'R:\groups\rosen\gene_carrier_imaging_all\VBM\NIFD_controls\images_dir';
+
+d = SAdir(datapath,'^[0-9]'); %get PIDN folders
+d([d.isdir]==0) = []; %remove nondirectories
+% go through each PIDN folder
+participants(size(d,1)).PIDN = ''; %initialize structure
+for p = 1:size(d, 1)
+    participants(p).PIDN = d(p).name; %PIDN
+    subd= SAdir( fullfile(datapath, d(p).name),'[0-9]{4}-[0-9]{2}-[0-9]{2}'); %enter date folder
+    
+    for s = 1:size(subd,1)
+        participants(p).MRIdate{s} = subd(s).name; % get date
+        participants(p).MRIdatenum{s} = datenum(participants(p).MRIdate{s}); %save datenum as well
+    end
+    
+end
+%load participant structure: 
+%[participants, datapath] = SA_load_participant_info_longreg('casestudy1');
 
 %regular expression that would grab your single timepoint image file:
 %filenameregexp = '^\d+_\d.{4}\d.{2}\d.{2}MP-LAS_\w+(.img|.nii)';% e.g "6764_2012-06-18_MP-LAS_NIFD077X1.nii" 
@@ -38,7 +56,7 @@ filenameregexp = '^MP-LAS_\w+(.img|.nii)';
 %datapath= participants.datapath; %datapath should be specified in 'SA_load_participant_info_longreg.m'
 
 %path to jobs folder
-jobspath =fullfile(SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','jobs'); 
+%jobspath =fullfile(SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','jobs'); 
 
 %path to SPM12b folder 
 spmpath =fullfile(SAreturnDriveMap('R'),'users','sattygalle','Matlab','spm12b');
