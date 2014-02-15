@@ -25,15 +25,14 @@ function scans_to_process = LONG_load_inputfile( scandatafolder )
 % Created 2/12/14
 %
 % Revisions:
-scandatafolder = 'R:\groups\rosen\longitudinalVBM\testfolder';
+%scandatafolder = 'R:\groups\rosen\longitudinalVBM\testfolder';
 datapath = fullfile(scandatafolder);
-
 d=SAdir(fullfile(datapath), '\d');
 
-clear allparticipants
-clear ans
+allparticipants =LONG_participant.empty(size(d,1),0);
+
 for i = 1:size(d,1)
     allparticipants(i) = LONG_participant(d(i).name, datapath);
 end
-allparticipants(1)
-allparticipants(2)
+
+scans_to_process = allparticipants;

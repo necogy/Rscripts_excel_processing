@@ -10,12 +10,29 @@ classdef LONG_participant
         Date2
         Date1num
         Date2num
-        Time1filename
-        Time2filename
-        DeltaTime
+        Time1file
+        Time2file
+       % DeltaTime
+       
+       Ran_Longitudinal_registration % yes, date, prefix
+       Ran_Longitudinal_Segmentation
+       Ran_DARTEL_intersubject_registration
+       Ran_DARTEL_normalize_LONG_to_MNI
+       
+       Ran_t1_Segmentation
+       Ran_t2_Segmentation
+       
+       Ran_DARTEL_normalize_t1_to_MNI
+       Ran_DARTEL_normalize_t2_to_MNI
+       
+       
+       
+       
         
     end
-    
+    properties (Dependent = true, SetAccess = private)
+        DeltaTime
+    end
     methods
         function lp = LONG_participant(pidn, datapath)
             if nargin > 0 % Support calling with 0 arguments
@@ -23,7 +40,7 @@ classdef LONG_participant
                 lp.Datapath = datapath;
                 
                 % load two time point dates
-                t = SAdir(fullfile(datapath,pidn),  '\d{4}-\d{2}-\d{2}'); % load two time point dates        
+                t = SAdir(fullfile(datapath,pidn),  '\d{4}-\d{2}-\d{2}'); % load two time point dates
                 if size(t,2) > 1
                     error('Data for more than two dates present, check folder')
                 end
