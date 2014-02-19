@@ -1,5 +1,5 @@
 function scans_to_process = LONG_run_registration( scans_to_process )
-%FUNCTION_NAME - SPM12b Longitudinal Registration
+%LONG_run_registration - SPM12b Longitudinal Registration
 %
 % Syntax:  participantstructure = SA_load_participant_info_longreg(listname)
 %
@@ -27,9 +27,17 @@ function scans_to_process = LONG_run_registration( scans_to_process )
 % spm SPM - SPM12b (5174)
 % cfg_basicio BasicIO - Unknown
 %-----------------------------------------------------------------------
-matlabbatch{1}.spm.tools.longit{1}.pairwise.vols1 = '<UNDEFINED>';
-matlabbatch{1}.spm.tools.longit{1}.pairwise.vols2 = '<UNDEFINED>';
-matlabbatch{1}.spm.tools.longit{1}.pairwise.tdif = '<UNDEFINED>';
+prefixes =''; % registration is first step - no prefix added
+
+volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
+deltatime = [scans_to_process.DeltaTime]./365;
+
+spm('defaults', 'PET');
+spm_jobman('initcfg');
+
+matlabbatch{1}.spm.tools.longit{1}.pairwise.vols1 = volumepaths(:,1);
+matlabbatch{1}.spm.tools.longit{1}.pairwise.vols2 = volumepaths(:,2);
+matlabbatch{1}.spm.tools.longit{1}.pairwise.tdif = deltatime;
 matlabbatch{1}.spm.tools.longit{1}.pairwise.noise = NaN;
 matlabbatch{1}.spm.tools.longit{1}.pairwise.wparam = [0 0 100 25 100];
 matlabbatch{1}.spm.tools.longit{1}.pairwise.bparam = 1000000;
@@ -37,6 +45,8 @@ matlabbatch{1}.spm.tools.longit{1}.pairwise.write_avg = 1;
 matlabbatch{1}.spm.tools.longit{1}.pairwise.write_jac = 1;
 matlabbatch{1}.spm.tools.longit{1}.pairwise.write_div = 1;
 matlabbatch{1}.spm.tools.longit{1}.pairwise.write_def = 1;
+
+spm_jobman('run',matlabbatch);
 
 end
 

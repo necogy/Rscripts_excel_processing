@@ -59,6 +59,7 @@ classdef LONG_participant
                 lp.Time1file = file1.name;
                 file2 = SAdir(fullfile(datapath,pidn, lp.Date2), '^MP-LAS_\w+(.img|.nii)');
                 lp.Time2file=file2.name;
+     
                 
             end
         end % LONG_participant
