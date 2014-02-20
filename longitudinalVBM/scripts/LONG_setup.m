@@ -45,8 +45,8 @@ scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'time1');
 scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'time2');
 
 %Group:
-LONG_extractROIs %extract from custom ROIs
-LONG_extractVolumes %WM/GM/CSF/TIV
+LONG_extractROIs %extract from custom ROIs and generate spreadsheet
+LONG_extractVolumes %WM/GM/CSF/TIV and generate spreadsheet
 LONG_generatemeanmaps % create average change maps
 
 
