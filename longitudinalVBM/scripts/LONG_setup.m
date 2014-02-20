@@ -4,14 +4,14 @@
 
 clear
 
-scandatafolder = 'R:\groups\rosen\longitudinalVBM\testfolder';
+scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_feb2014_reprocess','images','images_dir');
 scans_to_process = LONG_load_inputfile( scandatafolder );
 
 %path to SPM12b folder 
-spmpath = 'R:\users\sattygalle\Matlab\spm12b';
+spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');
 
 %path to DARTEL template
-dartelpath = 'R:\users\sattygalle\Matlab\longitudinal\Template_binney';
+%dartelpath = 'R:\users\sattygalle\Matlab\longitudinal\Template_binney';
 
 
 %% steps to run:

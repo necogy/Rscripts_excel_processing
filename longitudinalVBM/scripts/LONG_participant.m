@@ -12,6 +12,7 @@ classdef LONG_participant
         Date2num
         Time1file
         Time2file
+        %Group 
        % DeltaTime
        
        Ran_Longitudinal_registration % yes, date, prefix
@@ -36,6 +37,7 @@ classdef LONG_participant
     methods
         function lp = LONG_participant(pidn, datapath)
             if nargin > 0 % Support calling with 0 arguments
+                try
                 lp.PIDN = pidn;
                 lp.Datapath = datapath;
                 
@@ -55,11 +57,17 @@ classdef LONG_participant
                 lp.Date2num = date(I(2));
                 
                 %load filenames
-                file1 = SAdir(fullfile(datapath,pidn, lp.Date1), '^MP-LAS_\w+(.img|.nii)');
+                file1 = SAdir(fullfile(datapath,pidn, lp.Date1), '^MP-LAS\S+(.img|.nii)');
                 lp.Time1file = file1.name;
-                file2 = SAdir(fullfile(datapath,pidn, lp.Date2), '^MP-LAS_\w+(.img|.nii)');
+                %file2 = SAdir(fullfile(datapath,pidn, lp.Date2), '^MP-LAS\w+(.img|.nii)');
+                file2 = SAdir(fullfile(datapath,pidn, lp.Date2), '^MP-LAS\S+(.img|.nii)');
+
                 lp.Time2file=file2.name;
      
+                catch err
+                   error(['problem with PIDN:' num2str(pidn)])
+                   rethrow(err)
+                end
                 
             end
         end % LONG_participant
