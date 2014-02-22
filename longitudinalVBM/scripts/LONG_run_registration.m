@@ -1,7 +1,7 @@
 function scans_to_process = LONG_run_registration( scans_to_process )
 %LONG_run_registration - SPM12b Longitudinal Registration
 %
-% Syntax:  participantstructure = SA_load_participant_info_longreg(listname)
+% Syntax:  participantstructure = LONG_run_registration(listname)
 %
 % Inputs: scans_to_process - array of objects of class LONG_participant
 %
@@ -16,7 +16,8 @@ function scans_to_process = LONG_run_registration( scans_to_process )
 % See also:
 %
 % To Do:
-%
+%           Add code to store that registration was run into
+%           scans_to_process
 % Author: Suneth Attygalle
 % Created 02/14/2014
 %
