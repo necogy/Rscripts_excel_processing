@@ -1,0 +1,77 @@
+function scans_to_process = LONG_run_segmentation( scans_to_process, spmpath )
+%LONG_run_segmentation - SPM12b Segmentation for Longitudinal processing
+%
+% Syntax:  participantstructure = LONG_run_segmentation(scans_to_process )
+%
+% Inputs: scans_to_process - array of objects of class LONG_participant,
+% string specifying whether to segment time1, time2 or mean image.
+%
+% Outputs: scans_to_process - updated array with run status
+%
+%
+% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12b
+% Subfunctions:
+%
+% MAT-files required: none
+%
+% See also: longitudinal registration should be run first to generate mean
+% images
+%
+% To Do:
+%
+% Author: Suneth Attygalle
+% Created 02/21/2014
+%
+% Revisions:
+
+%-----------------------------------------------------------------------
+% Job saved on 14-Mar-2013 16:07:58 by cfg_util (rev $Rev: 4972 $)
+% spm SPM - SPM12b (5298)
+% cfg_basicio BasicIO - Unknown
+%-----------------------------------------------------------------------
+prefixes ='avg_'; % average images start with "avg_
+
+volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
+
+spm('defaults', 'PET');
+spm_jobman('initcfg');
+
+matlabbatch{1}.spm.spatial.preproc.channel.vols = '<UNDEFINED>';
+matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.001;
+matlabbatch{1}.spm.spatial.preproc.channel.biasfwhm = 60;
+matlabbatch{1}.spm.spatial.preproc.channel.write = [0 1];
+matlabbatch{1}.spm.spatial.preproc.tissue(1).tpm = {fullfile(spmpath,'tpm','TPM.nii,1')};
+matlabbatch{1}.spm.spatial.preproc.tissue(1).ngaus = 1; %edit this 
+matlabbatch{1}.spm.spatial.preproc.tissue(1).native = [1 1];
+matlabbatch{1}.spm.spatial.preproc.tissue(1).warped = [0 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(2).tpm = {fullfile(spmpath,'tpm','TPM.nii,2')};
+matlabbatch{1}.spm.spatial.preproc.tissue(2).ngaus = 1; %edit this 
+matlabbatch{1}.spm.spatial.preproc.tissue(2).native = [1 1];
+matlabbatch{1}.spm.spatial.preproc.tissue(2).warped = [0 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(3).tpm = {fullfile(spmpath,'tpm','TPM.nii,3')};
+matlabbatch{1}.spm.spatial.preproc.tissue(3).ngaus = 2; %check this 
+matlabbatch{1}.spm.spatial.preproc.tissue(3).native = [1 1];
+matlabbatch{1}.spm.spatial.preproc.tissue(3).warped = [0 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(4).tpm = {fullfile(spmpath,'tpm','TPM.nii,4')};
+matlabbatch{1}.spm.spatial.preproc.tissue(4).ngaus = 3;%check this 
+matlabbatch{1}.spm.spatial.preproc.tissue(4).native = [1 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(4).warped = [0 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(5).tpm = {fullfile(spmpath,'tpm','TPM.nii,5')};
+matlabbatch{1}.spm.spatial.preproc.tissue(5).ngaus = 4;%check this 
+matlabbatch{1}.spm.spatial.preproc.tissue(5).native = [1 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(5).warped = [0 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(6).tpm = {fullfile(spmpath,'tpm','TPM.nii,6')};
+matlabbatch{1}.spm.spatial.preproc.tissue(6).ngaus = 2;%check this 
+matlabbatch{1}.spm.spatial.preproc.tissue(6).native = [0 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(6).warped = [0 0];
+matlabbatch{1}.spm.spatial.preproc.warp.mrf = 1;
+matlabbatch{1}.spm.spatial.preproc.warp.cleanup = 1;
+matlabbatch{1}.spm.spatial.preproc.warp.reg = [0 0.001 0.5 0.025 0.1];
+matlabbatch{1}.spm.spatial.preproc.warp.affreg = 'mni';
+matlabbatch{1}.spm.spatial.preproc.warp.fwhm = 0;
+matlabbatch{1}.spm.spatial.preproc.warp.samp = 3;
+matlabbatch{1}.spm.spatial.preproc.warp.write = [0 1];
+
+spm_jobman('run',matlabbatch);
+
+end
