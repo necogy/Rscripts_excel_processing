@@ -3,7 +3,7 @@
 % pipeline.
 
 clear
-
+spm_my_defaults; % set up max mem
 scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
 %scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_feb2014_reprocess','images','images_dir');
 
