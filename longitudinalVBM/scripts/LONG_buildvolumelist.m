@@ -20,17 +20,22 @@ function volumepaths = LONG_buildvolumelist( scans_to_process, prefixes )
 
 a = {scans_to_process.Datapath};
 b = {scans_to_process.PIDN};
+
+
 c = {scans_to_process.Date1};
 d = {scans_to_process.Time1file};
 e = cellfun(@(x) strcat(prefixes, x) , cellstr(d), 'UniformOutput', false); % add prefix to file
   
 volumepaths(:,1)=  fullfile(a,b,c,e);
+volumepaths(:,1)=strrep(volumepaths(:,1), 'img', 'nii');
 
 c = {scans_to_process.Date2};
 d = {scans_to_process.Time2file};
 e = cellfun(@(x) strcat(prefixes, x) , cellstr(d), 'UniformOutput', false); % add prefix to file
 
 volumepaths(:,2) = fullfile(a,b,c, e);
+volumepaths(:,2)=strrep(volumepaths(:,2), 'img', 'nii');
+
 %volumepaths(:,3) = {scans_to_process.DeltaTime};
 
 

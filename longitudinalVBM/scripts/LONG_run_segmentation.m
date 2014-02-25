@@ -34,7 +34,7 @@ end
 
 volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
 volumes = strrep(volumepaths(:,1), 'img', 'nii'); %avg filenames sometimes were img not nii
-dartelimport = 0; % it's better to do the dartel import separately so voxel size can be specified
+dartelimport = 1; % it's better to do the dartel import separately so voxel size can be specified
 
 spm('defaults', 'PET');
 spm_jobman('initcfg');
