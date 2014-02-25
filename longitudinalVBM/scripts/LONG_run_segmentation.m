@@ -1,4 +1,4 @@
-function scans_to_process = LONG_run_segmentation( scans_to_process, spmpath )
+function scans_to_process = LONG_run_segmentation( scans_to_process, scantype, spmpath)
 %LONG_run_segmentation - SPM12b Segmentation for Longitudinal processing
 %
 % Syntax:  participantstructure = LONG_run_segmentation(scans_to_process )
@@ -24,33 +24,36 @@ function scans_to_process = LONG_run_segmentation( scans_to_process, spmpath )
 %
 % Revisions:
 
-%-----------------------------------------------------------------------
-% Job saved on 14-Mar-2013 16:07:58 by cfg_util (rev $Rev: 4972 $)
-% spm SPM - SPM12b (5298)
-% cfg_basicio BasicIO - Unknown
-%-----------------------------------------------------------------------
-prefixes ='avg_'; % average images start with "avg_
+switch lower(scantype)
+    case 'mean'
+        prefixes ='avg_' ;% average images start with "avg_
+    case 'time1' 
+        
+    case 'time2' 
+end
 
 volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
+volumes = strrep(volumepaths(:,1), 'img', 'nii'); %avg filenames sometimes were img not nii
+dartelimport = 0; % it's better to do the dartel import separately so voxel size can be specified
 
 spm('defaults', 'PET');
 spm_jobman('initcfg');
 
-matlabbatch{1}.spm.spatial.preproc.channel.vols = '<UNDEFINED>';
+matlabbatch{1}.spm.spatial.preproc.channel.vols = volumes; % the avg images are only in the time 1 folders.
 matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.001;
 matlabbatch{1}.spm.spatial.preproc.channel.biasfwhm = 60;
 matlabbatch{1}.spm.spatial.preproc.channel.write = [0 1];
 matlabbatch{1}.spm.spatial.preproc.tissue(1).tpm = {fullfile(spmpath,'tpm','TPM.nii,1')};
-matlabbatch{1}.spm.spatial.preproc.tissue(1).ngaus = 1; %edit this 
-matlabbatch{1}.spm.spatial.preproc.tissue(1).native = [1 1];
+matlabbatch{1}.spm.spatial.preproc.tissue(1).ngaus = 2;  
+matlabbatch{1}.spm.spatial.preproc.tissue(1).native = [1 dartelimport];
 matlabbatch{1}.spm.spatial.preproc.tissue(1).warped = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(2).tpm = {fullfile(spmpath,'tpm','TPM.nii,2')};
-matlabbatch{1}.spm.spatial.preproc.tissue(2).ngaus = 1; %edit this 
-matlabbatch{1}.spm.spatial.preproc.tissue(2).native = [1 1];
+matlabbatch{1}.spm.spatial.preproc.tissue(2).ngaus = 2; 
+matlabbatch{1}.spm.spatial.preproc.tissue(2).native = [1 dartelimport];
 matlabbatch{1}.spm.spatial.preproc.tissue(2).warped = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(3).tpm = {fullfile(spmpath,'tpm','TPM.nii,3')};
 matlabbatch{1}.spm.spatial.preproc.tissue(3).ngaus = 2; %check this 
-matlabbatch{1}.spm.spatial.preproc.tissue(3).native = [1 1];
+matlabbatch{1}.spm.spatial.preproc.tissue(3).native = [1 dartelimport];
 matlabbatch{1}.spm.spatial.preproc.tissue(3).warped = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(4).tpm = {fullfile(spmpath,'tpm','TPM.nii,4')};
 matlabbatch{1}.spm.spatial.preproc.tissue(4).ngaus = 3;%check this 

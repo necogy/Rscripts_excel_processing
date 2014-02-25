@@ -4,7 +4,9 @@
 
 clear
 
-scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_feb2014_reprocess','images','images_dir');
+scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
+%scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_feb2014_reprocess','images','images_dir');
+
 scans_to_process = LONG_load_inputfile( scandatafolder );
 
 %path to SPM12b folder 
@@ -20,10 +22,13 @@ spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','sp
 scans_to_process = LONG_run_registration( scans_to_process ); % done
 
 % Segment mean images generated from longitudinal toolbox 
-scans_to_process = LONG_run_segmentation( scans_to_process, 'mean' );
+scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath ); % done
 
 % multiply segmented mean images with longitudinal change maps
 scans_to_process = LONG_multiply_segments_with_change(scans_to_process);
+
+% rigidly realign files for DARTEL
+scans_to_process = LONG_DARTELimport( scans_to_process );
 
 % inter-subject registration of mean images using Dartel (requires template
 % or create a new one)
