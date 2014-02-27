@@ -39,6 +39,7 @@ scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath ); %
 %scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath); %could use vararg 
 PIDNlist = [DARTELnorms ; DARTELpatients];
 scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist);
+% MOVE GENERATED TEMPLATE FILES TO TEMPLATE FOLDER
 
 %% multiply segmented mean images with longitudinal change maps
 scans_to_process = LONG_multiply_segments_with_change(scans_to_process);
