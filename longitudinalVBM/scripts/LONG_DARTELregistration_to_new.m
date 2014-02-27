@@ -31,19 +31,20 @@ for subject = 1:size(allPIDNs,2)
     keep(subject) = ismember( str2double(allPIDNs{subject}) , PIDNlist)     ;
 end
 
-prefixes ='c1avg_' ; % use c1 images to make sure segmentatoin occured.
+prefixes ='rc1avg_' ; % use c1 images to make sure segmentatoin occured.
 c1volumes = LONG_buildvolumelist(scans_to_process(keep), prefixes);
 
-prefixes ='c2avg_' ; % use c1 images to make sure segmentatioin occured.
+prefixes ='rc2avg_' ; % use c1 images to make sure segmentatioin occured.
 c2volumes = LONG_buildvolumelist(scans_to_process(keep), prefixes);
 
 spm('defaults', 'PET');
 spm_jobman('initcfg');
 
-matlabbatch{1}.spm.tools.dartel.warp.images = {
-                                               c1volumes(:,1), c2volumes(:,1)
-                                               }';
-                                           
+% matlabbatch{1}.spm.tools.dartel.warp.images = {
+%                                                c1volumes(:,1) c2volumes(:,1)
+%                                                }';
+matlabbatch{1}.spm.tools.dartel.warp.images{1} = c1volumes(:,1)     ;                  
+matlabbatch{1}.spm.tools.dartel.warp.images{2} = c2volumes(:,1)    ;                           
 matlabbatch{1}.spm.tools.dartel.warp.settings.template = 'Template';
 matlabbatch{1}.spm.tools.dartel.warp.settings.rform = 0;
 matlabbatch{1}.spm.tools.dartel.warp.settings.param(1).its = 3;
