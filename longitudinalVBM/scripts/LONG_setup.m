@@ -40,7 +40,7 @@ DARTELpatients =[98;588;951;1004;1176;1319;1340;1463;1586;2275;2500;2711;3521;41
 PIDNlist = [DARTELnorms ; DARTELpatients];
 scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist); % done + ran 
 % MOVE GENERATED TEMPLATE FILES TO TEMPLATE FOLDER 
-templatepath = 'R:\users\sattygalle\Matlab\longitudinal\Feb2014_SD_NORM'; % set this to the new template name.
+templatepath = 'R:\users\sattygalle\Matlab\longitudinal\Feb2014_SD_NORM'; % set this to the new template folder name.
 scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath);
 
 
@@ -62,6 +62,8 @@ scans_to_process = LONG_run_segmentation( scans_to_process, 'time2' );
 %% Transform time1 and time2 data to mni using intermediate longitudinal image
 scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'time1');
 scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'time2');
+
+%% T-Spoon
 
 %% Group:
 LONG_extractROIs %extract from custom ROIs and generate spreadsheet
