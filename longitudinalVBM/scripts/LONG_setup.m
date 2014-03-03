@@ -43,6 +43,9 @@ scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist); %
 templatepath = 'R:\users\sattygalle\Matlab\longitudinal\Feb2014_SD_NORM'; % set this to the new template folder name.
 scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath);
 
+%% Segment time1 and time2 images:
+scans_to_process = LONG_run_segmentation( scans_to_process, 'time1', spmpath );
+scans_to_process = LONG_run_segmentation( scans_to_process, 'time2', spmpath );
 
 %% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -55,9 +58,6 @@ scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'mean');
 %% Smooth individual participant change maps images for stats 
 scans_to_process = LONG_smooth_changemaps(scans_to_process);
 
-%% Segment time1 and time2 images:
-scans_to_process = LONG_run_segmentation( scans_to_process, 'time1' );
-scans_to_process = LONG_run_segmentation( scans_to_process, 'time2' );
 
 %% Transform time1 and time2 data to mni using intermediate longitudinal image
 scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'time1');

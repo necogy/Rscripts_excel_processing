@@ -26,15 +26,22 @@ function scans_to_process = LONG_run_segmentation( scans_to_process, scantype, s
 
 switch lower(scantype)
     case 'mean'
-        prefixes ='avg_' ;% average images start with "avg_
-    case 'time1' 
+        prefixes ='avg_' ;% average images start with "avg_++
+        volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
+        volumes = strrep(volumepaths(:,1), 'img', 'nii'); %avg filenames sometimes were img not nii
+
+    case {'time1','time2'}
+        prefixes ='' ;% average images start with "avg_++
+        volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
         
-    case 'time2' 
+        if strcmpi(scantype,'time1')
+            volumes = volumepaths(:,1);
+        elseif strcmpi(scantype,'time2')
+            volumes = volumepaths(:,2);
+        end       
 end
 
-volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
-volumes = strrep(volumepaths(:,1), 'img', 'nii'); %avg filenames sometimes were img not nii
-dartelimport = 1; % it's better to do the dartel import separately so voxel size can be specified
+dartelimport = 1; % it's better to do the dartel import separately so voxel size can be specified ( this might work in future versions of SPM)
 
 spm('defaults', 'PET');
 spm_jobman('initcfg');
