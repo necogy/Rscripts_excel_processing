@@ -5,6 +5,7 @@ classdef LONG_participant
     properties
         PIDN
         %folder
+        Fullpath
         Datapath
         Date1
         Date2
@@ -40,7 +41,7 @@ classdef LONG_participant
                 try
                 lp.PIDN = pidn;
                 lp.Datapath = datapath;
-                
+                lp.Fullpath = fullfile(datapath,pidn);
                 % load two time point dates
                 t = SAdir(fullfile(datapath,pidn),  '\d{4}-\d{2}-\d{2}'); % load two time point dates
                 if size(t,2) > 1

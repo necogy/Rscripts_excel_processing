@@ -33,11 +33,13 @@ switch lower(scantype)
     case {'time1','time2'}
         prefixes ='' ;% average images start with "avg_++
         volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
-        
+        writeforavgonly = 1;
         if strcmpi(scantype,'time1')
             volumes = volumepaths(:,1);
+            writeforavgonly =0;
         elseif strcmpi(scantype,'time2')
             volumes = volumepaths(:,2);
+            writeforavgonly = 0;
         end       
 end
 
@@ -59,19 +61,19 @@ matlabbatch{1}.spm.spatial.preproc.tissue(2).ngaus = 2;
 matlabbatch{1}.spm.spatial.preproc.tissue(2).native = [1 dartelimport];
 matlabbatch{1}.spm.spatial.preproc.tissue(2).warped = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(3).tpm = {fullfile(spmpath,'tpm','TPM.nii,3')};
-matlabbatch{1}.spm.spatial.preproc.tissue(3).ngaus = 2; %check this 
+matlabbatch{1}.spm.spatial.preproc.tissue(3).ngaus = 2; 
 matlabbatch{1}.spm.spatial.preproc.tissue(3).native = [1 dartelimport];
 matlabbatch{1}.spm.spatial.preproc.tissue(3).warped = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(4).tpm = {fullfile(spmpath,'tpm','TPM.nii,4')};
-matlabbatch{1}.spm.spatial.preproc.tissue(4).ngaus = 3;%check this 
-matlabbatch{1}.spm.spatial.preproc.tissue(4).native = [1 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(4).ngaus = 3;
+matlabbatch{1}.spm.spatial.preproc.tissue(4).native = [writeforavgonly 0]; % only need to write these images for the average which is used for dartel.
 matlabbatch{1}.spm.spatial.preproc.tissue(4).warped = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(5).tpm = {fullfile(spmpath,'tpm','TPM.nii,5')};
-matlabbatch{1}.spm.spatial.preproc.tissue(5).ngaus = 4;%check this 
-matlabbatch{1}.spm.spatial.preproc.tissue(5).native = [1 0];
+matlabbatch{1}.spm.spatial.preproc.tissue(5).ngaus = 4;
+matlabbatch{1}.spm.spatial.preproc.tissue(5).native = [writeforavgonly 0]; % only need to write these images for the average which is used for dartel.
 matlabbatch{1}.spm.spatial.preproc.tissue(5).warped = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(6).tpm = {fullfile(spmpath,'tpm','TPM.nii,6')};
-matlabbatch{1}.spm.spatial.preproc.tissue(6).ngaus = 2;%check this 
+matlabbatch{1}.spm.spatial.preproc.tissue(6).ngaus = 2;
 matlabbatch{1}.spm.spatial.preproc.tissue(6).native = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(6).warped = [0 0];
 matlabbatch{1}.spm.spatial.preproc.warp.mrf = 1;

@@ -4,12 +4,10 @@
 % Syntax: cellarraywithinsertions = SAinsertstr(originalcellaray, stringtoinsert)
 %
 % Inputs: 
-%           path - pathname to look for file
-%           regexptomatch - regular expression to match a file name within
-%           the directory. 
-%
+%       originalcellaray
+%       stringtoinsert
 % Outputs:
-%    directorystructure - same output as dir command with ./.. removed
+%    cellarraywithinsertions
 %
 % Example: 
 %

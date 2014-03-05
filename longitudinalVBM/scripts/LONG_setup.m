@@ -1,4 +1,4 @@
-%% LONG_setup
+,%% LONG_setup
 % Sets up Longitudinal VBM using the second revision of the
 % pipeline.
 
@@ -6,10 +6,10 @@
 %to matlab path.
 
 clear
-spm_my_defaults; % set up max mem  = edit and set this to half of your avilable ram % this might not be necssary unless doing stats
+%spm_my_defaults; % set up max mem  = edit and set this to half of your avilable ram % this might not be necssary unless doing stats
+
 %scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
 scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_feb2014_reprocess','images','images_dir');
-
 scans_to_process = LONG_load_inputfile( scandatafolder );
 
 %path to SPM12b folder 
@@ -19,10 +19,10 @@ spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','sp
 %% steps to run:
 
 %% Longitudinal registration to generate mean images
-scans_to_process = LONG_run_registration( scans_to_process ); % done + ran
+scans_to_process = LONG_run_registration( scans_to_process ); 
 
 %% Segment mean images generated from longitudinal toolbox 
-scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath ); % done + ran
+scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath ); 
 
 %% rigidly realign and reslice mean images for DARTEL
 % this step doesn't work because the new segment doesn't create the
@@ -38,37 +38,40 @@ DARTELnorms = [841;1124;1362;1416;1418;1813;2046;2062;2557;2679;2680;2688;2692;2
 DARTELpatients =[98;588;951;1004;1176;1319;1340;1463;1586;2275;2500;2711;3521;4160;4375;4379;4471;5468;5830;6110;10114;10880;11735;11965;12555;13108;13138;13185;13272;13512;13919;14427;15774;84;278;1615;2522;3690;3824;4747;6600;9283;10032;10434;11028;11704;11773;13962];
 
 PIDNlist = [DARTELnorms ; DARTELpatients];
-scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist); % done + ran 
+scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist); 
 % MOVE GENERATED TEMPLATE FILES TO TEMPLATE FOLDER 
 templatepath = 'R:\users\sattygalle\Matlab\longitudinal\Feb2014_SD_NORM'; % set this to the new template folder name.
 scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath);
 
 %% Segment time1 and time2 images:
-scans_to_process = LONG_run_segmentation( scans_to_process, 'time1', spmpath );
-scans_to_process = LONG_run_segmentation( scans_to_process, 'time2', spmpath );
+scans_to_process = LONG_run_segmentation( scans_to_process, 'time1', spmpath ); 
+scans_to_process = LONG_run_segmentation( scans_to_process, 'time2', spmpath ); 
+
+%% multiply segmented mean images with longitudinal change maps
+scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
+
 
 %% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% multiply segmented mean images with longitudinal change maps
-scans_to_process = LONG_multiply_segments_with_change(scans_to_process);
+
 
 %% Transform longitudinal images to group/MNI space
 scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'mean');
-
-%% Smooth individual participant change maps images for stats 
-scans_to_process = LONG_smooth_changemaps(scans_to_process);
-
 
 %% Transform time1 and time2 data to mni using intermediate longitudinal image
 scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'time1');
 scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'time2');
 
-%% T-Spoon
+%% Smooth individual participant change maps images for stats 
+scans_to_process = LONG_smooth_changemaps(scans_to_process);
+
+%% T-Spoon for stats
+scans_to_process = LONG_tspoon_changemaps(scans_to_process);
 
 %% Group:
-LONG_extractROIs %extract from custom ROIs and generate spreadsheet
-LONG_extractVolumes %WM/GM/CSF/TIV and generate spreadsheet
-LONG_generatemeanmaps % create average change maps
+LONG_extractROIs %extract from custom ROIs and generate spreadsheet (time1, time2, average)
+LONG_extractVolumes %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
+LONG_generatemeanmaps % create average change maps (GM/WM/WholeBrain)
 
 
 
