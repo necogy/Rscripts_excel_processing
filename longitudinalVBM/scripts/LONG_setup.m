@@ -40,7 +40,7 @@ DARTELpatients =[98;588;951;1004;1176;1319;1340;1463;1586;2275;2500;2711;3521;41
 PIDNlist = [DARTELnorms ; DARTELpatients];
 scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist); 
 % MOVE GENERATED TEMPLATE FILES TO TEMPLATE FOLDER 
-templatepath = 'R:\users\sattygalle\Matlab\longitudinal\Feb2014_SD_NORM'; % set this to the new template folder name.
+templatepath = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Feb2014_SD_NORM' ;% set this to the new template folder name.
 scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath);
 
 %% Segment time1 and time2 images:
@@ -53,14 +53,12 @@ scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this w
 
 %% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
 %% Transform longitudinal images to group/MNI space
-scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'mean');
+scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, 'mean');
 
 %% Transform time1 and time2 data to mni using intermediate longitudinal image
-scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'time1');
-scans_to_process = LONG_DARTELnormalise_to_MNI(scans_to_process, 'time2');
+scans_to_process = LONG_timepoint_to_MNI(scans_to_process, 'time1');
+scans_to_process = LONG_timepoint_to_MNI(scans_to_process, 'time2');
 
 %% Smooth individual participant change maps images for stats 
 scans_to_process = LONG_smooth_changemaps(scans_to_process);

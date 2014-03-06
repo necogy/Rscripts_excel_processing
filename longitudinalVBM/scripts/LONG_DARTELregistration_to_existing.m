@@ -24,9 +24,11 @@ function scans_to_process = LONG_DARTELregistration_to_existing( scans_to_proces
 
 prefixes ='rc1avg_' ; % use c1 images to make sure segmentatoin occured.
 c1volumes = LONG_buildvolumelist(scans_to_process, prefixes);
+c1volumes = strrep(c1volumes, 'img', 'nii'); %avg filenames sometimes were img not nii
 
 prefixes ='rc2avg_' ; % use c1 images to make sure segmentatioin occured.
 c2volumes = LONG_buildvolumelist(scans_to_process, prefixes);
+c2volumes = strrep(c2volumes, 'img', 'nii'); %avg filenames sometimes were img not nii
 
 spm('defaults', 'PET');
 spm_jobman('initcfg');

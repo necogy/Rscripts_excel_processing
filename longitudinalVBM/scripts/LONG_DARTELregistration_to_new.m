@@ -33,9 +33,11 @@ end
 
 prefixes ='rc1avg_' ; % use c1 images to make sure segmentatoin occured.
 c1volumes = LONG_buildvolumelist(scans_to_process(keep), prefixes);
+  c1volumes = strrep(c1volumes, 'img', 'nii');
 
 prefixes ='rc2avg_' ; % use c1 images to make sure segmentatioin occured.
 c2volumes = LONG_buildvolumelist(scans_to_process(keep), prefixes);
+ c2volumes = strrep(c2volumes, 'img', 'nii');
 
 spm('defaults', 'PET');
 spm_jobman('initcfg');
