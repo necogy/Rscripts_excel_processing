@@ -22,94 +22,41 @@ function scans_to_process = LONG_DARTEL_to_MNI( scans_to_process, dartelpath )
 % Revisions:
 
 
-
-
 %look for template_6 file and set 
-template = fullfile(dartelpath, 'Template_6.nii') % Template_6 file
+template = fullfile(dartelpath, 'Template_6.nii'); % Template_6 file
+imageprefixes = {'avg','mavg','c1avg','c2avg','l_c1avg_jd','l_c1avg_dv','l_c2avg_jd','l_c2avg_dv' };
 
+for subject = 1:size(scans_to_process,2)
+    
+    flowfield =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, ['u_rc1avg_'  scans_to_process(subject).Time1file]);
+    flowfield = strrep(flowfield, 'img', 'nii'); %avg filenames sometimes were img not nii
 
-for 
-spm('defaults', 'PET');
-spm_jobman('initcfg');
-flowfield % u_rc1avg_8.nii file
-matlabbatch{1}.spm.tools.dartel.mni_norm.template = template;
-matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.flowfields = flowfield;
-prefixes = {'avg','mavg','c1avg','c2avg','l_c1avg_jd','l_c1avg_jd','l_c2avg_jd','l_c2avg_jd' };
+    spm('defaults', 'PET');
+    spm_jobman('initcfg');
+    matlabbatch{1}.spm.tools.dartel.mni_norm.template = cellstr(template);
+    matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.flowfields = cellstr(flowfield);
+    
+    
+    for image = 1:size(imageprefixes,2)
+       
+        d=SAdir(fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1), ['^' imageprefixes{image} '.*nii']);
+        
+        imagetowarp = fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, d.name) ;
+        
+        matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.images{image} = cellstr(imagetowarp);
+        
+    end
+    
+    matlabbatch{1}.spm.tools.dartel.mni_norm.vox = [1 1 1];
+    matlabbatch{1}.spm.tools.dartel.mni_norm.bb = [NaN NaN NaN
+                                                   NaN NaN NaN];
+                                               
+    matlabbatch{1}.spm.tools.dartel.mni_norm.preserve = 0;
+    matlabbatch{1}.spm.tools.dartel.mni_norm.fwhm = [0 0 0];
 
+    spm_jobman('run',matlabbatch);
 
-
-
-
-%images in dartel space to transform to MNI:
-matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.images{1} 
-matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.images{2}
-matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.images{3}
-matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.images{4}
-
-
-
-
-matlabbatch{1}.spm.tools.dartel.mni_norm.vox = [NaN NaN NaN];
-matlabbatch{1}.spm.tools.dartel.mni_norm.bb = [NaN NaN NaN
-                                               NaN NaN NaN];
-matlabbatch{1}.spm.tools.dartel.mni_norm.preserve = 0;
-matlabbatch{1}.spm.tools.dartel.mni_norm.fwhm = [0 0 0];
-
-spm_jobman('run',matlabbatch);
-
-% 
-%   warning('please make sure dartel normalize SPM job has correct number of fields')
-%         
-%     prefixes = {'u_rc1avg','avg','mavg','c1avg','c2avg', 'c1jd','c1dv','c2jd','c2dv' };
-%    % prefixes = {'u_rc1avg','c1jd','c1dv','c2jd','c2dv' };
-%     inputs = cell(size(prefixes,2)+1,1);
-%     inputs{1, 1} = {fullfile(dartelpath, 'Template_6.nii')};% Group-specific DARTEL template
-%     
-%     %build input file of average file:
-%     for n = 1:size(prefixes,2)
-%         
-%         files = cell(size(input.subjectdir,1),1);
-%         for i = 1:size(input.subjectdir,1)
-%             
-%             file = SAdir(input.subjectdir{i}, ['^' prefixes{n} '_.*nii$'] );
-%             files{i,1} = [input.subjectdir{i} filesep file.name];
-%             
-%         end
-%         inputs{n+1,1}= files;
-%     end
-% 
-
-% 
-% 
-% prefixes = {'c1avg_', 'c2avg_'};
-% maptypes = {'jd_' ,'dv_'};
-% 
-% for subject = 1:size(scans_to_process,2)
-%     for p = 1:size(prefixes,2)
-%         for jdordv = 1:size(maptypes,2)
-%             
-%             segpath = LONG_buildvolumelist(scans_to_process(subject), prefixes{p});
-%             segvolume = strrep(segpath{1}, 'img', 'nii'); %avg filenames sometimes were img not nii
-%             
-%             date1path = fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1);
-%             filestruct = SAdir( date1path, ['^' maptypes{jdordv}]) ;
-%             
-%             jdpath = fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, filestruct.name);
-%             outpath = SAinsertStr2Paths(jdpath, ['l_' prefixes{p}]);
-%             
-%             SAmultiply2Images(segvolume, jdpath, outpath)
-%         end
-%     end
-%     
-% end
-% 
-% end
-% 
-
-
-
-
-
-
-
+    
+    
+end
 

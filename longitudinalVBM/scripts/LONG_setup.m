@@ -54,7 +54,11 @@ scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this w
 %% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Transform longitudinal images to group/MNI space
-scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, 'mean');
+templatepath = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Feb2014_SD_NORM' ;% set this to the new template folder name.
+
+scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
+
+%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Transform time1 and time2 data to mni using intermediate longitudinal image
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, 'time1');
