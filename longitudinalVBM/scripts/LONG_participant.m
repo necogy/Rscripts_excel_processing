@@ -13,7 +13,8 @@ classdef LONG_participant
         Date2num
         Time1file
         Time2file
-        %Group 
+        
+        Group % HC, L_SD, R_SD
        % DeltaTime
        
        Ran_Longitudinal_registration % yes, date, prefix
