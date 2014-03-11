@@ -54,6 +54,8 @@ scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this w
 templatepath = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Feb2014_SD_NORM' ;% set this to the new template folder name.
 scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 
+%% Group results:
+
 %% generate average maps of c_jd/dv maps and wholebrain 
 LSD_PIDNs = [98;588;951;1004;1176;1319;1340;1463;1586;2275;2500;2711;3521;4160;4375;4379;4471;5468;5830;6110;10114;10880;11735;11965;12555;13108;13138;13185;13272;13512;13919;14427;15774];
 RSD_PIDNs = [84;278;1615;2522;3690;3824;4747;6600;9283;10032;10434;11028;11704;11773;13962];
@@ -77,6 +79,7 @@ scans_to_process = LONG_timepoint_to_MNI(scans_to_process, 'time2');
 LONG_extractROIs(scans_to_process, pathtoROIs) %extract from custom ROIs and generate spreadsheet (time1, time2, average)
 LONG_extractVolumes(scans_to_process, pathtoROIs) %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
 
+%% Prep for statistics:
 
 %% Smooth individual participant change maps images for stats 
 scans_to_process = LONG_smooth_changemaps(scans_to_process);
@@ -86,4 +89,8 @@ scans_to_process = LONG_tspoon_changemaps(scans_to_process);
 
 
 
+%% To Do:
+
+% add error checking codes into scans_to_process to ensure previous steps
+% have been run
 

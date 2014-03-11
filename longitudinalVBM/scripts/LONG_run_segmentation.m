@@ -30,7 +30,8 @@ switch lower(scantype)
         prefixes ='avg_' ;% average images start with "avg_++
         volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
         volumes = strrep(volumepaths(:,1), 'img', 'nii'); %avg filenames sometimes were img not nii
-
+        writeforavgonly = 1;
+        
     case {'time1','time2'}
         prefixes ='' ;% average images start with "avg_++
         volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
