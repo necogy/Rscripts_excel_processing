@@ -1,12 +1,13 @@
-,%% LONG_setup
+%% LONG_setup
 % Sets up Longitudinal VBM using the second revision of the
 % pipeline.
 
 %make sure to add spm12b folder and longitudinalVBM folder with subfolders
 %to matlab path.
 
+% enable cell evaluation in matlab settings for easier use of this script
+
 clear
-%spm_my_defaults; % set up max mem  = edit and set this to half of your avilable ram % this might not be necssary unless doing stats
 
 %scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
 scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_feb2014_reprocess','images','images_dir');
@@ -26,7 +27,7 @@ scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath );
 
 %% rigidly realign and reslice mean images for DARTEL
 % this step doesn't work because the new segment doesn't create the
-% appropriate fields.
+% appropriate fields, but it might work in future SPM versions
 
 %voxelsize =1;
 %scans_to_process = LONG_DARTELimport( scans_to_process, voxelsize ); 
@@ -53,9 +54,6 @@ scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this w
 templatepath = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Feb2014_SD_NORM' ;% set this to the new template folder name.
 scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 
-
-%% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %% generate average maps of c_jd/dv maps and wholebrain 
 LSD_PIDNs = [98;588;951;1004;1176;1319;1340;1463;1586;2275;2500;2711;3521;4160;4375;4379;4471;5468;5830;6110;10114;10880;11735;11965;12555;13108;13138;13185;13272;13512;13919;14427;15774];
 RSD_PIDNs = [84;278;1615;2522;3690;3824;4747;6600;9283;10032;10434;11028;11704;11773;13962];
@@ -68,9 +66,17 @@ scans_to_process = LONG_generatemeanmaps(scans_to_process, SD_PIDNs, 'SDLR');
 scans_to_process = LONG_generatemeanmaps(scans_to_process, HC_PIDNs, 'HC');
 
 
+%% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% Transform time1 and time2 data to mni using intermediate longitudinal image warp
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, 'time1');
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, 'time2');
+
+
+%% Group:
+LONG_extractROIs(scans_to_process, pathtoROIs) %extract from custom ROIs and generate spreadsheet (time1, time2, average)
+LONG_extractVolumes(scans_to_process, pathtoROIs) %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
+
 
 %% Smooth individual participant change maps images for stats 
 scans_to_process = LONG_smooth_changemaps(scans_to_process);
@@ -78,11 +84,6 @@ scans_to_process = LONG_smooth_changemaps(scans_to_process);
 %% T-Spoon for stats
 scans_to_process = LONG_tspoon_changemaps(scans_to_process);
 
-%% Group:
-LONG_generatecrosssectionalROIs
-LONG_extractROIs %extract from custom ROIs and generate spreadsheet (time1, time2, average)
-LONG_extractVolumes %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
-LONG_generatemeanmaps(scans_to_process, PIDNs, groupname) % create average change maps (GM/WM/WholeBrain)
 
 
 

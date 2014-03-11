@@ -4,6 +4,7 @@ function scans_to_process = LONG_DARTEL_to_MNI( scans_to_process, dartelpath )
 % Syntax:  scans_to_process = LONG_DARTEL_to_MNI( scans_to_process)
 %
 % Inputs: scans_to_process - array of objects of class LONG_participant,
+%           dartelpath - path to dartel template 
 %
 % Outputs: scans_to_process - updated array with run status
 %
@@ -13,7 +14,7 @@ function scans_to_process = LONG_DARTEL_to_MNI( scans_to_process, dartelpath )
 % MAT-files required: none
 %
 % See also:
-
+%
 % To Do: 
 %
 % Author: Suneth Attygalle
@@ -36,27 +37,19 @@ for subject = 1:size(scans_to_process,2)
     matlabbatch{1}.spm.tools.dartel.mni_norm.template = cellstr(template);
     matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.flowfields = cellstr(flowfield);
     
-    
-    for image = 1:size(imageprefixes,2)
-       
+    for image = 1:size(imageprefixes,2)    
         d=SAdir(fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1), ['^' imageprefixes{image} '.*nii']);
-        
-        imagetowarp = fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, d.name) ;
-        
-        matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.images{image} = cellstr(imagetowarp);
-        
+        imagetowarp = fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, d.name) ;  
+        matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.images{image} = cellstr(imagetowarp);    
     end
     
     matlabbatch{1}.spm.tools.dartel.mni_norm.vox = [1 1 1];
     matlabbatch{1}.spm.tools.dartel.mni_norm.bb = [NaN NaN NaN
-                                                   NaN NaN NaN];
-                                               
+                                                   NaN NaN NaN];                                          
     matlabbatch{1}.spm.tools.dartel.mni_norm.preserve = 0;
     matlabbatch{1}.spm.tools.dartel.mni_norm.fwhm = [0 0 0];
 
     spm_jobman('run',matlabbatch);
-
-    
     
 end
 

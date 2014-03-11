@@ -4,7 +4,8 @@ function scans_to_process = LONG_run_segmentation( scans_to_process, scantype, s
 % Syntax:  participantstructure = LONG_run_segmentation(scans_to_process )
 %
 % Inputs: scans_to_process - array of objects of class LONG_participant,
-% string specifying whether to segment time1, time2 or mean image.
+% scantype - string specifying whether to segment time1, time2 or mean image.
+% spmpath - path to spm 12b installation
 %
 % Outputs: scans_to_process - updated array with run status
 %
