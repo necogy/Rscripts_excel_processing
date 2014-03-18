@@ -67,16 +67,18 @@ scans_to_process = LONG_generatemeanmaps(scans_to_process, RSD_PIDNs, 'SDR');
 scans_to_process = LONG_generatemeanmaps(scans_to_process, SD_PIDNs, 'SDLR');
 scans_to_process = LONG_generatemeanmaps(scans_to_process, HC_PIDNs, 'HC');
 
-
-%% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %% Transform time1 and time2 data to mni using intermediate longitudinal image warp
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time1');
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time2');
 
+
+%% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %% Group:
 LONG_extractROIs(scans_to_process, pathtoROIs) %extract from custom ROIs and generate spreadsheet (time1, time2, average)
 LONG_extractVolumes(scans_to_process, pathtoROIs) %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
+
 
 %% Prep for statistics:
 
