@@ -36,53 +36,8 @@ if strcmp(listname, 'Nov2013_NIFDcontrols')
 end
 
 
-
-if strcmp(listname, 'Oct2013_3T_onlyT1T2')
-    datapath= fullfile(SAreturnDriveMap('R'),'groups','rosen','gene_carrier_imaging_all','VBM','sa_longitudinal', 'images','images_dir');
-    
-    
-    participants = getFoldersAndDates(datapath);
-end
-
-if strcmp(listname, 'Oct2013_3T')
-    datapath= fullfile(SAreturnDriveMap('R'),'groups','rosen','gene_carrier_imaging_all','VBM','sa_longitudinal', 'images','images_dir');
-    
-    
-    participants = getFoldersAndDates(datapath);
-    
-end
-
-if strcmp(listname,'casestudy1')
-    datapath= fullfile(SAreturnDriveMap('R'),'groups','rosen','gene_carrier_imaging_all','VBM','familiarcases','images_dir');
-    participants = getFoldersAndDates(datapath);
-    % participants(1).PIDN = 14710;
-    % participants(1).MRI = {'ADRC0047-1','NIFD094-1','NIFD094-2'};
-    % participants(1).MRIdate = {'07/23/2012', '11/07/2012', '06/24/2013'};
-    % participants(1).MRIdatenum= cellfun(@datenum, participants(1).MRIdate);
-    
-    % participants(2).PIDN = 12633;
-    % participants(2).MRI = {'NIFD033-1','NIFD033-2'};
-    % participants(2).MRIdate = {'05/03/2011', '11/30/2011'};
-    % participants(2).MRIdatenum= cellfun(@datenum, participants(2).MRIdate);
-    
-    % participants(3).PIDN = 11442;
-    % participants(3).MRI = {'NIFD003-1','NIFD003-2','NIFD003-3','NRS097-1' };
-    % participants(3).MRIdate = {'09/14/2010', '03/10/2011','09/21/11','09/15/2010'};
-    % participants(3).MRIdatenum= cellfun(@datenum, participants(3).MRIdate);
-    
-    % participants(4).PIDN = 10880;
-    % participants(4).MRI = {'NIFD012-1','NIFD012-2','NIFD012-3','NIFD012-4','PPG0228-1'};
-    % participants(4).MRIdate = {'11/02/2010', '07/15/2011','03/15/2012','03/15/2012', '10/16/2013' };
-    % participants(4).MRIdatenum= cellfun(@datenum, participants(4).MRIdate);
-    
-    % participants(5).PIDN = 11028;
-    % participants(5).MRI = {'NIC177-1','PPG0143-2'};
-    % participants(5).MRIdate = {'09/07/10', '09/10/2013'};
-    % participants(5).MRIdatenum= cellfun(@datenum, participants(5).MRIdate);
-    
-end
-
 end % end main function
+
 function participants = getFoldersAndDates(datapath)
 d = SAdir(datapath,'^[0-9]'); %get PIDN folders
 d([d.isdir]==0) = []; %remove nondirectories
