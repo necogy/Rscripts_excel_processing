@@ -23,9 +23,14 @@ function scans_to_process = LONG_timepoint_to_MNI( scans_to_process, dartelpath,
 % Revisions:
 %----------------------
 template = fullfile(dartelpath, 'Template_6.nii'); % Template_6 file
+  for subject = 1:size(scans_to_process,2)
+        
+        file = SAdir(input.subjectdir{i}, ['^' prefixes{n} '_.*nii$'] );
+        files{i,1} = [input.subjectdir{i} filesep file.name];
+        
+    end
  
- 
-for subject = 1:size(scans_to_process,2)
+
     
 switch lower(timepoint)
     case 'time1'

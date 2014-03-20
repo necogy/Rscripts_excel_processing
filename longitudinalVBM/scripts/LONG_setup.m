@@ -72,6 +72,10 @@ scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time1'
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time2');
 
 
+%% Smooth individual participant change maps images for stats 
+fwhm = 6 ;
+scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
+
 %% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -82,8 +86,7 @@ LONG_extractVolumes(scans_to_process, pathtoROIs) %WM/GM/CSF/TIV and generate sp
 
 %% Prep for statistics:
 
-%% Smooth individual participant change maps images for stats 
-scans_to_process = LONG_smooth_changemaps(scans_to_process);
+
 
 %% T-Spoon for stats
 scans_to_process = LONG_tspoon_changemaps(scans_to_process);
