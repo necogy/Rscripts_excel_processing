@@ -19,7 +19,6 @@ function scans_to_process = LONG_DARTEL_to_MNI( scans_to_process, dartelpath )
 %
 % Author: Suneth Attygalle
 % Created 03/06/2014
-%
 % Revisions:
 
 
@@ -31,6 +30,7 @@ for subject = 1:size(scans_to_process,2)
     
     flowfield =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, ['u_rc1avg_'  scans_to_process(subject).Time1file]);
     flowfield = strrep(flowfield, 'img', 'nii'); %avg filenames sometimes were img not nii
+   % flowfield = strrep(flowfield, '.nii', '_Template.nii'); %avg filenames sometimes were img not nii
 
     spm('defaults', 'PET');
     spm_jobman('initcfg');
