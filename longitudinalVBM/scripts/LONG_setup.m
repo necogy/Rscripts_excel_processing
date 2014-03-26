@@ -1,12 +1,12 @@
 %% LONG_setup
 % Sets up Longitudinal VBM using the second revision of the
-% pipeline.
+% pipeline. Create a copy of this file to make edits to for a specific data
+% set.
 
 %make sure to add spm12b folder and longitudinalVBM folder with subfolders
 %to matlab path.
 
 % enable cell evaluation in matlab settings for easier use of this script
-
 clear
 
 %scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
@@ -40,7 +40,7 @@ PIDNlist = [DARTELnorms ; DARTELpatients];
 scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist);  %create new template
 
 % MOVE GENERATED TEMPLATE FILES TO TEMPLATE FOLDER 
-templatepath = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Feb2014_SD_NORM' ;% set this to the new template folder name.
+templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Feb2014_SD_NORM'); % set this to the new template folder name.
 scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath);
 
 %% Segment time1 and time2 images:
@@ -51,7 +51,7 @@ scans_to_process = LONG_run_segmentation( scans_to_process, 'time2', spmpath );
 scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
 
 %% Transform longitudinal images to group/MNI space
-templatepath = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Feb2014_SD_NORM' ;% set this to the new template folder name.
+templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Feb2014_SD_NORM');% set this to the new template folder name.
 scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 
 %% Group results:
@@ -78,22 +78,12 @@ scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 
 %% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %% Group:
 LONG_extractROIs(scans_to_process, pathtoROIs) %extract from custom ROIs and generate spreadsheet (time1, time2, average)
 LONG_extractVolumes(scans_to_process, pathtoROIs) %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
 
-
 %% Prep for statistics:
-
-
 
 %% T-Spoon for stats
 scans_to_process = LONG_tspoon_changemaps(scans_to_process);
-
-
-%% To Do:
-
-% add error checking codes into scans_to_process to ensure previous steps
-% have been run
 
