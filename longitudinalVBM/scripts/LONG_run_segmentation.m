@@ -32,8 +32,7 @@ switch lower(scantype)
         volumes = strrep(volumepaths(:,1), 'img', 'nii'); %avg filenames sometimes were img not nii
         writeforavgonly = 1;
         dartelimport = 1; % it's better to do the dartel import separately so voxel size can be specified ( this might work in future versions of SPM)
-
-        
+ 
     case {'time1','time2'}
         prefixes ='' ;% average images start with "avg_++
         volumepaths = LONG_buildvolumelist(scans_to_process, prefixes);
@@ -42,10 +41,8 @@ switch lower(scantype)
 
         if strcmpi(scantype,'time1')
             volumes = volumepaths(:,1);
-            writeforavgonly = 0;
         elseif strcmpi(scantype,'time2')
             volumes = volumepaths(:,2);
-            writeforavgonly = 0;
         end       
 end
 
@@ -87,7 +84,7 @@ matlabbatch{1}.spm.spatial.preproc.warp.reg = [0 0.001 0.5 0.025 0.1];
 matlabbatch{1}.spm.spatial.preproc.warp.affreg = 'mni';
 matlabbatch{1}.spm.spatial.preproc.warp.fwhm = 0;
 matlabbatch{1}.spm.spatial.preproc.warp.samp = 3;
-matlabbatch{1}.spm.spatial.preproc.warp.write = [0 1];
+matlabbatch{1}.spm.spatial.preproc.warp.write = [0 writeforavgonly];
 
 spm_jobman('run',matlabbatch);
 
