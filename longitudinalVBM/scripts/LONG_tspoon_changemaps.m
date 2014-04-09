@@ -86,10 +86,10 @@ for subject = 1:size(scans_to_process,2)
     for prefix = 1:size(longprefixes,2)
 
 fwhm = 6;
-    LONG_smooth_images( scans_to_process,'bmwl_c1avg_jd_', fwhm)
-    LONG_smooth_images( scans_to_process,'bmwl_c2avg_jd_', fwhm)
-    LONG_smooth_images( scans_to_process,'wl_c1avg_jd_', fwhm)
-     LONG_smooth_images( scans_to_process,'wl_c2avg_jd_', fwhm)
+    LONG_smooth_images( scans_to_process,'bmwl_c1avg_jd', fwhm)
+    LONG_smooth_images( scans_to_process,'bmwl_c2avg_jd', fwhm)
+    LONG_smooth_images( scans_to_process,'wl_c1avg_jd', fwhm)
+     LONG_smooth_images( scans_to_process,'wl_c2avg_jd', fwhm)
     end
 end
 
