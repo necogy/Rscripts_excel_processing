@@ -10,7 +10,7 @@
 clear
 
 %scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
-scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_feb2014_reprocess','images','images_dir');
+scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_Mar2014_reprocess_2','images','images_dir');
 scans_to_process = LONG_load_inputfile( scandatafolder );
 
 %path to SPM12b folder 

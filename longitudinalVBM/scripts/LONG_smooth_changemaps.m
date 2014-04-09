@@ -24,7 +24,7 @@ allsubs =[];
 for sub = 1:size(scans_to_process,2)
         
       subdirectory = fullfile(scans_to_process(sub).Datapath, scans_to_process(sub).PIDN, scans_to_process(sub).Date1);
-      file = SAdir(subdirectory, '^l_' );
+      file = SAdir(subdirectory, '^wl_' );
       
       for files = 1:size(file,1)
       filestosmooth{files,1} = fullfile(subdirectory, file(files).name);
