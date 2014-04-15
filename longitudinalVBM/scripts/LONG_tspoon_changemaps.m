@@ -83,18 +83,43 @@ end
 %smooth combined masked image and smooth longitudinal image
 longprefixes = {'wl_c1avg_jd_','wl_c2avg_jd_' } ;
 for subject = 1:size(scans_to_process,2)
-    for prefix = 1:size(longprefixes,2)
-
-fwhm = 6;
+    fwhm = 6;
     LONG_smooth_images( scans_to_process,'bmwl_c1avg_jd', fwhm)
     LONG_smooth_images( scans_to_process,'bmwl_c2avg_jd', fwhm)
     LONG_smooth_images( scans_to_process,'wl_c1avg_jd', fwhm)
-     LONG_smooth_images( scans_to_process,'wl_c2avg_jd', fwhm)
-    end
+    LONG_smooth_images( scans_to_process,'wl_c2avg_jd', fwhm)
+    
 end
 
 %dived smoothed image by smoothed mask 
-    
-    
+
+tissuetype = {'c1avg_jd_', 'c2avg_jd_'};
+
+    for subject = 1:size(scans_to_process,2)
+        for tissueclass = 1:size(tissuetype,2)
+            spm('defaults', 'PET');
+            spm_jobman('initcfg');
+
+            filename = strcat('s6wl_', tissuetype{tissueclass}, scans_to_process(subject).Time1file(1:end-4) ,'_', scans_to_process(subject).Time2file) ;  
+            input1 =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, strrep(filename, '.img', '.nii'));
+
+            input2 = strrep(input1, 's6wl', 's6bmwl');
+            
+            input = {input1, input2};
+            outfile =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, strcat('T', strrep(filename, '.img', '.nii')));
+            
+
+            matlabbatch{1}.spm.util.imcalc.input = input;
+            matlabbatch{1}.spm.util.imcalc.output = char(outfile);
+            matlabbatch{1}.spm.util.imcalc.outdir = cellstr(fileparts(input2));
+            matlabbatch{1}.spm.util.imcalc.expression = 'i1./i2';
+            matlabbatch{1}.spm.util.imcalc.var = struct('name', {}, 'value', {});
+            matlabbatch{1}.spm.util.imcalc.options.dmtx = 0;
+            matlabbatch{1}.spm.util.imcalc.options.mask = 0;
+            matlabbatch{1}.spm.util.imcalc.options.interp = 1;
+            matlabbatch{1}.spm.util.imcalc.options.dtype = 16;
+            spm_jobman('run',matlabbatch);    
+        end
+    end
 end
 
