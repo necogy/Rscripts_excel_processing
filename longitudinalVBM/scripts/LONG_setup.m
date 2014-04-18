@@ -71,6 +71,8 @@ scans_to_process = LONG_generatemeanmaps(scans_to_process, HC_PIDNs, 'HC');
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time1');
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time2');
 
+%% T-Spoon for stats ( you might not want to use this vs normal smoothing below)
+scans_to_process = LONG_tspoon_changemaps(scans_to_process);
 
 %% Smooth individual participant change maps images for stats 
 fwhm = 6 ;
@@ -80,10 +82,8 @@ scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 
 %% Group:
 LONG_extractROIs(scans_to_process, pathtoROIs) %extract from custom ROIs and generate spreadsheet (time1, time2, average)
+
+
+
 LONG_extractVolumes(scans_to_process, pathtoROIs) %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
-
-%% Prep for statistics:
-
-%% T-Spoon for stats
-scans_to_process = LONG_tspoon_changemaps(scans_to_process);
 

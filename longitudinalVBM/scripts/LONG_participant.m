@@ -13,6 +13,7 @@ classdef LONG_participant
         Date2num
         Time1file
         Time2file
+        ROI
         
         Group % HC, L_SD, R_SD
        % DeltaTime
