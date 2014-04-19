@@ -29,12 +29,12 @@ function scans_to_process = LONG_extractROIs(scans_to_process, pathtoROIs)
 
 rois = SAdir(pathtoROIs, 'sr1_');
 
-for subject = 1:size(scans_to_process,2)
-    
+for subject = 1:5%size(scans_to_process,2)
+    subject
     [~, a, ~] = fileparts(scans_to_process(subject).Time1file);
     [~, b, ~] = fileparts(scans_to_process(subject).Time2file);
     changemap = ['wl_c1avg_jd_' a '_', b, '.nii'];
-    vol = spm_vol(fullfile(scans_to_process(1).Fullpath, scans_to_process(1).Date1,  changemap));
+    vol = spm_vol(fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1,  changemap));
     img_arr = spm_read_vols(vol);
         
     for r = 1:size(rois,1)
@@ -43,9 +43,9 @@ for subject = 1:size(scans_to_process,2)
         roizeros = ~(roi_arr==0);
         includedvalues = img_arr(roizeros);
 
-        scans_to_process.ROI(r).name = rois(r).name;
-        scans_to_process.ROI(r).mean = mean(includedvalues);
-        scans_to_process.ROI(r).median = median(includedvalues);
+        scans_to_process(subject).ROI{r}.name = rois(r).name;
+        scans_to_process(subject).ROI{r}.mean = mean(includedvalues);
+        scans_to_process(subject).ROI{r}.median = median(includedvalues);
         
     end
 end

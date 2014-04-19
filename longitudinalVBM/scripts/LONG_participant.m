@@ -18,16 +18,16 @@ classdef LONG_participant
         Group % HC, L_SD, R_SD
        % DeltaTime
        
-       Ran_Longitudinal_registration % yes, date, prefix
-       Ran_Longitudinal_Segmentation
-       Ran_DARTEL_intersubject_registration
-       Ran_DARTEL_normalize_LONG_to_MNI
+       %Ran_Longitudinal_registration % yes, date, prefix
+       %Ran_Longitudinal_Segmentation
+       %Ran_DARTEL_intersubject_registration
+       %Ran_DARTEL_normalize_LONG_to_MNI
        
-       Ran_t1_Segmentation
-       Ran_t2_Segmentation
+      % Ran_t1_Segmentation
+       %Ran_t2_Segmentation
        
-       Ran_DARTEL_normalize_t1_to_MNI
-       Ran_DARTEL_normalize_t2_to_MNI
+       %Ran_DARTEL_normalize_t1_to_MNI
+       %Ran_DARTEL_normalize_t2_to_MNI
        
        
        

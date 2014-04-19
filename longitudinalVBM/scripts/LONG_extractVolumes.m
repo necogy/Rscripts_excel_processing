@@ -18,7 +18,7 @@ function scans_to_process = LONG_extractVolumes( scans_to_process,scantype )
 % To Do: 
 %
 % Author: Suneth Attygalle
-% Created 03/10/2014
+% Created 
 %
 % Revisions:
 
