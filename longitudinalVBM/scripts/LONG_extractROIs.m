@@ -1,4 +1,4 @@
-function scans_to_process = LONG_extractROIs(scans_to_process, pathtoROIs)
+function scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix)
 %LONG_extractROIs - apply t-spoon smoothing to change maps
 %
 % Syntax:  scans_to_process =  LONG_extractROIs( scans_to_process,pathtoROIs )
@@ -27,13 +27,12 @@ function scans_to_process = LONG_extractROIs(scans_to_process, pathtoROIs)
 
 %get list of ROIs 
 
-rois = SAdir(pathtoROIs, 'sr1_');
+rois = SAdir(pathtoROIs,  ROIprefix);
 
-for subject = 1:5%size(scans_to_process,2)
-    subject
+for subject = 1:size(scans_to_process,2)
     [~, a, ~] = fileparts(scans_to_process(subject).Time1file);
     [~, b, ~] = fileparts(scans_to_process(subject).Time2file);
-    changemap = ['wl_c1avg_jd_' a '_', b, '.nii'];
+    changemap = [changemapprefix a '_', b, '.nii'];
     vol = spm_vol(fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1,  changemap));
     img_arr = spm_read_vols(vol);
         

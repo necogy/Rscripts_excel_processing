@@ -78,14 +78,12 @@ scans_to_process = LONG_tspoon_changemaps(scans_to_process);
 fwhm = 6 ;
 scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 
-%% Group:
-
-%extract mean/median change values in ROIs and save to scans_to_process
+%% extract mean/median change values in ROIs and save to scans_to_process
 %structure
 pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');% set this to the new template folder name.
-
-scans_to_process = LONG_extractROIs(scans_to_process, pathtoROIs) ;%extract from custom ROIs and generate spreadsheet (time1, time2, average)
-
+ROIprefix = 'sr1_';
+changemapprefix = 'wl_c1avg_jd_';
+scans_to_process2 = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix);
 
 %% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
