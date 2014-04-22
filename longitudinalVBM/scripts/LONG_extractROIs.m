@@ -39,8 +39,8 @@ for subject = 1:size(scans_to_process,2)
     for r = 1:size(rois,1)
         roivol  = spm_vol(fullfile(pathtoROIs, rois(r).name));
         roi_arr = spm_read_vols(roivol);
-        roizeros = ~(roi_arr==0);
-        includedvalues = img_arr(roizeros);
+        roiones = ~roi_arr==0;
+        includedvalues = img_arr(roiones);
 
         scans_to_process(subject).ROImean{1,r} = rois(r).name;
         scans_to_process(subject).ROImean{2,r} = mean(includedvalues);
