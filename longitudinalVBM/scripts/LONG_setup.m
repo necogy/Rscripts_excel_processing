@@ -1,6 +1,6 @@
 %% LONG_setup
 % Sets up Longitudinal VBM using the second revision of the
-% pipeline. Create a copy of this file to make edits to for a specific data
+% pipeline. Set all of your paths first in LONG_config.  Create a copy of this file if you make edits to for a specific data
 % set.
 
 %make sure to add spm12b folder and longitudinalVBM folder with subfolders
@@ -9,12 +9,15 @@
 % enable cell evaluation in matlab settings for easier use of this script
 clear
 
+%load parameters:
+LONG_config
+
 %scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
-scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_Mar2014_reprocess_2','images','images_dir');
+%scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_Mar2014_reprocess_2','images','images_dir');
 scans_to_process = LONG_load_inputfile( scandatafolder );
 
 %path to SPM12b folder 
-spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');
+%spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');
 
 
 %% steps to run:
@@ -40,7 +43,7 @@ PIDNlist = [DARTELnorms ; DARTELpatients];
 scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist);  %create new template
 
 % MOVE GENERATED TEMPLATE FILES TO TEMPLATE FOLDER 
-templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Feb2014_SD_NORM'); % set this to the new template folder name.
+%templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Feb2014_SD_NORM'); % set this to the new template folder name.
 scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath);
 
 %% Segment time1 and time2 images:
@@ -51,7 +54,7 @@ scans_to_process = LONG_run_segmentation( scans_to_process, 'time2', spmpath );
 scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
 
 %% Transform longitudinal images to group/MNI space
-templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Feb2014_SD_NORM');% set this to the new template folder name.
+%templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Feb2014_SD_NORM');% set this to the new template folder name.
 scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 
 %% Group results:
@@ -80,12 +83,13 @@ scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 
 %% extract mean/median change values in ROIs and save to scans_to_process
 %structure
-pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');% set this to the new template folder name.
+%pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');% set this to the new template folder name.
 ROIprefix = 'sr1_';
 changemapprefix = 'wl_c1avg_jd_';
-scans_to_process2 = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix);
+scans_to_process2 = LONG_extractROIs(scans_to_process(1:4), changemapprefix, pathtoROIs, ROIprefix);
+[ROImeans, ROImedians] = LONG_exportROIs(scans_to_process2);
+
 
 %% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 LONG_extractVolumes(scans_to_process, pathtoROIs) %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
 

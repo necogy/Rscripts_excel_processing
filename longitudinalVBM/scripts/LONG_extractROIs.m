@@ -42,9 +42,10 @@ for subject = 1:size(scans_to_process,2)
         roizeros = ~(roi_arr==0);
         includedvalues = img_arr(roizeros);
 
-        scans_to_process(subject).ROI{r}.name = rois(r).name;
-        scans_to_process(subject).ROI{r}.mean = mean(includedvalues);
-        scans_to_process(subject).ROI{r}.median = median(includedvalues);
+        scans_to_process(subject).ROImean{1,r} = rois(r).name;
+        scans_to_process(subject).ROImean{2,r} = mean(includedvalues);
+        scans_to_process(subject).ROImedian{1,r} = rois(r).name;
+        scans_to_process(subject).ROImedian{2,r} = median(includedvalues);
         
     end
 end
