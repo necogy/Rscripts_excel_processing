@@ -33,7 +33,8 @@ for subject = 1:size(allPIDNs,2)
 end
 trimmed_scans = scans_to_process(keep);
 
-imageprefixes = {'wl_c1avg_jd','wl_c1avg_dv','wl_c2avg_jd','wl_c2avg_dv', 'wavg', 'wc1avg', 'wc2avg' };
+%imageprefixes = {'wl_c1avg_jd','wl_c1avg_dv','wl_c2avg_jd','wl_c2avg_dv', 'wavg', 'wc1avg', 'wc2avg' };
+imageprefixes = {'wl_c1avg_jd','wl_c2avg_jd','wavg', 'wc1avg', 'wc2avg' };
 
 for imagetype = 1:size(imageprefixes,2 )
 
@@ -42,6 +43,8 @@ for imagetype = 1:size(imageprefixes,2 )
 
         inputfile{subject} =  fullfile(trimmed_scans(subject).Fullpath, trimmed_scans(subject).Date1, d.name) ;
     end
+    
+    mkdir(fullfile( fileparts(fileparts(trimmed_scans(1).Datapath )), 'group_averages'))
     
     outfile = fullfile( fileparts(fileparts(trimmed_scans(1).Datapath )), 'group_averages', [groupname '_average_' imageprefixes{imagetype} '.nii']) ;
     spm('defaults', 'PET');
