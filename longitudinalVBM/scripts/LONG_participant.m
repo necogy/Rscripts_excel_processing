@@ -16,6 +16,11 @@ classdef LONG_participant
         ROImean
         ROImedian
         
+        baselineGMvol
+        baselineWMvol
+        baselineCSFvol
+        baselineTIVvol
+        
         Group % HC, L_SD, R_SD
        % DeltaTime
        

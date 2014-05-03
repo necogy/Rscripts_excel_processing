@@ -22,8 +22,36 @@ function scans_to_process = LONG_extractVolumes( scans_to_process,scantype )
 %
 % Revisions:
 
+% TIV = GM + WM + CSF  (probablistic segmentatoins)
+    
+for subject = 1:size(scans_to_process,2)
+    
+    GMpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, scans_to_process(subject).Time1file);
+    GMpath = SAinsertStr2Paths(GMpath, 'mwc1');
+    GMpath = strrep(GMpath, 'img','nii');
+    WMpath = strrep(GMpath, 'mwc1','mwc2');
+    CSFpath = strrep(GMpath, 'mwc1','mwc3');
+           
+    GMvol  = spm_read_vols(spm_vol(GMpath));
+    WMvol  = spm_read_vols(spm_vol(WMpath));
+    CSFvol = spm_read_vols(spm_vol(CSFpath));
+    
+    GMtotal = sum(GMvol(:));
+    WMtotal = sum(WMvol(:));
+    CSFtotal =sum(CSFvol(:));
+    
+    TIV = GMtotal+WMtotal+CSFtotal;
+    
+    scans_to_process(subject).baselineGMvol  = GMtotal;
+    scans_to_process(subject).baselineWMvol = WMtotal;
+    scans_to_process(subject).baselineCSFvol =CSFtotal;
+    scans_to_process(subject).baselineTIVvol = TIV;
 
     
+  
     
+end
+
+
 end
 
