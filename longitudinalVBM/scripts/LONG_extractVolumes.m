@@ -1,5 +1,6 @@
 function scans_to_process = LONG_extractVolumes( scans_to_process,scantype )
-%LONG_extractVolumes - extract WM/GM/CSF/TIV and generate spreadsheet
+%LONG_extractVolumes - extract WM/GM/CSF/TIV and add to scans_to_process
+%structure
 %
 % Syntax:  scans_to_process = LONG_extractVolumes( scans_to_process,scantype )
 %
@@ -15,23 +16,32 @@ function scans_to_process = LONG_extractVolumes( scans_to_process,scantype )
 %
 % See also:
 
-% To Do: 
+% To Do:
 %
 % Author: Suneth Attygalle
-% Created 
+% Created 5/2/14
 %
 % Revisions:
 
-% TIV = GM + WM + CSF  (probablistic segmentatoins)
-    
 for subject = 1:size(scans_to_process,2)
+    switch lower(scantype)
+        case 'mean'
+            
+        case 'time2'
+            GMpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, scans_to_process(subject).Time2file);
+            
+        case 'time1'
+            GMpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, scans_to_process(subject).Time1file);
+            
+    end
     
-    GMpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, scans_to_process(subject).Time1file);
+    %GMpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, scans_to_process(subject).Time1file);
+    
     GMpath = SAinsertStr2Paths(GMpath, 'mwc1');
     GMpath = strrep(GMpath, 'img','nii');
     WMpath = strrep(GMpath, 'mwc1','mwc2');
     CSFpath = strrep(GMpath, 'mwc1','mwc3');
-           
+    
     GMvol  = spm_read_vols(spm_vol(GMpath));
     WMvol  = spm_read_vols(spm_vol(WMpath));
     CSFvol = spm_read_vols(spm_vol(CSFpath));
@@ -42,16 +52,19 @@ for subject = 1:size(scans_to_process,2)
     
     TIV = GMtotal+WMtotal+CSFtotal;
     
-    scans_to_process(subject).baselineGMvol  = GMtotal;
-    scans_to_process(subject).baselineWMvol = WMtotal;
-    scans_to_process(subject).baselineCSFvol =CSFtotal;
-    scans_to_process(subject).baselineTIVvol = TIV;
+    switch lower(scantype)
+        case 'mean'
+            
+        case 'time2'
+            
+        case 'time1'
+            scans_to_process(subject).baselineGMvol  = GMtotal;
+            scans_to_process(subject).baselineWMvol = WMtotal;
+            scans_to_process(subject).baselineCSFvol =CSFtotal;
+            scans_to_process(subject).baselineTIVvol = TIV;
+    end
+    
 
     
-  
-    
-end
-
-
-end
+end % for subject = 1:size(scans_to_process,2)
 

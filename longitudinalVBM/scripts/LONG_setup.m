@@ -88,11 +88,11 @@ scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 %pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');% set this to the new template folder name.
 ROIprefix = '^r';
 changemapprefix = 'wl_c1avg_jd_';
-scans_to_process = LONG_extractROIs(scans_to_process(1:4), changemapprefix, pathtoROIs, ROIprefix); %extract ROI values and add to scans_to_process structure
+scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); %extract ROI values and add to scans_to_process structure
 [ROImeans, ROImedians] = LONG_exportROIs(scans_to_process); %pull out mean and median values from scans_to_process in a convenient format
 
 
 %% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-scans_to_process = LONG_extractVolumes(scans_to_process) %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
+scans_to_process = LONG_extractVolumes(scans_to_process); %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
 
