@@ -21,6 +21,11 @@ classdef LONG_participant
         baselineCSFvol
         baselineTIVvol
         
+        time2GMvol
+        time2WMvol
+        time2CSFvol
+        time2TIVvol
+        
         Group % HC, L_SD, R_SD
        % DeltaTime
        

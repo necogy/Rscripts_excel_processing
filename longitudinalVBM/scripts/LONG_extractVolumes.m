@@ -28,7 +28,7 @@ for subject = 1:size(scans_to_process,2)
         case 'mean'
             
         case 'time2'
-            GMpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, scans_to_process(subject).Time2file);
+            GMpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date2, scans_to_process(subject).Time2file);
             
         case 'time1'
             GMpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, scans_to_process(subject).Time1file);
@@ -56,7 +56,10 @@ for subject = 1:size(scans_to_process,2)
         case 'mean'
             
         case 'time2'
-            
+              scans_to_process(subject).time2GMvol  = GMtotal;
+            scans_to_process(subject).time2WMvol = WMtotal;
+            scans_to_process(subject).time2CSFvol =CSFtotal;
+            scans_to_process(subject).time2TIVvol = TIV;
         case 'time1'
             scans_to_process(subject).baselineGMvol  = GMtotal;
             scans_to_process(subject).baselineWMvol = WMtotal;

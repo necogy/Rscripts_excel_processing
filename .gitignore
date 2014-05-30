@@ -2,3 +2,6 @@
 *.m~
 *.nii
 *.log
+*.hdr
+*.img
+*.mat

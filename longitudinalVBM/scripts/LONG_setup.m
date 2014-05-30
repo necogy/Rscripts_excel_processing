@@ -91,8 +91,25 @@ changemapprefix = 'wl_c1avg_jd_';
 scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); %extract ROI values and add to scans_to_process structure
 [ROImeans, ROImedians] = LONG_exportROIs(scans_to_process); %pull out mean and median values from scans_to_process in a convenient format
 
+%% extract time 1 and time 2 volumes
+scans_to_process = LONG_extractVolumes(scans_to_process, 'time1'); %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
+scans_to_process = LONG_extractVolumes(scans_to_process, 'time2'); %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
 
-%% Code below is not done%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-scans_to_process = LONG_extractVolumes(scans_to_process); %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
+
+
+
+%% DTI related scripts below %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%create affine transformation to template from dartel (should already be
+%ok)
+
+%create and apply inverse deformations from ROI to native space
+
+
+
+%extract ROIs in native space 
+
+LONG_extractROIsInNativeSpace(scans_to_process)
+
 
