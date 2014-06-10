@@ -12,7 +12,7 @@ spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','sp
 
 %path to dartel template for your study (or where a dartel template will
 %be created if it doesn't exist yet):
-templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Feb2014_SD_NORM'); % set this to the new template folder name.
+templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Mar2014_SD_NORM'); % set this to the new template folder name.
 
 %path to ROIs to use to extract mean/median change values from a specific
 %ROI:

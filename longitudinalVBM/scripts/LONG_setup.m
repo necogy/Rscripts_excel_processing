@@ -109,7 +109,6 @@ scans_to_process = LONG_extractVolumes(scans_to_process, 'time2'); %WM/GM/CSF/TI
 
 
 %extract ROIs in native space 
-
-LONG_extractROIsInNativeSpace(scans_to_process)
+scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, templatepath, roipath, timepoint);
 
 
