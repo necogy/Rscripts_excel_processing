@@ -1,5 +1,5 @@
-function scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, templatepath, roipath, timepoint)
-%LONG_extractROIsInNativeSpace - warp atlas ROIs into native timepoint
+function scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, roipath, timepoint)
+%LONG_warpROIsToNativeSpace - warp atlas ROIs into native timepoint
 %space
 %
 % Syntax:  scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, timepoint)
