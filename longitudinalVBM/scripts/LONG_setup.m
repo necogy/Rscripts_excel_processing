@@ -96,17 +96,13 @@ scans_to_process = LONG_extractVolumes(scans_to_process, 'time1'); %WM/GM/CSF/TI
 scans_to_process = LONG_extractVolumes(scans_to_process, 'time2'); %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
 
 
-
-
-
 %% DTI related scripts below %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %create affine transformation to template from dartel (should already be
 %ok)
 
 %create and apply inverse deformations from ROI to native space
-
-
+scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, roipath, timepoint);
 
 %extract ROIs in native space 
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, templatepath, roipath, timepoint);
