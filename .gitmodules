@@ -1,0 +1,3 @@
+[submodule "matNI"]
+	path = matNI
+	url = git://github.com/sattygalle/matNI.git
