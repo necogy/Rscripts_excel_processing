@@ -15,6 +15,9 @@ classdef LONG_participant
         Time2file
         ROImean
         ROImedian
+        ROIextraction
+        ROIextractionsTime1
+        ROIextractionsTime2
         
         baselineGMvol
         baselineWMvol

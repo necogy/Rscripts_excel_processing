@@ -103,8 +103,15 @@ scans_to_process = LONG_extractVolumes(scans_to_process, 'time2'); %WM/GM/CSF/TI
 
 %create and apply inverse deformations from ROI to native space
 scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, roipath, timepoint);
+scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pathtoROIs, 'time1');
+scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pathtoROIs, 'time2');
+
+
 
 %extract ROIs in native space 
-scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, templatepath, roipath, timepoint);
+ROInames = {'mwACC', 'mwAmygdala', 'mwAnt_FG', 'mwInsula'} ;
+%scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois, timepoint);
+scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time1');
+
 
 
