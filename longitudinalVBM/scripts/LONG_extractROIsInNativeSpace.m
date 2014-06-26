@@ -44,7 +44,6 @@ for subject = 1:size(scans_to_process,2)
     for r = 1:size(rois,2)
        ROIpath = fullfile( timepointpath, 'roi_extraction', [rois{r} '.nii'] );
        roivalues =spm_read_vols(spm_vol(ROIpath)) ;
-       
        roiex(r).sum = sum(roivalues(:));
        clear roivalues
        roiex(r).name = rois{r} ;
@@ -52,6 +51,6 @@ for subject = 1:size(scans_to_process,2)
     end
     
     scans_to_process(subject).(fieldname) = roiex;
-    
+    clear roiex
 end % for subject = 1:size(scans_to_process,2)
 
