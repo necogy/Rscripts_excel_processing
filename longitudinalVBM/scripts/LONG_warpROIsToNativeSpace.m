@@ -40,7 +40,7 @@ for subject = 1:size(scans_to_process,2)
           
     flowfield =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, ['u_rc1avg_'  scans_to_process(subject).Time1file]);
     flowfield = strrep(flowfield, 'img', 'nii'); %avg filenames sometimes were img not nii
-    
+    clear matlabbatch
     spm('defaults', 'PET');
     spm_jobman('initcfg');
     
