@@ -25,7 +25,7 @@ function scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois
 %
 % Revisions:
 
-for subject = 1:size(scans_to_process,2)
+for subject = 1: 5%size(scans_to_process,2)
     subject
     switch lower(timepoint)
         case 'mean'   
