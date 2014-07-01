@@ -111,10 +111,10 @@ scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pa
 %extract ROIs in native space 
 ROInames = {'mwACC', 'mwAmygdala', 'mwAnt_FG', 'mwInsula'} ;
 %scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois, timepoint);
-scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time1');
+scans_to_process2 = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time1');
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time2');
 
-nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process, 'time1');
+nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process2(1:5), 'time1');
 nativeROIvolumes_time2 = LONG_exportNativeROIs(scans_to_process, 'time2');
 
 
