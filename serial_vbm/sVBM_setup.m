@@ -22,8 +22,7 @@ sVBM_config % or name of new config file
 
 %scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
 %scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_Mar2014_reprocess_2','images','images_dir');
-scandatafolder = 'R:\groups\rosen\longitudinalVBM\gene_carriers_serialVBMtest'
+scandatafolder = 'R:\groups\rosen\longitudinalVBM\gene_carriers_serialVBMtest';
 scans_to_process = sVBM_load_rawdata( scandatafolder );
 
-%path to SPM12b folder 
-%spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');
+scans_to_process2 = sVBM_run_segmentation(scans_to_process);
