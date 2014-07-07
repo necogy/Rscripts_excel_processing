@@ -7,8 +7,6 @@
 %path to data:
 scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_Mar2014_reprocess_2','images','images_dir');
 
-%path to spm12b folder:
-spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');
 
 %path to dartel template for your study (or where a dartel template will
 %be created if it doesn't exist yet):

@@ -27,7 +27,7 @@ clear
 clear classes
 
 %load parameters:
-sVBM_config % or name of edited config file 
+%sVBM_config % or name of edited config file 
 
 %set scan data folder where image were placed using image_finder.sh
 scandatafolder = 'R:\groups\rosen\longitudinalVBM\gene_carriers_serialVBMtest';
@@ -36,7 +36,7 @@ scandatafolder = 'R:\groups\rosen\longitudinalVBM\gene_carriers_serialVBMtest';
 scans_to_process = sVBM_load_rawdata( scandatafolder );
 
 %% Segmentation of timepoints:
-scans_to_process2 = sVBM_run_segmentation(scans_to_process); % (will segment all available timepoints in the directories)
+scans_to_process = sVBM_run_segmentation(scans_to_process); % (will segment all available timepoints in the directories)
 
 %% Longitudinal Registration
 
