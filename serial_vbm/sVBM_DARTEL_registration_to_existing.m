@@ -33,16 +33,16 @@ for subject = 1:size(scans_to_process,2) % for every subject
 
         disp(['Now DARTEL Registering: ' num2str(scans_to_process(subject).PIDN )])
         disp(['Timepoint: ' num2str(timepoint)]) 
-        
+                spm('defaults', 'PET');
+        spm_jobman('initcfg');
         dartelregistertimepoint(rc1file,rc2file, DARTEL_template_path) % call subfunction to process that subject
         
     end
 end
 
     function dartelregistertimepoint(rc1,rc2, templatepath)
-        spm('defaults', 'PET');
-        spm_jobman('initcfg');
-        
+
+        clear matlabbatch
         matlabbatch{1}.spm.tools.dartel.warp1.images{1} = cellstr(rc1)   ;
         matlabbatch{1}.spm.tools.dartel.warp1.images{2} = cellstr(rc2)   ;
         matlabbatch{1}.spm.tools.dartel.warp1.settings.rform = 0;

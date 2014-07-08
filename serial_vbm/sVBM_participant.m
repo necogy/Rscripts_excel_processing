@@ -31,12 +31,13 @@ classdef sVBM_participant
                     
                     for datedir= 1: numtimepoints
                         scandates(datedir) = datenum(t(datedir).name, 'yyyy-mm-dd');
-                        [~, timeindex] = sort(scandates);
+
+                    end
+
+                     [~, timeindex] = sort(scandates);
                         
                         % resort t
                         t = t(timeindex);
-                    end
-
                     % create sVBM_timepoint for each date and store in
                     % array
                     for timepointindex = 1: numtimepoints     
