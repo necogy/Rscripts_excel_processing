@@ -3,6 +3,6 @@ Please create a new folder for each new imaging-core project.
 
 Projects being tracked:
 	Longitudinal VBM processing using SPM 12b (Suneth Attygalle, Richard Binney)
-	Image_finder.sh - script for pulling images from I drive (Jon Elofson)
+	Image_finder.sh - Pull images from I drive (Jon Elofson)
 	serial_vbm - serial ( >2timepoint longitudinal) pipeline (Suneth Attygalle)
-	scan_processing - script for processing imaging data to run from osirix (Jon Elofson)
+	scan_processing - process imaging data from osirix (Jon Elofson)
