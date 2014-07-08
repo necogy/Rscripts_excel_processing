@@ -42,13 +42,27 @@ scans_to_process = sVBM_run_segmentation(scans_to_process); % (will segment all 
 
 %% Segmentation of Longitudinal Images
 
+%% DARTEL registration of Longitudinal Images to Existing DARTEL Template
+
+%% DARTEL registration of Longitudinal Images to Existing DARTEL Template
+
 %% Multiply Change Maps with Segmentations
 
 %% Transform Longitudinal Images to Group/MNI space
 
 %% Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
 
-%% Warp ROIs from Atlas Space to Native Timepoint Space.
+%% Warp ROIs from Atlas Space to Native Timepoint Space via Longitudinal Image Warp
+
+
+%% Cross-sectional processing (single timepoint, no longitudinal registration)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Register Timepoints to existing Dartel. 
+scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, DARTEL_template_path); 
+
+
+%% Warp Timepoints to MNI via DARTEL (ignores longitudional images)
 
 
 
