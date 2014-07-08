@@ -20,37 +20,31 @@ function scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_proces
 % Created 07/07/2014
 %
 % Revisions:
-scans_to_process;
-DARTEL_template_path;
 
 for subject = 1:size(scans_to_process,2) % for every subject
     
     for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
         
-       % file = scans_to_process(subject).Timepoint{timepoint}.File.name;
-       % fullpath =  scans_to_process(subject).Timepoint{timepoint}.Fullpath;
+        rc1file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc1' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ; 
+        rc1file = strrep(rc1file, 'img', 'nii');
         
-       % volume = fullfile(fullpath, file);
-        
+        rc2file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc2' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ; 
+        rc2file = strrep(rc2file, 'img', 'nii');
+
         disp(['Now DARTEL Registering: ' num2str(scans_to_process(subject).PIDN )])
         disp(['Timepoint: ' num2str(timepoint)]) 
         
-        dartelregistertimepoint(scanpath, DARTEL_template_path) % call subfunction to process that subject
+        dartelregistertimepoint(rc1file,rc2file, DARTEL_template_path) % call subfunction to process that subject
         
     end
 end
 
-
-
-
-
-    function dartelregistertimepoint(scanpath, templatepath)
-        spmpath = SA_getSPMpath(12);
+    function dartelregistertimepoint(rc1,rc2, templatepath)
         spm('defaults', 'PET');
         spm_jobman('initcfg');
         
-        matlabbatch{1}.spm.tools.dartel.warp1.images{1} = c1volumes(:,1)     ;
-        matlabbatch{1}.spm.tools.dartel.warp1.images{2} = c2volumes(:,1)    ;
+        matlabbatch{1}.spm.tools.dartel.warp1.images{1} = cellstr(rc1)   ;
+        matlabbatch{1}.spm.tools.dartel.warp1.images{2} = cellstr(rc2)   ;
         matlabbatch{1}.spm.tools.dartel.warp1.settings.rform = 0;
         matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).its = 3;
         matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).rparam = [4 2 1e-06];

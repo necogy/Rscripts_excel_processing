@@ -31,6 +31,8 @@ clear classes
 
 %set scan data folder where image were placed using image_finder.sh
 scandatafolder = 'R:\groups\rosen\longitudinalVBM\gene_carriers_serialVBMtest';
+DARTEL_template_path = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Template_binney';
+
 
 %read in directories and store info in scans_to_process structure
 scans_to_process = sVBM_load_rawdata( scandatafolder );
@@ -61,8 +63,7 @@ scans_to_process = sVBM_run_segmentation(scans_to_process); % (will segment all 
 %% Register Timepoints to existing Dartel. 
 scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, DARTEL_template_path); 
 
-
-%% Warp Timepoints to MNI via DARTEL (ignores longitudional images)
+%% Warp Timepoints to MNI via DARTEL (ignores longitudinal images)
 
 
 
