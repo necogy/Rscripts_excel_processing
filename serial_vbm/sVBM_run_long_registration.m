@@ -29,19 +29,26 @@ spm_jobman('initcfg');
 
 for subject = 1:size(scans_to_process,2) % for every subject
     
+    
     for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
         
         file = scans_to_process(subject).Timepoint{timepoint}.File.name;
         fullpath =  scans_to_process(subject).Timepoint{timepoint}.Fullpath;
         
-        volume = fullfile(fullpath, file);
-        
+        volumes{timepoint} = fullfile(fullpath, file);
+        times(timepoint) = scans_to_process(subject).Timepoint{timepoint}.Datenum;
         
     end
     
+    %compute timedeltas
+    timedeltas;
     
     disp(['Now running longitudinal Registratoin on: ' num2str(scans_to_process(subject).PIDN )])
     registersubject(volumes, timedeltas) % call subfunction to process that subject
+    
+    clear volumes
+    clear times
+    clear timedeltas
 end
 
     function registersubject(volumes, timedeltas)
