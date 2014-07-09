@@ -33,7 +33,6 @@ clear classes
 scandatafolder = 'R:\groups\rosen\longitudinalVBM\gene_carriers_serialVBMtest';
 DARTEL_template_path = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Template_binney';
 
-
 %read in directories and store info in scans_to_process structure
 scans_to_process = sVBM_load_rawdata( scandatafolder );
 
@@ -44,7 +43,8 @@ scans_to_process = sVBM_run_segmentation(scans_to_process); % (will segment all 
 
 %% Segmentation of Longitudinal Images
 
-%% DARTEL registration of Longitudinal Images to Existing DARTEL Template
+
+%% DARTEL registration of Longitudinal Images to New DARTEL Template
 
 %% DARTEL registration of Longitudinal Images to Existing DARTEL Template
 
