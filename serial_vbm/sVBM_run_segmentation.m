@@ -24,7 +24,8 @@ function scans_to_process = sVBM_run_segmentation(scans_to_process)
 % Created 07/3/2014
 %
 % Revisions:
-
+spm('defaults', 'PET');
+spm_jobman('initcfg');
 for subject = 1:size(scans_to_process,2) % for every subject
     
     for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
@@ -35,7 +36,7 @@ for subject = 1:size(scans_to_process,2) % for every subject
         volume = fullfile(fullpath, file);
         
         disp(['Now segmenting: ' num2str(scans_to_process(subject).PIDN )])
-        disp(['Timepoint: ' num2str(timepoint)]) 
+        disp(['Timepoint: ' num2str(timepoint)])
         
         segmenttimepoint(volume) % call subfunction to process that subject
         
@@ -46,8 +47,7 @@ end
         dartelimport = 1;
         writeforavgonly = 1; % for now just run this for all timepoints as well.
         spmpath = SA_getSPMpath(12);
-        spm('defaults', 'PET');
-        spm_jobman('initcfg');
+        clear matlabbatch;
         
         matlabbatch{1}.spm.spatial.preproc.channel.vols = cellstr(volume); % the avg images are only in the time 1 folders.
         matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.001;

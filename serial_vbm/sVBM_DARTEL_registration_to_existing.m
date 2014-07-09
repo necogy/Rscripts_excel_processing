@@ -20,28 +20,28 @@ function scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_proces
 % Created 07/07/2014
 %
 % Revisions:
-
+spm('defaults', 'PET');
+spm_jobman('initcfg');
 for subject = 1:size(scans_to_process,2) % for every subject
     
     for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
         
-        rc1file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc1' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ; 
+        rc1file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc1' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ;
         rc1file = strrep(rc1file, 'img', 'nii');
         
-        rc2file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc2' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ; 
+        rc2file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc2' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ;
         rc2file = strrep(rc2file, 'img', 'nii');
-
+        
         disp(['Now DARTEL Registering: ' num2str(scans_to_process(subject).PIDN )])
-        disp(['Timepoint: ' num2str(timepoint)]) 
-                spm('defaults', 'PET');
-        spm_jobman('initcfg');
+        disp(['Timepoint: ' num2str(timepoint)])
+        
         dartelregistertimepoint(rc1file,rc2file, DARTEL_template_path) % call subfunction to process that subject
         
     end
 end
 
     function dartelregistertimepoint(rc1,rc2, templatepath)
-
+        
         clear matlabbatch
         matlabbatch{1}.spm.tools.dartel.warp1.images{1} = cellstr(rc1)   ;
         matlabbatch{1}.spm.tools.dartel.warp1.images{2} = cellstr(rc2)   ;

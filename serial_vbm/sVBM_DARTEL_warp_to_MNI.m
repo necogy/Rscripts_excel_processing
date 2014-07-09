@@ -24,7 +24,8 @@ function scans_to_process = sVBM_DARTEL_warp_to_MNI( scans_to_process, dartelpat
 
 %look for template_6 file and set
 template = fullfile(dartelpath, 'Template_6.nii'); % Template_6 file
-
+spm('defaults', 'PET');
+spm_jobman('initcfg');
 for subject = 1:size(scans_to_process,2) % for every subject
     
     for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
@@ -38,14 +39,13 @@ for subject = 1:size(scans_to_process,2) % for every subject
         
         disp(['Now Warping from DARTEL to MNI, PIDN : ' num2str(scans_to_process(subject).PIDN )])
         disp(['Timepoint: ' num2str(timepoint)])
-        spm('defaults', 'PET');
-        spm_jobman('initcfg');
+        
         warp_timepointtoMNI(files, template ) % call subfunction to process that subject
     end
 end
 
     function warp_timepointtoMNI(files, DARTEL_template_path)
-       
+        
         clear matlabbatch
         matlabbatch{1}.spm.tools.dartel.mni_norm.template = cellstr(DARTEL_template_path);
         
