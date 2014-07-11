@@ -43,8 +43,9 @@ scans_to_process = sVBM_run_segmentation(scans_to_process); % (will segment all 
 %% Longitudinal Registration
 scans_to_process = sVBM_run_long_registration(scans_to_process); 
 
-
 %% Segmentation of Longitudinal Images
+
+
 
 %% DARTEL registration of Longitudinal Images to New DARTEL Template
 

@@ -1,4 +1,4 @@
-function scans_to_process = sVBM_run_segmentation(scans_to_process)
+function scans_to_process = sVBM_run_segmentation(scans_to_process, imagetype)
 %sVBM_run_segmentation - SPM12b Segmentation for serial Longitudinal processing
 %
 % Syntax:  participantstructure = LONG_run_segmentation(scans_to_process )
@@ -24,23 +24,38 @@ function scans_to_process = sVBM_run_segmentation(scans_to_process)
 % Created 07/3/2014
 %
 % Revisions:
+
 spm('defaults', 'PET');
 spm_jobman('initcfg');
 for subject = 1:size(scans_to_process,2) % for every subject
     
-    for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
-        
-        file = scans_to_process(subject).Timepoint{timepoint}.File.name;
-        fullpath =  scans_to_process(subject).Timepoint{timepoint}.Fullpath;
-        
-        volume = fullfile(fullpath, file);
-        
-        disp(['Now segmenting: ' num2str(scans_to_process(subject).PIDN )])
-        disp(['Timepoint: ' num2str(timepoint)])
-        
-        segmenttimepoint(volume) % call subfunction to process that subject
-        
+    switch scantype
+        case 'timepoints'
+            for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
+                
+                file = scans_to_process(subject).Timepoint{timepoint}.File.name;
+                fullpath =  scans_to_process(subject).Timepoint{timepoint}.Fullpath;
+                
+                volume = fullfile(fullpath, file);
+                
+                disp(['Now segmenting: ' num2str(scans_to_process(subject).PIDN )])
+                disp(['Timepoint: ' num2str(timepoint)])
+                
+                segmenttimepoint(volume) % call subfunction to process that subject
+            end
+            
+        case 'average'
+            
+            avgfile = fullfile(scans_to_process(subject).Timepoint{1}.Fullpath, scans_to_process(subject).Timepoint{1}.File.name);
+            avgfile=strrep(avgfile, '.img', '.nii');
+            avgfile = SAinsertStr2Paths(avgfile, 'avg_');
+            volume = avgfile;
+            
+            disp(['Now segmenting average image for: ' num2str(scans_to_process(subject).PIDN )])
+            
+            segmenttimepoint(volume) % call subfunction to process that subject
     end
+    
 end
 
     function segmenttimepoint(volume)
