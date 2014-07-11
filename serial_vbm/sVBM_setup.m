@@ -42,9 +42,10 @@ scans_to_process = sVBM_load_rawdata( scandatafolder );
 scans_to_process = sVBM_run_long_registration(scans_to_process); 
 
 %% Segmentation of Longitudinal Images
-scans_to_process = sVBM_run_segmentation(scans_to_process2, 'average'); % (will segment all available timepoints in the directories)
+scans_to_process = sVBM_run_segmentation(scans_to_process, 'average'); % (will segment all available timepoints in the directories)
 
 %% DARTEL registration of Longitudinal Average Images to New DARTEL Template
+scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process);
 
 %% DARTEL registration of Longitudinal AverageImages to Existing DARTEL Template
 
