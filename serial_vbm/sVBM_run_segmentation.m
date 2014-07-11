@@ -29,7 +29,7 @@ spm('defaults', 'PET');
 spm_jobman('initcfg');
 for subject = 1:size(scans_to_process,2) % for every subject
     
-    switch scantype
+    switch imagetype
         case 'timepoints'
             for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
                 
@@ -45,8 +45,9 @@ for subject = 1:size(scans_to_process,2) % for every subject
             end
             
         case 'average'
+            %avg file is found in first time point folder
+            avgfile = fullfile(scans_to_process(subject).Fullpath,'avg', scans_to_process(subject).Timepoint{1}.File.name); 
             
-            avgfile = fullfile(scans_to_process(subject).Timepoint{1}.Fullpath, scans_to_process(subject).Timepoint{1}.File.name);
             avgfile=strrep(avgfile, '.img', '.nii');
             avgfile = SAinsertStr2Paths(avgfile, 'avg_');
             volume = avgfile;

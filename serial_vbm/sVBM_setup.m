@@ -36,20 +36,17 @@ DARTEL_template_path = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Template
 %read in directories and store info in scans_to_process structure
 scans_to_process = sVBM_load_rawdata( scandatafolder );
 
-%% Segmentation of timepoints:
-scans_to_process = sVBM_run_segmentation(scans_to_process); % (will segment all available timepoints in the directories)
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Longitudinal Registration
+%% Serial Longitudinal Registration (multiple timepoints)
 scans_to_process = sVBM_run_long_registration(scans_to_process); 
 
 %% Segmentation of Longitudinal Images
+scans_to_process = sVBM_run_segmentation(scans_to_process2, 'average'); % (will segment all available timepoints in the directories)
 
+%% DARTEL registration of Longitudinal Average Images to New DARTEL Template
 
-
-%% DARTEL registration of Longitudinal Images to New DARTEL Template
-
-%% DARTEL registration of Longitudinal Images to Existing DARTEL Template
+%% DARTEL registration of Longitudinal AverageImages to Existing DARTEL Template
 
 %% Multiply Change Maps with Segmentations
 
@@ -59,8 +56,11 @@ scans_to_process = sVBM_run_long_registration(scans_to_process);
 
 %% Warp ROIs from Atlas Space to Native Timepoint Space via Longitudinal Image Warp
 
+
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Cross-sectional processing (single timepoint, no longitudinal registration)
+%% Segmentation of timepoints:
+scans_to_process = sVBM_run_segmentation(scans_to_process, 'timepoints'); % (will segment all available timepoints in the directories)
 
 %% Register Timepoints to existing Dartel. 
 scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, DARTEL_template_path); 

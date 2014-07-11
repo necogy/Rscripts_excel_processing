@@ -40,13 +40,13 @@ for subject = 1:size(scans_to_process,2) % for every subject
     disp(['Now running longitudinal Registration on: ' num2str(scans_to_process(subject).PIDN )])
     registersubject(volumes, timedeltas); % call subfunction to process that subject
     avgdirectory = fullfile(scans_to_process(subject).Fullpath, 'avg');
-    mkdir(avgdirectory);
+    mkdir(avgdirectory)
         
     avgfile = fullfile(scans_to_process(subject).Timepoint{1}.Fullpath, scans_to_process(subject).Timepoint{1}.File.name);
     avgfile=strrep(avgfile, '.img', '.nii');
     avgfile = SAinsertStr2Paths(avgfile, 'avg_');
 
-    [status,message,~]=movefile(avgfile,'destination') ;
+    [status,message,~]=movefile(avgfile,avgdirectory) ;
     
    
     clear volumes
