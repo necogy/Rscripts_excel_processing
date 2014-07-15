@@ -24,9 +24,10 @@ function scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templat
 %----------------------
 
 template = fullfile(templatepath, 'Template_6.nii'); % Template_6 file from DARTEL
-
+ spm('defaults', 'PET');
+    spm_jobman('initcfg');
 for subject = 1:size(scans_to_process,2)
-
+display(scans_to_process(subject).PIDN)
     switch lower(timepoint)
         case 'time1'
             rawtimepointimage = fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, scans_to_process(subject).Time1file);
@@ -41,8 +42,7 @@ for subject = 1:size(scans_to_process,2)
     flowfield =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, ['u_rc1avg_'  scans_to_process(subject).Time1file]);
     flowfield = strrep(flowfield, 'img', 'nii'); %avg filenames sometimes were img not nii
     clear matlabbatch
-    spm('defaults', 'PET');
-    spm_jobman('initcfg');
+   
     
     matlabbatch{1}.spm.util.defs.comp{1}.dartel.flowfield = cellstr(flowfield);
     matlabbatch{1}.spm.util.defs.comp{1}.dartel.times = [1 0];
