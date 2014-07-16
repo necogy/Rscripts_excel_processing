@@ -97,7 +97,6 @@ scans_to_process = LONG_extractVolumes(scans_to_process, 'time2'); %WM/GM/CSF/TI
 
 
 %% DTI related scripts below %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %create affine transformation to template from dartel (should already be
 %ok)
 
@@ -106,15 +105,14 @@ scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, ro
 scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pathtoROIs, 'time1');
 scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pathtoROIs, 'time2');
 
-
-
 %extract ROIs in native space 
-ROInames = {'mwACC', 'mwAmygdala', 'mwAnt_FG', 'mwInsula'} ;
+d=SAdir(pathtoROIs, '\w');
+ROInames = strrep({d.name},'.nii','');
 %scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois, timepoint);
-scans_to_process2 = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time1');
+scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time1');
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time2');
 
-nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process2(1:5), 'time1');
+nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process, 'time1');
 nativeROIvolumes_time2 = LONG_exportNativeROIs(scans_to_process, 'time2');
 
 

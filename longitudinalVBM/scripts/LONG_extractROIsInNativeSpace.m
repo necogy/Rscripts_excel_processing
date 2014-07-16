@@ -25,7 +25,7 @@ function scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois
 %
 % Revisions:
 
-for subject = 1: 5%size(scans_to_process,2)
+for subject = 1:size(scans_to_process,2)
     subject
     switch lower(timepoint)
         case 'mean'   
@@ -42,9 +42,18 @@ for subject = 1: 5%size(scans_to_process,2)
 
     
     for r = 1:size(rois,2)
-       ROIpath = fullfile( timepointpath, 'roi_extraction', [rois{r} '.nii'] );
-       roivalues =spm_read_vols(spm_vol(ROIpath)) ;
-       roiex(r).sum = sum(roivalues(:));
+     
+       ROIpath = fullfile( timepointpath, 'roi_extraction', ['mw' rois{r} '.nii'] );
+     % roivalues =spm_read_vols(spm_vol(ROIpath)) ;
+     
+     try % use faster load_nii function if available
+        roivalues = load_nii(ROIpath);
+      roiex(r).sum=sum(roivalues.img(:));
+     catch  % else use SPM NIFTI function
+          roivalues = nifti(ROIpath);
+          roiex(r).sum = sum(roivalues.dat(:));
+     end
+
        clear roivalues
        roiex(r).name = rois{r} ;
        
