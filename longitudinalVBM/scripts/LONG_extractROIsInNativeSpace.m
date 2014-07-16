@@ -25,40 +25,50 @@ function scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois
 %
 % Revisions:
 
-for subject = 1:size(scans_to_process,2)
+for subject = 1: size(scans_to_process,2)
     subject
     switch lower(timepoint)
-        case 'mean'   
+        case 'mean'
         case 'time2'
-           timepointpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date2); 
-           fieldname = 'ROIextractionsTime2';
-           
+            timepointpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date2);
+            fieldname = 'ROIextractionsTime2';
+            
         case 'time1'
-            timepointpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1);  
+            timepointpath =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1);
             fieldname = 'ROIextractionsTime1';
     end
-
+    
     %roiextraction =LONG_roiextraction.empty(size(rois,1),0);
-
+    
     
     for r = 1:size(rois,2)
-     
-       ROIpath = fullfile( timepointpath, 'roi_extraction', ['mw' rois{r} '.nii'] );
-     % roivalues =spm_read_vols(spm_vol(ROIpath)) ;
-     
-     try % use faster load_nii function if available
-        roivalues = load_nii(ROIpath);
-      roiex(r).sum=sum(roivalues.img(:));
-     catch  % else use SPM NIFTI function
-          roivalues = nifti(ROIpath);
-          roiex(r).sum = sum(roivalues.dat(:));
-     end
-
-       clear roivalues
-       roiex(r).name = rois{r} ;
-       
+        
+        ROIpath = fullfile( timepointpath, 'roi_extraction', ['mw' rois{r} '.nii'] );
+        % roivalues =spm_read_vols(spm_vol(ROIpath)) ;
+        
+        %try % use faster load_nii function if available
+            roivalues = load_nii(ROIpath);
+            roiex(r).sum=sum(roivalues.img(:));
+        %catch  % else use SPM NIFTI function
+           % roivalues = nifti(ROIpath);
+            %roiex(r).sum = sum(roivalues.dat(:));
+        %end
+        
+        clear roivalues
+        clear ROIpath
+        roiex(r).name = rois{r} ;
+        
     end
+    % chheck if it exists and add first row of ROI names
     
+    myformat = ['%s, ', repmat('%f,',1,size(roiex,2)) '\n'];
+    %append to text file
+    fid = fopen('extractions.txt', 'a');
+    % write values at end of file
+    fprintf(fid, myformat,scans_to_process(subject).PIDN, [roiex.sum]);
+    
+    % close the file
+    fclose(fid);
     scans_to_process(subject).(fieldname) = roiex;
     clear roiex
 end % for subject = 1:size(scans_to_process,2)
