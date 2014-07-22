@@ -1,4 +1,4 @@
-function scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois, timepoint)
+function scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois, timepoint, modulation)
 %LONG_extractVolumes - extract WM/GM/CSF/TIV and add to scans_to_process
 %structure
 %
@@ -24,6 +24,12 @@ function scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois
 % Created 6/23/14
 %
 % Revisions:
+switch modulation
+    case 1
+        modstring = 'mw';
+    case 0
+        modstring ='w' ;
+end
 
 for subject = 1: size(scans_to_process,2)
     subject
@@ -43,16 +49,19 @@ for subject = 1: size(scans_to_process,2)
     
     for r = 1:size(rois,2)
         
-        ROIpath = fullfile( timepointpath, 'roi_extraction', ['mw' rois{r} '.nii'] );
+        ROIpath = fullfile( timepointpath, 'roi_extraction', [modstring rois{r} '.nii'] );
         % roivalues =spm_read_vols(spm_vol(ROIpath)) ;
         
-        %try % use faster load_nii function if available
+        try % use faster load_nii function if available
             roivalues = load_nii(ROIpath);
             roiex(r).sum=sum(roivalues.img(:));
-        %catch  % else use SPM NIFTI function
+        catch  % else use SPM NIFTI function
            % roivalues = nifti(ROIpath);
             %roiex(r).sum = sum(roivalues.dat(:));
-        %end
+            roivalues = 0;
+             roiex(r).sum = 0;
+            
+        end
         
         clear roivalues
         clear ROIpath

@@ -1,4 +1,4 @@
-function scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, roipath, timepoint)
+function scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, roipath, timepoint, modulation)
 %LONG_warpROIsToNativeSpace - warp atlas ROIs into native timepoint
 %space
 %
@@ -67,7 +67,7 @@ display(scans_to_process(subject).PIDN)
     mkdir(newROIdir ); 
     matlabbatch{1}.spm.util.defs.out{2}.push.savedir.saveusr = cellstr(newROIdir);
     matlabbatch{1}.spm.util.defs.out{2}.push.fov.file = cellstr(rawtimepointimage); %image to base voxel dims (native space time point image)
-    matlabbatch{1}.spm.util.defs.out{2}.push.preserve = 1;
+    matlabbatch{1}.spm.util.defs.out{2}.push.preserve = modulation;
     matlabbatch{1}.spm.util.defs.out{2}.push.fwhm = [0 0 0];
     spm_jobman('run',matlabbatch);
 
