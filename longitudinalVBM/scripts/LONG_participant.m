@@ -19,6 +19,9 @@ classdef LONG_participant
         ROIextractionsTime1
         ROIextractionsTime2
         
+        MNI_ROIextractionsTime1
+        MNI_ROIextractionsTime2
+        
         baselineGMvol
         baselineWMvol
         baselineCSFvol

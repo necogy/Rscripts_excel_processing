@@ -85,11 +85,19 @@ scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 
 %% extract mean/median change values in ROIs and save to scans_to_process
 %structure
-%pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');% set this to the new template folder name.
+%pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
 ROIprefix = '^r';
 changemapprefix = 'wl_c1avg_jd_';
 scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); %extract ROI values and add to scans_to_process structure
 [ROImeans, ROImedians] = LONG_exportROIs(scans_to_process); %pull out mean and median values from scans_to_process in a convenient format
+
+%% extract mean/median change values from warped timepoints (MNI) and save to scans_to_process
+%pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
+d=SAdir(pathtoROIs, '\w');
+ROInames = strrep({d.name},'.nii','');
+scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time1'); %extract ROI values and add to scans_to_process structure
+nativeROIvolumes_time1 = LONG_exportMNI_ROIs(scans_to_process, 'time1');
+nativeROIvolumes_time2 = LONG_exportMNI_ROIs(scans_to_process, 'time2');
 
 %% extract time 1 and time 2 volumes
 scans_to_process = LONG_extractVolumes(scans_to_process, 'time1'); %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
@@ -97,8 +105,6 @@ scans_to_process = LONG_extractVolumes(scans_to_process, 'time2'); %WM/GM/CSF/TI
 
 
 %% DTI related scripts below %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%create affine transformation to template from dartel (should already be
-%ok)
 
 %create and apply inverse deformations from ROI to native space
 %scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, roipath, timepoint, modulation);
@@ -109,11 +115,11 @@ scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pa
 %extract ROIs in native space 
 d=SAdir(pathtoROIs, '\w');
 ROInames = strrep({d.name},'.nii','');
-%scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, rois, timepoint);
 ROImodulationon = 1;
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time1', ROImodulationon);
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time2', ROImodulationon);
 
+%export native ROI volumes
 nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process, 'time1');
 nativeROIvolumes_time2 = LONG_exportNativeROIs(scans_to_process, 'time2');
 
