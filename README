@@ -6,3 +6,8 @@ Projects being tracked:
 	Image_finder.sh - Pull images from I drive (Jon Elofson)
 	serial_vbm - serial ( >2timepoint longitudinal) pipeline (Suneth Attygalle)
 	scan_processing - process imaging data from osirix (Jon Elofson)
+	
+
+If there are any issues with any of the code please add an issue in the github tracker.
+
+Please email Suneth Attygalle at SAttygalle@memory.ucsf.edu with any questions regarding this repository.

@@ -93,21 +93,20 @@ scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROI
 
 %% extract mean/median change values from warped timepoints (MNI) and save to scans_to_process
 %pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
-d=SAdir(pathtoROIs, '\w');
-ROInames = strrep({d.name},'.nii','');
 scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time1'); %extract ROI values and add to scans_to_process structure
+scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time2'); %extract ROI values and add to scans_to_process structure
+
 nativeROIvolumes_time1 = LONG_exportMNI_ROIs(scans_to_process, 'time1');
 nativeROIvolumes_time2 = LONG_exportMNI_ROIs(scans_to_process, 'time2');
 
 %% extract time 1 and time 2 volumes
-scans_to_process = LONG_extractVolumes(scans_to_process, 'time1'); %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
-scans_to_process = LONG_extractVolumes(scans_to_process, 'time2'); %WM/GM/CSF/TIV and generate spreadsheet (time1, time2, average)
+scans_to_process = LONG_extractVolumes(scans_to_process, 'time1'); 
+scans_to_process = LONG_extractVolumes(scans_to_process, 'time2'); 
 
 
 %% DTI related scripts below %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %create and apply inverse deformations from ROI to native space
-%scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, roipath, timepoint, modulation);
 ROImodulationon = 1;
 scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pathtoROIs, 'time1', ROImodulationon);
 scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pathtoROIs, 'time2', ROImodulationon);
