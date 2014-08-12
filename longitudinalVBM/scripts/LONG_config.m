@@ -5,7 +5,7 @@
 
 
 %path to data:
-scandatafolder = 'R:\groups\rosen\longitudinalVBM\FLOOR_mar2014_reprocess_2\testwarptoMNI\';
+scandatafolder = 'R:\groups\rosen\longitudinalVBM\FLOOR_mar2014_reprocess_2\images\images_dir';
 
 %path to spm12b folder:
 spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');

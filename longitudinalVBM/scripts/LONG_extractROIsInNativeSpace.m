@@ -70,15 +70,15 @@ for subject = 1: size(scans_to_process,2)
     end
     % chheck if it exists and add first row of ROI names
     
-    myformat = ['%s, ', repmat('%f,',1,size(roiex,2)) '\n'];
-    %append to text file
-    fid = fopen('extractions.txt', 'a');
-    % write values at end of file
-    fprintf(fid, myformat,scans_to_process(subject).PIDN, [roiex.sum]);
-    
-    % close the file
-    fclose(fid);
-    scans_to_process(subject).(fieldname) = roiex;
+% % %     myformat = ['%s, ', repmat('%f,',1,size(roiex,2)) '\n'];
+% % %     %append to text file
+% % %     fid = fopen('extractions.txt', 'a');
+% % %     % write values at end of file
+% % %     fprintf(fid, myformat,scans_to_process(subject).PIDN, [roiex.sum]);
+% % %     
+% % %     % close the file
+% % %     fclose(fid);
+   scans_to_process(subject).(fieldname) = roiex;
     clear roiex
 end % for subject = 1:size(scans_to_process,2)
 

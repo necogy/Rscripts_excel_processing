@@ -33,17 +33,18 @@ function nativeROIvolumes = LONG_exportNativeROIs(scans_to_process, timepoint)
     
     extractions = [scans_to_process.(fieldname) ];
     
-    for r = 1:size(numROIs)
+   for r = 1:numROIs
         
         ROIindex =  r:numROIs:size(extractions,2)
         
-        ROIextraction(r) = [extractions(ROIindex).sum];
-        
+        ROIextraction(r,:) = [extractions(ROIindex).sum];
+                %ROIextraction = [extractions.sum];
+
     end 
     
     
     
 
-
+nativeROIvolumes = ROIextraction;
 
 

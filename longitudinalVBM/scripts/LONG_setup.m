@@ -23,7 +23,7 @@ scans_to_process = LONG_load_inputfile( scandatafolder );
 %% steps to run:
 
 %% Longitudinal registration to generate mean images
-scans_to_process = LONG_run_registration( scans_to_process ); 
+scans_to_process2 = LONG_run_registration( scans_to_process(1) ); 
 
 %% Segment mean images generated from longitudinal toolbox 
 scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath ); 
@@ -107,20 +107,20 @@ scans_to_process = LONG_extractVolumes(scans_to_process, 'time2');
 %% DTI related scripts below %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %create and apply inverse deformations from ROI to native space
-ROImodulationon = 1;
+ROImodulationon = 0;
 scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pathtoROIs, 'time1', ROImodulationon);
 scans_to_process = LONG_warpROIsToNativeSpace(scans_to_process, templatepath, pathtoROIs, 'time2', ROImodulationon);
 
 %extract ROIs in native space 
 d=SAdir(pathtoROIs, '\w');
 ROInames = strrep({d.name},'.nii','');
-ROImodulationon = 1;
+ROImodulationon = 0;
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time1', ROImodulationon);
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time2', ROImodulationon);
 
 %export native ROI volumes
-nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process, 'time1');
-nativeROIvolumes_time2 = LONG_exportNativeROIs(scans_to_process, 'time2');
+nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process, 'time1')';
+nativeROIvolumes_time2 = LONG_exportNativeROIs(scans_to_process, 'time2')';
 
 
 

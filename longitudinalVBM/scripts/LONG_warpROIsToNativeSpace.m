@@ -27,6 +27,11 @@ template = fullfile(templatepath, 'Template_6.nii'); % Template_6 file from DART
 spm('defaults', 'PET');
 spm_jobman('initcfg');
 for subject = 1:size(scans_to_process,2)
+    
+    clear rawtimepointimage
+    clear rawtimepointimagenii
+    clear flowfield
+    
     display(scans_to_process(subject).PIDN)
     switch lower(timepoint)
         case 'time1'
