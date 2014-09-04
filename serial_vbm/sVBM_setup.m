@@ -30,7 +30,7 @@ clear classes
 %sVBM_config % or name of edited config file 
 
 %set scan data folder where image were placed using image_finder.sh
-scandatafolder = 'R:\groups\rosen\longitudinalVBM\gene_carriers_serialVBMtest';
+scandatafolder = 'R:\groups\rosen\yokoyama\pidn_dir_light\';
 DARTEL_template_path = 'R:\groups\rosen\longitudinalVBM\darteltemplates\Template_binney';
 
 %read in directories and store info in scans_to_process structure

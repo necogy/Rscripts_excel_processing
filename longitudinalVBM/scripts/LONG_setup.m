@@ -23,7 +23,7 @@ scans_to_process = LONG_load_inputfile( scandatafolder );
 %% steps to run:
 
 %% Longitudinal registration to generate mean images
-scans_to_process2 = LONG_run_registration( scans_to_process(1) ); 
+scans_to_process = LONG_run_registration( scans_to_process ); 
 
 %% Segment mean images generated from longitudinal toolbox 
 scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath ); 
@@ -86,7 +86,7 @@ scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 %% extract mean/median change values in ROIs and save to scans_to_process
 %structure
 %pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
-ROIprefix = '^r';
+ROIprefix = '^rr';
 changemapprefix = 'wl_c1avg_jd_';
 scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); %extract ROI values and add to scans_to_process structure
 [ROImeans, ROImedians] = LONG_exportROIs(scans_to_process); %pull out mean and median values from scans_to_process in a convenient format
