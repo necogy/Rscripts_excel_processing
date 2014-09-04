@@ -79,11 +79,23 @@ classdef LONG_participant
                 %load filenames
                 file1 = SAdir(fullfile(datapath,pidn, lp.Date1), '^MP-LAS\S+(.img|.nii)');
                 lp.Time1file = file1.name;
+                
+                filepath1 = fullfile(datapath,pidn, lp.Date1, lp.Time1file);
+                time1header = spm_vol(filepath1);
                 %file2 = SAdir(fullfile(datapath,pidn, lp.Date2), '^MP-LAS\w+(.img|.nii)');
                 file2 = SAdir(fullfile(datapath,pidn, lp.Date2), '^MP-LAS\S+(.img|.nii)');
 
                 lp.Time2file=file2.name;
-     
+                filepath2 = fullfile(datapath,pidn, lp.Date2, lp.Time2file);
+                time2header = spm_vol(filepath2);
+
+                P1 = spm_imatrix(time1header.mat);
+                P2 = spm_imatrix(time2header.mat);
+                
+                if sum(abs(P1(7:9)) - abs(P2(7:9)))>0.01
+                    error(['voxel size mismatch with PIDN:' num2str(pidn)])
+                end
+                
                 catch err
                    error(['problem with PIDN:' num2str(pidn)])
                    rethrow(err)
