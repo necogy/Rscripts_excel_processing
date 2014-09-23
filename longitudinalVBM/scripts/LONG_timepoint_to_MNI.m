@@ -74,7 +74,7 @@ for subject = 1:size(scans_to_process,2)
     matlabbatch{1}.spm.util.defs.out{2}.push.savedir.savesrc = 1;
     
     
-    matlabbatch{1}.spm.util.defs.out{2}.push.fov.file = ''; cellstr(warpedavg); %image to base voxel dims (warped avg)
+    matlabbatch{1}.spm.util.defs.out{2}.push.fov.file = cellstr(warpedavg); %image to base voxel dims (warped avg)
     
     % matlabbatch{1}.spm.util.defs.out{2}.push.fov.file = ''; %image to base voxel dims (warped avg)
     
