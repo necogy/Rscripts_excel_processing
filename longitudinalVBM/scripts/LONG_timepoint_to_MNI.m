@@ -31,7 +31,11 @@ template = fullfile(dartelpath, 'Template_6.nii'); % Template_6 file
 %
 % end
 %
+
+    spm('defaults', 'PET');
+
 for subject = 1:size(scans_to_process,2)
+    clear matlabbatch
     clear rawtimepointimage
     clear rawtimepointimagenii
     clear flowfield
@@ -51,7 +55,6 @@ for subject = 1:size(scans_to_process,2)
     flowfield = strrep(flowfield, 'img', 'nii'); %avg filenames sometimes were img not nii
     warpedavg = strrep( flowfield, 'u_rc1avg_', 'wavg_');
     
-    spm('defaults', 'PET');
     spm_jobman('initcfg');
     
     matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.dartel.flowfield = cellstr(flowfield);% DARTEL flowfield from AVG u_rc
