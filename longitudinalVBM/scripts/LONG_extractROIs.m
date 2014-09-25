@@ -24,6 +24,7 @@ function scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, 
 % Created 04/16/2014
 %
 % Revisions:
+% 9/25/14 - convert nans to 0 so extraction doesn't break - Suneth
 
 %get list of ROIs 
 
@@ -39,6 +40,8 @@ for subject = 1:size(scans_to_process,2)
     for r = 1:size(rois,1)
         roivol  = spm_vol(fullfile(pathtoROIs, rois(r).name));
         roi_arr = spm_read_vols(roivol);
+                roi_arr(isnan(roi_arr))=0;
+
         roiones = ~roi_arr==0;
         includedvalues = img_arr(roiones);
 
