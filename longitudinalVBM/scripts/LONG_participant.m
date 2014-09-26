@@ -15,6 +15,7 @@ classdef LONG_participant
         Time2file
         ROImean
         ROImedian
+        ROIsum
         ROIextraction
         ROIextractionsTime1
         ROIextractionsTime2
