@@ -24,6 +24,7 @@ function scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, 
 % Created 04/16/2014
 %
 % Revisions:
+% 9/26/14- Add sum in addition to mean/median -Suneth
 
 %get list of ROIs 
 
@@ -39,9 +40,11 @@ for subject = 1:size(scans_to_process,2)
     for r = 1:size(rois,1)
         roivol  = spm_vol(fullfile(pathtoROIs, rois(r).name));
         roi_arr = spm_read_vols(roivol);
+        roi_arr(isnan(roi_arr))=0;
         roiones = ~roi_arr==0;
         includedvalues = img_arr(roiones);
-
+        scans_to_process(subject).ROIsum{1,r} = rois(r).name;
+        scans_to_process(subject).ROIsum{2,r} = sum(includedvalues);
         scans_to_process(subject).ROImean{1,r} = rois(r).name;
         scans_to_process(subject).ROImean{2,r} = mean(includedvalues);
         scans_to_process(subject).ROImedian{1,r} = rois(r).name;
