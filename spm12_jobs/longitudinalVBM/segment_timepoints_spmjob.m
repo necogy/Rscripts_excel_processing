@@ -1,3 +1,5 @@
+% SPM12 job for segmenting timepoint images to prepare for DARTEL/Longitudinal Registration
+
 matlabbatch{1}.spm.spatial.preproc.channel.vols = volumes;
 matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.001;
 matlabbatch{1}.spm.spatial.preproc.channel.biasfwhm = 60;
