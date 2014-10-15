@@ -6,8 +6,10 @@ Projects being tracked:
 	Image_finder.sh - Pull images from I drive (Jon Elofson)
 	serial_vbm - serial ( >2timepoint longitudinal) pipeline (Suneth Attygalle)
 	scan_processing - process imaging data from osirix (Jon Elofson)
-	
+	single_subj_vbm - VBM analysis vs control group (Jon Elofson)
+	spm12_jobs - job files for SPM12 batch
 
 If there are any issues with any of the code please add an issue in the github tracker.
 
 Please email Suneth Attygalle at SAttygalle@memory.ucsf.edu with any questions regarding this repository.
+
