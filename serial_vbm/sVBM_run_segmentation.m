@@ -41,7 +41,30 @@ for subject = 1:size(scans_to_process,2) % for every subject
                 disp(['Now segmenting: ' num2str(scans_to_process(subject).PIDN )])
                 disp(['Timepoint: ' num2str(timepoint)])
                 
+                %check for existing volume, check for re-running. 
+                
+                %segmented volumes found, skipping segmentation
+                                
+                %volumes found but re-run set to 1
                 segmenttimepoint(volume) % call subfunction to process that subject
+                
+                
+                
+                %extract volumes and add to scans_to_process structure
+                segfile =  strrep(SAinsertStr2Paths(volume,'c1'),'img','nii');
+                [scans_to_process(subject).Timepoint{timepoint}.GMvol, ~]=spm_summarise(segfile,'all','litres',1);
+                segfile =  strrep(SAinsertStr2Paths(volume,'c2'),'img','nii');
+                [scans_to_process(subject).Timepoint{timepoint}.WMvol, ~]=spm_summarise(segfile,'all','litres',1);
+                segfile =  strrep(SAinsertStr2Paths(volume,'c3'),'img','nii');
+                [scans_to_process(subject).Timepoint{timepoint}.CSFvol, ~]=spm_summarise(segfile,'all','litres',1);
+                
+                scans_to_process(subject).Timepoint{timepoint}.TIV = ...
+                    scans_to_process(subject).Timepoint{timepoint}.GMvol ...
+                    + scans_to_process(subject).Timepoint{timepoint}.WMvol ...
+                    + scans_to_process(subject).Timepoint{timepoint}.CSfvol ;
+                
+                
+                
             end
             
         case 'average'
@@ -102,7 +125,13 @@ end
         matlabbatch{1}.spm.spatial.preproc.warp.fwhm = 0;
         matlabbatch{1}.spm.spatial.preproc.warp.samp = 3;
         matlabbatch{1}.spm.spatial.preproc.warp.write = [0 writeforavgonly];
+        
+        try
         spm_jobman('run',matlabbatch);
+       
+        catch
+            warning(['problem segmenting' cellstr(volume)])
+        end
     end
 
 end
