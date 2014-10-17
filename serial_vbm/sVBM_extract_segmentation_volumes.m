@@ -16,3 +16,18 @@ for sub = 1:size(scans_to_process,2)
 end
 
 PIDNs = {scans_to_process.PIDN};
+
+
+
+for sub = 1:size(scans_to_process,2)
+    for col = 1:size(scans_to_process(sub).Timepoint,2)
+        try
+        ROIvol(sub,col) =scans_to_process2(sub).Timepoint{col}.ROI{2,5}
+        catch
+        end
+        
+        
+    end
+end
+
+PIDNs = {scans_to_process.PIDN};

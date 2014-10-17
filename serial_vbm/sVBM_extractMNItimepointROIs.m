@@ -31,9 +31,9 @@ ROInames = strrep({d.name},'.nii','');
 ROInames = {d.name};
 
 for  subject = 1:size(scans_to_process,2)
-    
+    subject
     for col = 1:size(scans_to_process(subject).Timepoint,2)
-        
+        col
         
         basename = fullfile(scans_to_process(subject).Timepoint{col}.Fullpath, scans_to_process(subject).Timepoint{col}.File.name);
         imagetoextractfrom= strrep(SAinsertStr2Paths(basename, 'mwc1'),'img','nii');
