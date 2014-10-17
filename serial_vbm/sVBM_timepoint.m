@@ -13,6 +13,8 @@ classdef sVBM_timepoint
         CSFvol
         TIV
         
+        ROI
+        
     end
     
     methods

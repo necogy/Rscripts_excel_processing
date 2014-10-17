@@ -31,7 +31,7 @@ sVBM_config % or name of edited config file
 
 %set scan data folder where image were placed using image_finder.sh
 
-DARTEL_template_path = templatepath
+DARTEL_template_path = templatepath;
 
 %read in directories and store info in scans_to_process structure
 scans_to_process = sVBM_load_rawdata( scandatafolder );
@@ -59,7 +59,8 @@ scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process);
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Cross-sectional processing (single timepoint, no longitudinal registration)
+%% Non-longitudinal processing 
+
 %% Segmentation of timepoints:
 reprocess = 0;
 scans_to_process = sVBM_run_segmentation(scans_to_process, 'timepoints', reprocess); % (will segment all available timepoints in the directories)
@@ -73,6 +74,8 @@ scans_to_process = sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_pa
 %% Warp Timepoints to MNI, standard normalization, no DARTEL
 scans_to_process = sVBM_warp_to_MNI(scans_to_process);
 
+%% Extract ROI values from MNI warped timepoints 
+scans_to_process = sVBM_extractMNItimepointROIs(scans_to_process, pathtoROIs)
 
 
 
