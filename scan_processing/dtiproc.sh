@@ -59,16 +59,18 @@ for i in ${@};
 				imagenob0=$( ls ./1_preproc/${sourceidv}/unzipped/$bdir/*dcm | wc -w)
 				mv -u ./1_preproc/${sourceidv}/unzipped/$bdir ./1_preproc/${sourceidv}/unzipped/${sourceidv}_b0	
 
-#10 B0 images present____________________________________________________________________________
+			   #10 B0 images present____________________________________________________________________________
 			      
             #generate NITFI images for DTI files with 10 B0 images
   				  if  [ $imagenob0 == 550 ] || [[ "$version" = "v2" && $imagenob0 == 600 ]]; then
   				  echo "Generating NIFTI images from raw DICOMS for ${sourceidv}"
-  				  dcm2nii ./1_preproc/${sourceidv}/unzipped/*64dir/* 1>/dev/null;
+  				  dcm2nii -v N ./1_preproc/${sourceidv}/unzipped/*64dir/* 1>/dev/null;
+            gunzip ./1_preproc/${sourceidv}/unzipped/*64dir/*gz
   				  mv ./1_preproc/${sourceidv}/unzipped/*64dir/*nii ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir.nii 
   				  mv ./1_preproc/${sourceidv}/unzipped/*64dir/*bval ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir.bval
   				  mv ./1_preproc/${sourceidv}/unzipped/*64dir/*bvec ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir.bvec
-  				  dcm2nii ./1_preproc/${sourceidv}/unzipped/*b0/* 1>/dev/null;
+  				  dcm2nii -v N ./1_preproc/${sourceidv}/unzipped/*b0/* 1>/dev/null;
+            gunzip ./1_preproc/${sourceidv}/unzipped/*b0/*gz
   				  mv ./1_preproc/${sourceidv}/unzipped/${sourceidv}_b0/*nii ./1_preproc/${sourceidv}/nifti/${sourceidv}_b0images.nii 
   				  
             #split b0 and 64dir images
@@ -78,7 +80,7 @@ for i in ${@};
   				  mv ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir_0000.nii.gz ./1_preproc/${sourceidv}/nifti/_excluded
   				  
             #merge 10 b0 images and 64dir images and edit bvec file
-        		fslmerge -t ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir10b0 ./1_preproc/${sourceidv}/nifti/${sourceidv}_b0_*.nii.gz ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir_*.nii.gz
+            fslmerge -t ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir10b0 ./1_preproc/${sourceidv}/nifti/${sourceidv}_b0_*.nii.gz ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir_*.nii.gz
   				  sed -i '1s/^/0 0 0 0 0 0 0 0 0 /' ./1_preproc/${sourceidv}/nifti/*bval
   				  sed -i '1s/^/0 0 0 0 0 0 0 0 0 /' ./1_preproc/${sourceidv}/nifti/*bvec
   				  sed -i '2s/^/0 0 0 0 0 0 0 0 0 /' ./1_preproc/${sourceidv}/nifti/*bvec
@@ -86,9 +88,9 @@ for i in ${@};
   				  BIMAGE=$(find ./1_preproc/${sourceidv}/nifti -type f -name *b0_scan.nii | head -1);
   				  IMAGE=$(find ./1_preproc/${sourceidv}/nifti/ -type f -name ${sourceidv}_64dir10b0.nii.gz | head -1);
   			
-            #eddy correct the 64 direction DTI images
+  			    #eddy correct the 64 direction DTI images
   			    echo "Running eddy_correct for ${sourceidv}"
-  			    eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir10b0_ecc.nii.gz 0 1>/dev/null;
+  				 # eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir10b0_ecc.nii.gz 0 1>/dev/null;
   			
   			    #average 10 b0 images to create B0 mean image
   			    echo "Generating b0 mean image for ${sourceidv}"
@@ -101,7 +103,7 @@ for i in ${@};
   			
   			    #skull strip the mean B0 image with BET
   			    echo "Running BET on ${sourceidv}'s b0 mean image"
-  				  bet ./1_preproc/${sourceidv}/b0_images/${sourceidv}_mean_b0_image.nii  ./1_preproc/${sourceidv}/bet/${sourceidv}_bet_mean_b0_image.nii  -m -f 0.3;
+  				  bet ./1_preproc/${sourceidv}/b0_images/${sourceidv}_mean_b0_image.nii  ./1_preproc/${sourceidv}/bet/${sourceidv}_bet_mean_b0_image.nii  -m -R -B -f 0.1;
             
             #run dtifit on the eddy corrected 64 direction image using the skull stripped B0 mean image as a mask			
   			    echo "Running dtifit for ${sourceidv}"
@@ -129,7 +131,7 @@ for i in ${@};
             #generate NITFI images for DTI files with 1 B0 image
             else echo -e "${red}${sourceidv} has only one b0 image${NC}"
 				    echo "Generating NIFTI images from raw DICOMS for ${sourceidv}"
-				    dcm2nii ./1_preproc/${sourceidv}/unzipped/*64dir/* 1>/dev/null;
+				    dcm2nii -g N ./1_preproc/${sourceidv}/unzipped/*64dir/* 1>/dev/null;
 				    mv ./1_preproc/${sourceidv}/unzipped/*64dir/*nii ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir.nii 
 				    mv ./1_preproc/${sourceidv}/unzipped/*64dir/*bval ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir.bval
 				    mv ./1_preproc/${sourceidv}/unzipped/*64dir/*bvec ./1_preproc/${sourceidv}/nifti/${sourceidv}_64dir.bvec
@@ -141,11 +143,11 @@ for i in ${@};
 			
 			     #eddy correct the 64 direction DTI image
             echo "Running eddy_correct for ${sourceidv}"
-				    eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir1b0_ecc.nii.gz 0 1>/dev/null;
+				    #eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir1b0_ecc.nii.gz 0 1>/dev/null;
 			
            #skull strip single B0 image with BET
 			     echo "Running BET on ${sourceidv}'s b0 image"
-				   bet ./1_preproc/${sourceidv}/b0_images/${sourceidv}_b0_image.nii.gz  ./1_preproc/${sourceidv}/bet/${sourceidv}_bet_b0_image.nii  -m -f 0.1;
+				   bet ./1_preproc/${sourceidv}/b0_images/${sourceidv}_b0_image.nii.gz  ./1_preproc/${sourceidv}/bet/${sourceidv}_bet_b0_image.nii  -R -B -m -f 0.1;
 		    
            #run dtifit on the eddy corrected 64 direction image using the skull stripped B0 mean image as a mask        
 		       echo "Running dtifit for ${sourceidv}"

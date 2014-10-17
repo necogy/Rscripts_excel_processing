@@ -1,4 +1,4 @@
-function scans_to_process = sVBM_run_segmentation(scans_to_process, imagetype)
+function scans_to_process = sVBM_run_segmentation(scans_to_process, imagetype, reprocess)
 %sVBM_run_segmentation - SPM12b Segmentation for serial Longitudinal processing
 %
 % Syntax:  participantstructure = LONG_run_segmentation(scans_to_process )
@@ -6,11 +6,12 @@ function scans_to_process = sVBM_run_segmentation(scans_to_process, imagetype)
 % Inputs: scans_to_process - array of objects of class LONG_participant,
 % scantype - string specifying whether to segment time1, time2 or mean image.
 % spmpath - path to spm 12b installation
+% reprocess - 1 or 0 to re-run existing calculations.
 %
 % Outputs: scans_to_process - updated array with run status
 %
 %
-% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12b
+% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12
 % Subfunctions:
 %
 % MAT-files required: none
@@ -24,6 +25,7 @@ function scans_to_process = sVBM_run_segmentation(scans_to_process, imagetype)
 % Created 07/3/2014
 %
 % Revisions:
+% 10/14/14 Suneth: Add segment volume calculations and reprocess flag
 
 spm('defaults', 'PET');
 spm_jobman('initcfg');
@@ -41,7 +43,30 @@ for subject = 1:size(scans_to_process,2) % for every subject
                 disp(['Now segmenting: ' num2str(scans_to_process(subject).PIDN )])
                 disp(['Timepoint: ' num2str(timepoint)])
                 
+                %check for existing segmented volume, check for re-running.
+                cvolumes = strrep(SAinsertStr2Paths(volume,'c*'),'img','nii');
+                d=dir(cvolumes)     ;                        
+                                      
+                %volumes found but reprocess set to 1 or no volumes found
+                if reprocess == 1 || size(d,1) ~= 3
                 segmenttimepoint(volume) % call subfunction to process that subject
+       
+ 
+                else
+                        disp('Skipping Timepoint because segmentation already found')
+                end
+           %extract volumes and add to scans_to_process structure
+                segfile =  strrep(SAinsertStr2Paths(volume,'c1'),'img','nii');
+                [scans_to_process(subject).Timepoint{timepoint}.GMvol, ~]=spm_summarise(segfile,'all','litres',1);
+                segfile =  strrep(SAinsertStr2Paths(volume,'c2'),'img','nii');
+                [scans_to_process(subject).Timepoint{timepoint}.WMvol, ~]=spm_summarise(segfile,'all','litres',1);
+                segfile =  strrep(SAinsertStr2Paths(volume,'c3'),'img','nii');
+                [scans_to_process(subject).Timepoint{timepoint}.CSFvol, ~]=spm_summarise(segfile,'all','litres',1);
+                
+                scans_to_process(subject).Timepoint{timepoint}.TIV = ...
+                    scans_to_process(subject).Timepoint{timepoint}.GMvol ...
+                    + scans_to_process(subject).Timepoint{timepoint}.WMvol ...
+                    + scans_to_process(subject).Timepoint{timepoint}.CSFvol ;
             end
             
         case 'average'
@@ -102,7 +127,13 @@ end
         matlabbatch{1}.spm.spatial.preproc.warp.fwhm = 0;
         matlabbatch{1}.spm.spatial.preproc.warp.samp = 3;
         matlabbatch{1}.spm.spatial.preproc.warp.write = [0 writeforavgonly];
+        
+        try
         spm_jobman('run',matlabbatch);
+       
+        catch
+            warning(['problem segmenting' cellstr(volume)])
+        end
     end
 
 end
