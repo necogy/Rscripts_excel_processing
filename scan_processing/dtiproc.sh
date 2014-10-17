@@ -90,7 +90,7 @@ for i in ${@};
   			
   			    #eddy correct the 64 direction DTI images
   			    echo "Running eddy_correct for ${sourceidv}"
-  				  eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir10b0_ecc.nii.gz 0 1>/dev/null;
+  				 # eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir10b0_ecc.nii.gz 0 1>/dev/null;
   			
   			    #average 10 b0 images to create B0 mean image
   			    echo "Generating b0 mean image for ${sourceidv}"
@@ -103,7 +103,7 @@ for i in ${@};
   			
   			    #skull strip the mean B0 image with BET
   			    echo "Running BET on ${sourceidv}'s b0 mean image"
-  				  bet ./1_preproc/${sourceidv}/b0_images/${sourceidv}_mean_b0_image.nii  ./1_preproc/${sourceidv}/bet/${sourceidv}_bet_mean_b0_image.nii  -m -f 0.3;
+  				  bet ./1_preproc/${sourceidv}/b0_images/${sourceidv}_mean_b0_image.nii  ./1_preproc/${sourceidv}/bet/${sourceidv}_bet_mean_b0_image.nii  -m -R -B -f 0.1;
             
             #run dtifit on the eddy corrected 64 direction image using the skull stripped B0 mean image as a mask			
   			    echo "Running dtifit for ${sourceidv}"
@@ -143,11 +143,11 @@ for i in ${@};
 			
 			     #eddy correct the 64 direction DTI image
             echo "Running eddy_correct for ${sourceidv}"
-				    eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir1b0_ecc.nii.gz 0 1>/dev/null;
+				    #eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir1b0_ecc.nii.gz 0 1>/dev/null;
 			
            #skull strip single B0 image with BET
 			     echo "Running BET on ${sourceidv}'s b0 image"
-				   bet ./1_preproc/${sourceidv}/b0_images/${sourceidv}_b0_image.nii.gz  ./1_preproc/${sourceidv}/bet/${sourceidv}_bet_b0_image.nii  -m -f 0.1;
+				   bet ./1_preproc/${sourceidv}/b0_images/${sourceidv}_b0_image.nii.gz  ./1_preproc/${sourceidv}/bet/${sourceidv}_bet_b0_image.nii  -R -B -m -f 0.1;
 		    
            #run dtifit on the eddy corrected 64 direction image using the skull stripped B0 mean image as a mask        
 		       echo "Running dtifit for ${sourceidv}"
@@ -171,3 +171,4 @@ for i in ${@};
 			        echo "${sourceidv} FAILED" >> ./1_preproc/dtiproc_$DATE.txt
 		     fi
 	fi;
+done
