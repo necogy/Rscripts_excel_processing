@@ -5,15 +5,15 @@
 
 
 %path to data:
-scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_aug2014','images_dir')
+scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_mar2014_reprocess_2','images','images_dir');
 
 %path to spm12b folder:
 spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');
 
 %path to dartel template for your study (or where a dartel template will
 %be created if it doesn't exist yet):
-templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Aug2014_SD_NORM'); % set this to the new template folder name.
+templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Feb2014_SD_NORM'); % set this to the new template folder name.
 
 %path to ROIs to use to extract mean/median change values from a specific
 %ROI:
-pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_mar2014_reprocess_2','roistowarp');% set this to the new template folder name.
+pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_mar2014_reprocess_2','rois');% set this to the new template folder name.
