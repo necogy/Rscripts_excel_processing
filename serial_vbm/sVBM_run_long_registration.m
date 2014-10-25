@@ -38,6 +38,7 @@ for subject = 1:size(scans_to_process,2) % for every subject
     timedeltas = (times-times(1))/365.25 ;
     
     disp(['Now running longitudinal Registration on: ' num2str(scans_to_process(subject).PIDN )])
+    try
     registersubject(volumes, timedeltas); % call subfunction to process that subject
     avgdirectory = fullfile(scans_to_process(subject).Fullpath, 'avg');
     mkdir(avgdirectory)
@@ -48,7 +49,9 @@ for subject = 1:size(scans_to_process,2) % for every subject
 
     [status,message,~]=movefile(avgfile,avgdirectory) ;
     
-   
+    catch
+        disp(['problem registering: ' num2str(scans_to_process(subject).PIDN )])
+    end
     clear volumes
     clear times
     clear timedeltas
