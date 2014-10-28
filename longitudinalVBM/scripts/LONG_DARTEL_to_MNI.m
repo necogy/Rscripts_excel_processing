@@ -25,14 +25,14 @@ function scans_to_process = LONG_DARTEL_to_MNI( scans_to_process, dartelpath )
 %look for template_6 file and set 
 template = fullfile(dartelpath, 'Template_6.nii'); % Template_6 file
 imageprefixes = {'avg','mavg','c1avg','c2avg','c3avg','l_c1avg_jd','l_c1avg_dv','l_c2avg_jd','l_c2avg_dv', 'dv_', 'jd_' };
-
+spm('defaults', 'PET');
 for subject = 1:size(scans_to_process,2)
     
     flowfield =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, ['u_rc1avg_'  scans_to_process(subject).Time1file]);
     flowfield = strrep(flowfield, 'img', 'nii'); %avg filenames sometimes were img not nii
    % flowfield = strrep(flowfield, '.nii', '_Template.nii'); %avg filenames sometimes were img not nii
 
-    spm('defaults', 'PET');
+    
     spm_jobman('initcfg');
     matlabbatch{1}.spm.tools.dartel.mni_norm.template = cellstr(template);
     matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.flowfields = cellstr(flowfield);
@@ -50,6 +50,6 @@ for subject = 1:size(scans_to_process,2)
     matlabbatch{1}.spm.tools.dartel.mni_norm.fwhm = [0 0 0];
 
     spm_jobman('run',matlabbatch);
-    
+    clear matlabbatch
 end
 
