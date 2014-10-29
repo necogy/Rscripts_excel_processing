@@ -5,7 +5,7 @@
 
 
 %path to data:
-scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_aug2014','images_dir')
+scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','SD_floor_project','FLOOR_aug2014','images_dir')
 
 %path to spm12b folder:
 spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');
