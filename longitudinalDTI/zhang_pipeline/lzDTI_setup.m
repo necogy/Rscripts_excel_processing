@@ -24,11 +24,22 @@ clear classes
 scandatafolder = '/mnt/macdata/groups/imaging_core/suneth/analyses/longDTI_bri/pidns';
 scans_to_process = lzDTI_load_rawdata( scandatafolder );
 
+nSubjects = size(scans_to_process,2);
+
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%individual subject processing;
+for iSubject=1:nSubjects
+
+% Coregister FA to T1
+lzDTI_coregisterFAtoT1(scans_to_process(iSubject));
+
+% Dartel Register 
+
+end
 
 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% group processing
 
 
 
