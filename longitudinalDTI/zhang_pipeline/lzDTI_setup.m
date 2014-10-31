@@ -38,12 +38,24 @@ lzDTI_longitudinal_registerFA(scans_to_process(iSubject));
 
 % Warp timepoint T1 to FA average space
 lzDTI_warp_timepointT1toFAavgSpace(scans_to_process(iSubject))
+
+% Generate mean image
+lzDTI_calculate_averageT1inFAavgSpaceForDARTEL(scans_to_process(iSubject))
+lzDTI_coregisterWarpedT1sUsingLongitudinalRegistration(scans_to_process(iSubject))
+
+
+% Segment Average T1 for DARTEL
+
+
 end
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % group processing
 
+%Run DARTEL on T1 averages?
+
+%Warp T1s to MNI and bring along FA avg images.
 
 
 
