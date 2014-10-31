@@ -22,6 +22,7 @@ clear classes
 %load parameters:
 %path to data:
 scandatafolder = '/mnt/macdata/groups/imaging_core/suneth/analyses/longDTI_bri/pidns';
+spmpath = fileparts(which('spm'));
 scans_to_process = lzDTI_load_rawdata( scandatafolder );
 
 nSubjects = size(scans_to_process,2);
@@ -30,32 +31,34 @@ nSubjects = size(scans_to_process,2);
 %individual subject processing;
 for iSubject=1:nSubjects
 
-% Coregister FA to T1
+% 1 .Coregister FA to T1
 lzDTI_coregisterFAtoT1(scans_to_process(iSubject));
 
-% Dartel Register time1 FA to time2 FA
+% 2. Dartel Register time1 FA to time2 FA
 lzDTI_longitudinal_registerFA(scans_to_process(iSubject));
 
-% Warp timepoint T1 to FA average space
+% 3. Warp timepoint T1 to FA average space
 lzDTI_warp_timepointT1toFAavgSpace(scans_to_process(iSubject))
 
-% Generate mean image
-lzDTI_calculate_averageT1inFAavgSpaceForDARTEL(scans_to_process(iSubject))
+% 4. Generate mean image
+%lzDTI_calculate_averageT1inFAavgSpaceForDARTEL(scans_to_process(iSubject))
 lzDTI_coregisterWarpedT1sUsingLongitudinalRegistration(scans_to_process(iSubject))
 
-
-% Segment Average T1 for DARTEL
-
-
+% 5. Segment Average T1 for DARTEL
+lzDTI_segment_averageT1forDARTEL(scans_to_process(iSubject))
 end
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% group processing
+% Group processing
 
-%Run DARTEL on T1 averages?
+% 1.Run DARTEL on T1 averages
 
-%Warp T1s to MNI and bring along FA avg images.
+% Warp T1s to MNI 
+
+% Generate Combined warps
+
+% Apply to FA images.
 
 
 
