@@ -33,13 +33,17 @@ for iSubject=1:nSubjects
 % Coregister FA to T1
 lzDTI_coregisterFAtoT1(scans_to_process(iSubject));
 
-% Dartel Register 
+% Dartel Register time1 FA to time2 FA
+lzDTI_longitudinal_registerFA(scans_to_process(iSubject));
 
+% Warp timepoint T1 to FA average space
+lzDTI_warp_timepointT1toFAavgSpace(scans_to_process(iSubject))
 end
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % group processing
+
 
 
 
