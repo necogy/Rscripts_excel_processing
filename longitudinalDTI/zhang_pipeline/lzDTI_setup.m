@@ -66,6 +66,10 @@ end
 % Group processing
 
 % 1.Run DARTEL on T1 averages
+lzDTI_DARTEL_registration_to_new(scans_to_process)
+
+
+
 
 % Warp T1s to MNI
 
