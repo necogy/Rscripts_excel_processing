@@ -31,8 +31,8 @@ for sub = 1:size(scans_to_process,2)
     time1warpedtoFAavgT1 = SAinsertStr2Paths(      scans_to_process(sub).Timepoint{1}.Image_T1.path, 'w');
     time2warpedtoFAavgT1 = SAinsertStr2Paths(      scans_to_process(sub).Timepoint{2}.Image_T1.path, 'w'); 
     
-    time1warpedtoFAavgT1 = strrep(time1warpedtoFAavgT1, 'img','nii');
-    time2warpedtoFAavgT1 = strrep(time2warpedtoFAavgT1, 'img','nii');
+    %time1warpedtoFAavgT1 = strrep(time1warpedtoFAavgT1, 'img','nii');
+    %time2warpedtoFAavgT1 = strrep(time2warpedtoFAavgT1, 'img','nii');
     deltatime =  1;
     matlabbatch{1}.spm.tools.longit{1}.pairwise.vols1 = {time1warpedtoFAavgT1};
     matlabbatch{1}.spm.tools.longit{1}.pairwise.vols2 = {time2warpedtoFAavgT1};
