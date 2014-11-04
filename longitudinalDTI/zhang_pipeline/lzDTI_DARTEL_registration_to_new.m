@@ -24,7 +24,7 @@ function scans_to_process = lzDTI_DARTEL_registration_to_new(scans_to_process)
 
 for subject = 1:size(scans_to_process,2) % for every subject
     
-    avgfile = scans_to_process(1).Timepoint{1}.Image_T1.path   ;
+    avgfile = scans_to_process(subject).Timepoint{1}.Image_T1.path   ;
     avgfile = strrep(avgfile, '.img', '.nii');
     avgfile = SAinsertStr2Paths(avgfile, 'rc1avg_w');
     volume = avgfile;
@@ -38,8 +38,8 @@ end
 disp('now running DARTEL registration to a new template')
 spm('defaults', 'PET');
 spm_jobman('initcfg');
-matlabbatch{1}.spm.tools.dartel.warp.images{1} = rc1files(:,1)     ;
-matlabbatch{1}.spm.tools.dartel.warp.images{2} = rc2files(:,1)    ;
+matlabbatch{1}.spm.tools.dartel.warp.images{1} = rc1files   ;
+matlabbatch{1}.spm.tools.dartel.warp.images{2} = rc2files    ;
 matlabbatch{1}.spm.tools.dartel.warp.settings.template = 'Template';
 matlabbatch{1}.spm.tools.dartel.warp.settings.rform = 0;
 matlabbatch{1}.spm.tools.dartel.warp.settings.param(1).its = 3;
