@@ -1,4 +1,4 @@
-function scans_to_process = lzDTI_warp_timepointT1toFAavgSpace( scans_to_process )
+function scans_to_process = lzDTI_warp_timepointT1toFAavgSpace( scans_to_process)
 %lzDTI_longitudinal_registerFA- coreg time1 FA to time2 FA
 % Creates an array of objects of the class lzDTI_participant
 %
