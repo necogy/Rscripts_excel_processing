@@ -26,7 +26,7 @@ spm('defaults', 'PET');
 spm_jobman('initcfg');
 for sub = 1:size(scans_to_process,2)
     for iTimepoint= 1:size(scans_to_process(sub).Timepoint,2)
-        scans_to_process(sub).Timepoint{1}.Image_T1.path;
+
         y_timepointToFAavg = SAinsertStr2Paths(   scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path, 'y_rT1'); %'R:\groups\imaging_core\suneth\analyses\longDTI_bri\pidns\0065\2010-04-29\y_rT1GHB243X1_v1_FA.nii'
         u_FAavgToDartel=SAinsertStr2Paths(   scans_to_process(sub).Timepoint{1}.Image_T1.path, 'u_rc1avg_w');
         u_FAavgToDartel=strrep(u_FAavgToDartel, 'img','nii');
@@ -36,9 +36,11 @@ for sub = 1:size(scans_to_process,2)
         matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.flowfield = {u_FAavgToDartel};
         matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.times = [1 0];
         matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.K = 6;
-        matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.template = {dartelpath};
-        matlabbatch{1}.spm.util.defs.comp{1}.inv.space = { scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path};
-        matlabbatch{1}.spm.util.defs.out{1}.push.fnames = {scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path};
+        matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.template =  {dartelpath};
+        matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {SAinsertStr2Paths(   scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path, 'rT1')};
+        
+        matlabbatch{1}.spm.util.defs.out{1}.push.fnames = {SAinsertStr2Paths(   scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path, 'rT1')};
+        
         matlabbatch{1}.spm.util.defs.out{1}.push.weight = {''};
         matlabbatch{1}.spm.util.defs.out{1}.push.savedir.savesrc = 1;
         matlabbatch{1}.spm.util.defs.out{1}.push.fov.bbvox.bb = [NaN NaN NaN
