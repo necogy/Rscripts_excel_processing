@@ -35,19 +35,19 @@ for iSubject=1:nSubjects% find(ind)%
     try
         % 1 .Coregister FA to T1
         %lzDTI_coregisterFAtoT1(scans_to_process(iSubject));
-         lzDTI_FSLFLIRTcoregisterFAtoT1(scans_to_process(iSubject));
+         %lzDTI_FSLFLIRTcoregisterFAtoT1(scans_to_process(iSubject));
         % 2. Dartel Register time1 FA to time2 FA
-        %lzDTI_longitudinal_registerFA(scans_to_process(iSubject));
+        lzDTI_longitudinal_registerFA(scans_to_process(iSubject));
         
         % 3. Warp timepoint T1 to FA average space
-        %lzDTI_warp_timepointT1toFAavgSpace(scans_to_process(iSubject))
+        lzDTI_warp_timepointT1toFAavgSpace(scans_to_process(iSubject))
         
         % 4. Generate mean image
         %lzDTI_calculate_averageT1inFAavgSpaceForDARTEL(scans_to_process(iSubject))
-       % lzDTI_coregisterWarpedT1sUsingLongitudinalRegistration(scans_to_process(iSubject))
+       lzDTI_coregisterWarpedT1sUsingLongitudinalRegistration(scans_to_process(iSubject))
         
         % 5. Segment Average T1 for DARTEL
-        %lzDTI_segment_averageT1forDARTEL(scans_to_process(iSubject))
+        lzDTI_segment_averageT1forDARTEL(scans_to_process(iSubject))
         
     catch
         sprintf(['error with subject ' num2str(iSubject)])
