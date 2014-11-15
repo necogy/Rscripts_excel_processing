@@ -41,7 +41,7 @@ scans_to_process = sVBM_load_rawdata( scandatafolder );
 %% Serial Longitudinal Registration (multiple timepoints)
 scans_to_process = sVBM_run_long_registration(scans_to_process); 
 
-%% Segmentation of Longitudinal Images
+%% Segmentation of Average Images
 scans_to_process = sVBM_run_segmentation(scans_to_process, 'average'); % (will segment all available timepoints in the directories)
 
 %% DARTEL registration of Longitudinal Average Images to New DARTEL Template
