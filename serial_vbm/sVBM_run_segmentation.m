@@ -55,7 +55,9 @@ for subject = 1:size(scans_to_process,2) % for every subject
                 else
                         disp('Skipping Timepoint because segmentation already found')
                 end
-           %extract volumes and add to scans_to_process structure
+           %extract volumes and add to scans_to_process structure 
+           % this should be incorporated into the class or a seprate class
+           % function
                 segfile =  strrep(SAinsertStr2Paths(volume,'c1'),'img','nii');
                 [scans_to_process(subject).Timepoint{timepoint}.GMvol, ~]=spm_summarise(segfile,'all','litres',1);
                 segfile =  strrep(SAinsertStr2Paths(volume,'c2'),'img','nii');
@@ -70,7 +72,6 @@ for subject = 1:size(scans_to_process,2) % for every subject
             end
             
         case 'average'
-            %avg file is found in first time point folder
             avgfile = fullfile(scans_to_process(subject).Fullpath,'avg', scans_to_process(subject).Timepoint{1}.File.name); 
             
             avgfile=strrep(avgfile, '.img', '.nii');
@@ -132,7 +133,7 @@ end
         spm_jobman('run',matlabbatch);
        
         catch
-            warning(['problem segmenting' cellstr(volume)])
+            disp(['problem segmenting' cellstr(volume)])
         end
     end
 

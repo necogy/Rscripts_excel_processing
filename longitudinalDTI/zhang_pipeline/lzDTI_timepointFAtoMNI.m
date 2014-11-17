@@ -27,8 +27,8 @@ spm_jobman('initcfg');
 for sub = 1:size(scans_to_process,2)
     for iTimepoint= 1:size(scans_to_process(sub).Timepoint,2)
 
-        y_timepointToFAavg = SAinsertStr2Paths(   scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path, 'y_rT1'); %'R:\groups\imaging_core\suneth\analyses\longDTI_bri\pidns\0065\2010-04-29\y_rT1GHB243X1_v1_FA.nii'
-        y_fromT1nativeToFAavg = fullfile(fileparts(scans_to_process(sub).Timepoint{iTimepoint}.Image_T1.path), 'y_fromT1NativeToFAavg.nii') 
+        y_timepointToFAavg = SAinsertStr2Paths(   scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path, 'y_flirt'); %'R:\groups\imaging_core\suneth\analyses\longDTI_bri\pidns\0065\2010-04-29\y_rT1GHB243X1_v1_FA.nii'
+        y_fromT1nativeToFAavg = fullfile(fileparts(scans_to_process(sub).Timepoint{iTimepoint}.Image_T1.path), 'y_fromT1NativeToFAavg.nii') ;
         u_FAavgToDartel=SAinsertStr2Paths(   scans_to_process(sub).Timepoint{1}.Image_T1.path, 'u_rc1avg_w');
         u_FAavgToDartel=strrep(u_FAavgToDartel, 'img','nii');
         u_FAavgToDartel=strrep(u_FAavgToDartel, '.nii','_Template.nii');
@@ -39,9 +39,9 @@ for sub = 1:size(scans_to_process,2)
         matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{3}.dartel.times = [1 0];
         matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{3}.dartel.K = 6;
         matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{3}.dartel.template =  {dartelpath};
-        matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {SAinsertStr2Paths(   scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path, 'rT1')};
+        matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {SAinsertStr2Paths(   scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path, 'flirt')};
         
-        matlabbatch{1}.spm.util.defs.out{1}.push.fnames = {SAinsertStr2Paths(   scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path, 'rT1')};
+        matlabbatch{1}.spm.util.defs.out{1}.push.fnames = {SAinsertStr2Paths(   scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path, 'flirt')};
         
         matlabbatch{1}.spm.util.defs.out{1}.push.weight = {''};
         matlabbatch{1}.spm.util.defs.out{1}.push.savedir.savesrc = 1;

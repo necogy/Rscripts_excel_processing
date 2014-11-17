@@ -13,4 +13,4 @@ templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM
 %path to ROIs to use to extract mean/median change values from a specific
 %ROI:
 pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');% set this to the new template folder name.
-pathtoROIs= '/mnt/ramdisk/serial_svPPA_oct2014/rois';
+pathtoROIs= '/mnt/ramdisk/serial_svPPA_oct2014/NovROIs';
