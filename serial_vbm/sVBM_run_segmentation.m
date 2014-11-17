@@ -133,7 +133,7 @@ end
         spm_jobman('run',matlabbatch);
        
         catch
-            warning(['problem segmenting' cellstr(volume)])
+            disp(['problem segmenting' cellstr(volume)])
         end
     end
 

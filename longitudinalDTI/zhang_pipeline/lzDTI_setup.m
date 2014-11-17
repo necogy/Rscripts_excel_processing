@@ -72,7 +72,7 @@ lzDTI_DARTEL_registration_to_new(scans_to_process)
 % 2. move dartel template to somewhre convenient
 
 % 3. Generate Dartel to ICBM warping y deformation field (optional)
-dartelpath = '/mnt/macdata/groups/imaging_core/suneth/analyses/longDTI_bri/T1_Dartel_template_forlzDTI_Nov2014/Template_6.nii';
+dartelpath = '/mnt/macdata/groups/imaging_core/suneth/analyses/longDTI_bri/T1_Dartel_template_forlzDTI_Nov2014_new/Template_6.nii';
 spm_jobman('initcfg');
 matlabbatch{1}.spm.tools.dartel.popnorm.template = {dartelpath};
 spm_jobman('run',matlabbatch)
