@@ -38,43 +38,51 @@ for subject = 1:size(scans_to_process,2) % for every subject
     timedeltas = (times-times(1))/365.25 ;
     
     disp(['Now running longitudinal Registration on: ' num2str(scans_to_process(subject).PIDN )])
-    try
-    registersubject(volumes, timedeltas); % call subfunction to process that subject
-    avgdirectory = fullfile(scans_to_process(subject).Fullpath, 'avg');
-    mkdir(avgdirectory)
-        
-    avgfile = fullfile(scans_to_process(subject).Timepoint{1}.Fullpath, scans_to_process(subject).Timepoint{1}.File.name);
-    avgfile=strrep(avgfile, '.img', '.nii');
-    avgfile = SAinsertStr2Paths(avgfile, 'avg_');
-
-    [status,message,~]=movefile(avgfile,avgdirectory) ;
     
-    catch
-        disp(['problem registering: ' num2str(scans_to_process(subject).PIDN )])
+    % check for existing avg files
+    
+    avgdirectory = fullfile(scans_to_process(subject).Fullpath, 'avg');
+    d = SAdir(avgdirectory, '^avg_*');
+    if size(d,1)<1
+        try
+            registersubject(volumes, timedeltas); % call subfunction to process that subject
+            mkdir(avgdirectory)
+            avgfile = fullfile(scans_to_process(subject).Timepoint{1}.Fullpath, scans_to_process(subject).Timepoint{1}.File.name);
+            avgfile=strrep(avgfile, '.img', '.nii');
+            avgfile = SAinsertStr2Paths(avgfile, 'avg_');
+            [status,message,~]=movefile(avgfile,avgdirectory)     
+        catch
+            disp(['problem registering: ' num2str(scans_to_process(subject).PIDN )])
+        end
+    else
+        disp(['skipping because avg files already exist for : ' num2str(scans_to_process(subject).PIDN )])
+        clear d;
     end
-    clear volumes
-    clear times
-    clear timedeltas
+    
+end
+clear volumes
+clear times
+clear timedeltas
 end
 
-    function registersubject(volumes, timedeltas)
-        clear matlabbatch
-        matlabbatch{1}.spm.tools.longit{1}.series.vols = cellstr(volumes);
-        matlabbatch{1}.spm.tools.longit{1}.series.times = timedeltas;
-        matlabbatch{1}.spm.tools.longit{1}.series.noise = NaN;
-        matlabbatch{1}.spm.tools.longit{1}.series.wparam = [0 0 100 25 100];
-        matlabbatch{1}.spm.tools.longit{1}.series.bparam = 1000000;
-        matlabbatch{1}.spm.tools.longit{1}.series.write_avg = 1;
-        matlabbatch{1}.spm.tools.longit{1}.series.write_jac = 1;
-        matlabbatch{1}.spm.tools.longit{1}.series.write_div = 1;
-        matlabbatch{1}.spm.tools.longit{1}.series.write_def = 1;
-        spm_jobman('run',matlabbatch);
-    end
-
-
-
-
-
-
+function registersubject(volumes, timedeltas)
+clear matlabbatch
+matlabbatch{1}.spm.tools.longit{1}.series.vols = cellstr(volumes);
+matlabbatch{1}.spm.tools.longit{1}.series.times = timedeltas;
+matlabbatch{1}.spm.tools.longit{1}.series.noise = NaN;
+matlabbatch{1}.spm.tools.longit{1}.series.wparam = [0 0 100 25 100];
+matlabbatch{1}.spm.tools.longit{1}.series.bparam = 1000000;
+matlabbatch{1}.spm.tools.longit{1}.series.write_avg = 1;
+matlabbatch{1}.spm.tools.longit{1}.series.write_jac = 1;
+matlabbatch{1}.spm.tools.longit{1}.series.write_div = 1;
+matlabbatch{1}.spm.tools.longit{1}.series.write_def = 1;
+spm_jobman('run',matlabbatch);
 end
+
+
+
+
+
+
+
 
