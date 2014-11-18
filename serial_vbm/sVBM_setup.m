@@ -75,7 +75,7 @@ scans_to_process = sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_pa
 scans_to_process = sVBM_warp_to_MNI(scans_to_process);
 
 %% Extract ROI values from MNI warped timepoints 
-scans_to_process = sVBM_extractMNItimepointROIs(scans_to_process, pathtoROIs)
+scans_to_process = sVBM_extractMNItimepointROIs(scans_to_process, pathtoROIs);
 
 
 
