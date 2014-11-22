@@ -28,6 +28,7 @@ clear classes
 
 %load parameters:
 sVBM_config % or name of edited config file 
+%scandatafolder='R:\groups\rosen\longitudinalVBM\SD_floor_project\serial_svPPA_oct2014\pidn_dir'
 
 %set scan data folder where image were placed using image_finder.sh
 
@@ -50,6 +51,7 @@ scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process);
 %% DARTEL registration of Longitudinal AverageImages to Existing DARTEL Template
 
 %% Multiply Change Maps with Segmentations
+scans_to_process = sVBM_multiply_segments_with_change(scans_to_process);
 
 %% Transform Longitudinal Images to Group/MNI space
 

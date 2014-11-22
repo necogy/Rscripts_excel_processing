@@ -31,11 +31,11 @@ for subject = 1:size(scans_to_process,2)
         ['avg_' scans_to_process(subject).Timepoint{1}.File.name ]);
     averagefile = strrep(averagefile, '.img', '.nii');
     
-    for timepoint = 1:size(scans_to_process(subject).Timepoint,2)
+    for ntimepoint = 1:size(scans_to_process(subject).Timepoint,2)
         
         %get jacobian image
-        timepointJ_image = fullfile(scans_to_process(subject).Timepoint{1}.Fullpath, ...
-            ['dv_' scans_to_process(subject).Timepoint{1}.File.name ]);
+        timepointJ_image = fullfile(scans_to_process(subject).Timepoint{ ntimepoint}.Fullpath, ...
+            ['dv_' scans_to_process(subject).Timepoint{ ntimepoint}.File.name ]);
         timepointJ_image = strrep(timepointJ_image, '.img', '.nii');
         
         segments = {'c1','c2'};
@@ -54,8 +54,11 @@ for subject = 1:size(scans_to_process,2)
             matlabbatch{1}.spm.util.imcalc.options.mask = 0;
             matlabbatch{1}.spm.util.imcalc.options.interp = 1;
             matlabbatch{1}.spm.util.imcalc.options.dtype = 16;
+            try
+                spm_jobman('run',matlabbatch);
+            catch
+            end
             
-            spm_jobman('run',matlabbatch);
             clear matlabbatch
         end
         
