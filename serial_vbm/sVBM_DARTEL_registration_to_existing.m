@@ -1,4 +1,4 @@
-function scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, DARTEL_template_path)
+function scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, DARTEL_template_path, scantype)
 %sVBM_DARTEL_registration_to_existing SPM12b DARTEL register to template
 %   Detailed explanation goes here
 % Syntax:  scans_to_process = sVBM_DARTEL_registration_to_existing( scans_to_process, DARTEL_template_path)
@@ -22,23 +22,43 @@ function scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_proces
 % Revisions:
 spm('defaults', 'PET');
 spm_jobman('initcfg');
-for subject = 1:size(scans_to_process,2) % for every subject
-    
-    for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
+
+
+switch scantype
+    case 'timepoint'
+        for subject = 1:size(scans_to_process,2) % for every subject
+            
+            for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
+                
+                rc1file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc1' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ;
+                rc1file = strrep(rc1file, 'img', 'nii');
+                
+                rc2file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc2' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ;
+                rc2file = strrep(rc2file, 'img', 'nii');
+                
+                disp(['Now DARTEL Registering: ' num2str(scans_to_process(subject).PIDN )])
+                disp(['Timepoint: ' num2str(timepoint)])
+                
+                dartelregistertimepoint(rc1file,rc2file, DARTEL_template_path) % call subfunction to process that subject
+                
+            end
+        end
         
-        rc1file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc1' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ;
-        rc1file = strrep(rc1file, 'img', 'nii');
+    case 'average'
+        for subject = 1:size(scans_to_process,2) % for every subject
+                       
+                rc1file = fullfile( scans_to_process(subject).Fullpath, 'avg', ['rc1avg_' scans_to_process(subject).Timepoint{1}.File.name]  ) ;
+                rc1file = strrep(rc1file, 'img', 'nii');
+                
+                rc2file = strrep(rc1file, 'rc1avg_','rc2avg_');
+                
+                disp(['Now DARTEL Registering average file for PIDN: ' num2str(scans_to_process(subject).PIDN )])
+                
+                dartelregistertimepoint(rc1file,rc2file, DARTEL_template_path) % call subfunction to process that subject
+        end
         
-        rc2file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc2' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ;
-        rc2file = strrep(rc2file, 'img', 'nii');
-        
-        disp(['Now DARTEL Registering: ' num2str(scans_to_process(subject).PIDN )])
-        disp(['Timepoint: ' num2str(timepoint)])
-        
-        dartelregistertimepoint(rc1file,rc2file, DARTEL_template_path) % call subfunction to process that subject
-        
-    end
 end
+
 
     function dartelregistertimepoint(rc1,rc2, templatepath)
         

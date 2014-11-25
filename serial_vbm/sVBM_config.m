@@ -9,6 +9,7 @@ scandatafolder = '/mnt/ramdisk/serial_svPPA_oct2014/pidn_dir';
 %path to dartel template for your study (or where a dartel template will
 %be created if it doesn't exist yet):
 templatepath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','darteltemplates','Aug2014_SD_NORM'); % set this to the new template folder name.
+templatepath = '/mnt/ramdisk/serial_svPPA_oct2014/Aug2014_SD_NORM'
 
 %path to ROIs to use to extract mean/median change values from a specific
 %ROI:
