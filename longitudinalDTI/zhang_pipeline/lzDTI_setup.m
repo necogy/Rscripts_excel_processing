@@ -33,6 +33,11 @@ nSubjects = size(scans_to_process,2);
 for iSubject=1:nSubjects% find(ind)%
     sprintf(['now pre-processing subject ' num2str(iSubject)])
     try
+        
+        % segment T1 image into WM/GM
+        % run hessian on FA image
+        % Coregister hessianFA to WM/GM
+                       
         % 1 .Coregister FA to T1
         %lzDTI_coregisterFAtoT1(scans_to_process(iSubject));
          %lzDTI_FSLFLIRTcoregisterFAtoT1(scans_to_process(iSubject));

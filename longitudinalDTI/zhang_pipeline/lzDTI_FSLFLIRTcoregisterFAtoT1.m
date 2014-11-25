@@ -24,11 +24,32 @@ function scans_to_process = lzDTI_FSLFLIRTcoregisterFAtoT1( scans_to_process )
 %
 % Revisions:
 
+%  % segment T1 image into WM/GM
+        % run hessian on FA image
+        % Coregister hessianFA to WM/GM
+  
+        
+
+        
 for sub = 1:size(scans_to_process,2)
+    
     for iTimepoint= 1:size(scans_to_process(sub).Timepoint,2)
         
         T1image = scans_to_process(sub).Timepoint{iTimepoint}.Image_T1.path; %T1 image
         FAimage = scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path; %FA image
+        
+        %segment T1image
+        SA_SPM12_segment(T1image,'native');
+        %Add c1 and c2 together
+        formula = 'i1+i2';
+        c1image;
+        c2image;
+        images = {c1image, c2image};
+        SA_SPM12_imcalc(images, formula);
+        
+        %take hessian of FA image
+        
+        %run flirt to coregister hessian_FA to c1+c2 image
         
         [status,result]= runflirt(T1image, FAimage)
     end
