@@ -24,13 +24,6 @@ function scans_to_process = lzDTI_FSLFLIRTcoregisterFAtoT1( scans_to_process )
 %
 % Revisions:
 
-%  % segment T1 image into WM/GM
-        % run hessian on FA image
-        % Coregister hessianFA to WM/GM
-  
-        
-
-        
 for sub = 1:size(scans_to_process,2)
     
     for iTimepoint= 1:size(scans_to_process(sub).Timepoint,2)
@@ -40,25 +33,34 @@ for sub = 1:size(scans_to_process,2)
         
         %segment T1image
         SA_SPM12_segment(T1image,'native');
+        
         %Add c1 and c2 together
         formula = 'i1+i2';
-        c1image;
-        c2image;
+        c1image = SAinsertStr2Paths(T1image, 'c1') ;
+        c1image = strrep(c1image, '.img', '.nii');
+        c2image = strrep(c1image, 'c1', 'c2');
         images = {c1image, c2image};
-        SA_SPM12_imcalc(images, formula);
+        [c1c2path, c1c2image, c1c2ext] = fileparts(c2image);
+                
+        SA_SPM12_imcalc(images, formula, ['c1' c1c2image '.nii'] );
         
         %take hessian of FA image
-        
+        matNI_DTI_hessian_cardan(FAimage, 2)
+               
         %run flirt to coregister hessian_FA to c1+c2 image
-        
-        [status,result]= runflirt(T1image, FAimage)
+        c1c2file = fullfile(c1c2path, ['c1' c1c2image c1c2ext]);
+        hessFAimage=  SAinsertStr2Paths(FAimage, 'hess_2_')
+        [status,result]= runflirt(c1c2file,hessFAimage);
+        % gunzip coregisted FA
+        gunzip(hessFAimage);
     end
     
 end
 end
-function  [status,result]= runflirt(T1image, FAimage)
+function  [status,result]= runflirt(Template, Source)
 
-coregisteredFAimage= SAinsertStr2Paths(FAimage, 'flirt');
-commandstring = ['flirt -searchcost normmi -dof 6 -in ' char(FAimage) ' -ref ' char(T1image) ' -out ' char(coregisteredFAimage)];
+coregisteredimage= SAinsertStr2Paths(Source, 'flirt');
+coreg_mat = fullfile( fileparts(Template), 'flirt_FAtoT1.mat' );
+commandstring = ['flirt -cost mutualinfo -dof 6 -nosearch -omat ' coreg_mat ' -in ' char(Source) ' -ref ' char(Template) ' -out ' char(coregisteredimage)];
 [status,result] = system(commandstring);
 end

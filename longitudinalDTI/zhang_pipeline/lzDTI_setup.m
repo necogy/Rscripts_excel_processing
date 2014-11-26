@@ -37,7 +37,7 @@ for iSubject=1:nSubjects% find(ind)%
 
         % 1 .Coregister FA to T1
         %lzDTI_coregisterFAtoT1(scans_to_process(iSubject));
-         %lzDTI_FSLFLIRTcoregisterFAtoT1(scans_to_process(iSubject));
+         lzDTI_FSLFLIRTcoregisterFAtoT1(scans_to_process(iSubject));
         % 2. Dartel Register time1 FA to time2 FA
         lzDTI_longitudinal_registerFA(scans_to_process(iSubject));
         
