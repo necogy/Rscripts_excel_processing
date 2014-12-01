@@ -78,9 +78,21 @@ for subject = 1:size(scans_to_process,2) % for every subject
             avgfile = SAinsertStr2Paths(avgfile, 'avg_');
             volume = avgfile;
             
-            disp(['Now segmenting average image for: ' num2str(scans_to_process(subject).PIDN )])
             
-            segmenttimepoint(volume) % call subfunction to process that subject
+              %check for existing segmented volume, check for re-running.
+                cvolumes = strrep(SAinsertStr2Paths(volume,'c*'),'img','nii');
+                d=dir(cvolumes)     ;                        
+                                      
+                %volumes found but reprocess set to 1 or no volumes found
+                if reprocess == 1 || size(d,1) ~= 3
+                     disp(['Now segmenting average image for: ' num2str(scans_to_process(subject).PIDN )])
+                segmenttimepoint(volume) % call subfunction to process that subject
+       
+ 
+                else
+                        disp('Skipping average because segmentation already found')
+                end
+
     end
     
 end

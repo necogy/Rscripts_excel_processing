@@ -51,7 +51,7 @@ scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process);
 
 %% DARTEL registration of Longitudinal AverageImages to Existing DARTEL Template
 scantype = 'average';
-scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templatepath, scantype);
+scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process(1:8), templatepath, scantype);
 
 %% Multiply Change Maps with Segmentations
 scans_to_process = sVBM_multiply_segments_with_change(scans_to_process);
