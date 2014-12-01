@@ -57,6 +57,8 @@ scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templa
 scans_to_process = sVBM_multiply_segments_with_change(scans_to_process);
 
 %% Transform Longitudinal Images to Group/MNI space
+scantype = 'timepointdv';
+scans_to_process = sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
 
 %% Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
 
