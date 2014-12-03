@@ -41,7 +41,7 @@ for subject = 1:size(scans_to_process,2)
         segments = {'c1','c2'};
         
         for nseg = 1:size(segments,2)
-            caveragefile = SAinsertStr2Paths(averagefile, segments{nseg})
+            caveragefile = SAinsertStr2Paths(averagefile, segments{nseg});
             filestomultiply = {caveragefile, timepointJ_image};
             outputimage = SAinsertStr2Paths(  timepointJ_image, [segments{nseg} 'avg']);
             
