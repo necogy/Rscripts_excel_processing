@@ -54,7 +54,9 @@ scantype = 'average';
 scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templatepath, scantype);
 
 %% Multiply Change Maps with Segmentations
-scans_to_process = sVBM_multiply_segments_with_change(scans_to_process);
+scans_to_process = sVBM_multiply_segments_with_change(scans_to_process, 'j');
+scans_to_process = sVBM_multiply_segments_with_change(scans_to_process,'dv');
+
 
 %% Transform Longitudinal Images to Group/MNI space
 scantype = 'timepointdv';
@@ -68,7 +70,7 @@ sVBM_warp_timepoint_to_MNI_via_long;
 
 %% Extract ROI volumes from warped MNI images
 scans_to_process = sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs);
-ROIextractions = sVBM_export_ROI_values(scans_to_proces, 'mean'); % 'mean','median','sum','eigenvariate' 
+ROIextractions = sVBM_export_ROI_values(scans_to_process, 'mean'); % 'mean','median','sum','eigenvariate' 
 
 
 

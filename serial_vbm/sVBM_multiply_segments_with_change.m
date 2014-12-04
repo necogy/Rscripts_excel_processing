@@ -1,10 +1,11 @@
-function scans_to_process = sVBM_multiply_segments_with_change(scans_to_process)
-%LONG_multiply_segments_with_change - multiple c1/c2 images with jd/dv
+function scans_to_process = sVBM_multiply_segments_with_change(scans_to_process, j_or_dv)
+%sVBM_multiply_segments_with_change- multiple c1/c2 images with jd/dv
 %images. Iterates through all the subjects in scans_to_process.
 %
 % Syntax:  scans_to_process = sVBM_multiply_segments_with_change(scans_to_process )
 %
 % Inputs: scans_to_process - array of objects of class sVBM_participant
+%           j_or_dv - string 'j' 'dv' to determine which change map to use
 %
 % Outputs: scans_to_process - updated array with run status
 %
@@ -25,6 +26,16 @@ function scans_to_process = sVBM_multiply_segments_with_change(scans_to_process)
 spm('defaults', 'PET');
 spm_jobman('initcfg');
 
+switch j_or_dv
+    case 'j'
+        prefix = 'j_';
+        
+    case 'dv'
+        prefix = 'dv_';
+end
+
+
+
 for subject = 1:size(scans_to_process,2)
     %get average file
     averagefile = fullfile(scans_to_process(subject).Fullpath, 'avg', ...
@@ -35,7 +46,7 @@ for subject = 1:size(scans_to_process,2)
         
         %get jacobian image
         timepointJ_image = fullfile(scans_to_process(subject).Timepoint{ ntimepoint}.Fullpath, ...
-            ['dv_' scans_to_process(subject).Timepoint{ ntimepoint}.File.name ]);
+            [prefix scans_to_process(subject).Timepoint{ ntimepoint}.File.name ]);
         timepointJ_image = strrep(timepointJ_image, '.img', '.nii');
         
         segments = {'c1','c2'};
