@@ -34,42 +34,55 @@ switch scantype
             
             for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
                 
-%                 basefile =strrep(scans_to_process(subject).Timepoint{timepoint}.File.name,'.img','.nii');
-%                 
-%                 c1file = ['c1' basefile];
-%                 c2file = ['c2' basefile];
-%                 c3file = ['c3' basefile];
-%                 files = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, {c1file, c2file,c3file});
-%                 
-%                 disp(['Now Warping from DARTEL to MNI, PIDN : ' num2str(scans_to_process(subject).PIDN )])
-%                 disp(['Timepoint: ' num2str(timepoint)])
-%                 modulation =1;
-%                 warp_timepointtoMNI(files, template, modulation ) % call subfunction to process that subject
+                %                 basefile =strrep(scans_to_process(subject).Timepoint{timepoint}.File.name,'.img','.nii');
+                %
+                %                 c1file = ['c1' basefile];
+                %                 c2file = ['c2' basefile];
+                %                 c3file = ['c3' basefile];
+                %                 files = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, {c1file, c2file,c3file});
+                %
+                %                 disp(['Now Warping from DARTEL to MNI, PIDN : ' num2str(scans_to_process(subject).PIDN )])
+                %                 disp(['Timepoint: ' num2str(timepoint)])
+                %                 modulation =1;
+                %                 warp_timepointtoMNI(files, template, modulation ) % call subfunction to process that subject
             end
         end
     case 'timepointdv'
-        for subject = 1:size(scans_to_process,2) % for every subject
-            
-            for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
-                
-                basefile =strrep(scans_to_process(subject).Timepoint{timepoint}.File.name,'.img','.nii');
-                
-                c1file = ['c1avgdv_' basefile];
-                c2file = ['c2avgdv_' basefile];
-                
-                files = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, {c1file, c2file});
-                avgfilename =['u_rc1avg_' strrep(scans_to_process(subject).Timepoint{1}.File.name, 'img', 'nii')];
-                
-                u_rcfile = fullfile(scans_to_process(subject).Fullpath, 'avg', avgfilename);
-                disp(['Now Warping from DARTEL to MNI, PIDN : ' num2str(scans_to_process(subject).PIDN )])
-                disp(['Timepoint: ' num2str(timepoint)])
-                modulation = 0;
-                try
-                    warp_timepointtoMNI(files,u_rcfile, template, modulation) % call subfunction to process that subject
-                end
-            end
-        end
+        prefix= 'dv_';
+        modulation = 0;
+    case 'timepointj'
+        prefix = 'j_';
+        modulation = 0;
 end
+
+
+
+for subject = 1:size(scans_to_process,2) % for every subject
+    
+    for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
+        
+        basefile =strrep(scans_to_process(subject).Timepoint{timepoint}.File.name,'.img','.nii');
+        
+        c1file = ['c1avg' prefix basefile];
+        c2file = ['c2avg' prefix basefile];
+        
+        files = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, {c1file, c2file});
+        avgfilename =['u_rc1avg_' strrep(scans_to_process(subject).Timepoint{1}.File.name, 'img', 'nii')];
+        
+        u_rcfile = fullfile(scans_to_process(subject).Fullpath, 'avg', avgfilename);
+        disp(['Now Warping from DARTEL to MNI, PIDN : ' num2str(scans_to_process(subject).PIDN )])
+        disp(['Timepoint: ' num2str(timepoint)])
+        
+        try
+            warp_timepointtoMNI(files,u_rcfile, template, modulation) % call subfunction to process that subject
+        end
+    end
+end
+
+
+
+
+
 
 
     function warp_timepointtoMNI(files,u_rcfile, DARTEL_template_path, modulation )
