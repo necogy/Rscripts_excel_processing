@@ -31,15 +31,17 @@ switch lower(metric)
         metricrow = 5;
 end
 
-numROIs= size(scans_to_process(1).Timepoint{1}.ROI, 1)-1; % first row is ROI name
+numROIs= size(scans_to_process(1).Timepoint{1}.ROI, 1); 
 numSubjects=  size(scans_to_process,2);
 
 for nROI = 1:numROIs
     clear output
+    
     for  nSubject = 1: numSubjects
         for nTimepoint = 1:size(scans_to_process(nSubject).Timepoint,2)
-            output(nSubject, nTimepoint) = scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{metricrow, nROI+1};
+            output(nSubject, nTimepoint) = scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{metricrow, nROI};
         end
     end
+    
     ROIextractions{nROI} = output;
 end
