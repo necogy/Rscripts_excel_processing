@@ -68,6 +68,7 @@ sVBM_warp_timepoint_to_MNI_via_long;
 
 %% Extract ROI volumes from warped MNI images
 scans_to_process = sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs);
+ROIextractions = sVBM_export_ROI_values(scans_to_proces, 'mean'); % 'mean','median','sum','eigenvariate' 
 
 
 
