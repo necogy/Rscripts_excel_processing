@@ -35,7 +35,7 @@ for  nSubject = 1:size(scans_to_process,2)
         
         basename = fullfile(scans_to_process(nSubject).Timepoint{nTimepoint}.Fullpath, ...
             scans_to_process(nSubject).Timepoint{nTimepoint}.File.name);
-        imagetoextractfrom= strrep(SAinsertStr2Paths(basename, 'wc1avgdv_'),'img','nii');
+        imagetoextractfrom= strrep(SAinsertStr2Paths(basename, 'wc1avgj_'),'img','nii');
         
         for r = 1:size(ROInames,2)
             roi = fullfile(pathtoROIs, ROInames{r});
@@ -47,6 +47,7 @@ for  nSubject = 1:size(scans_to_process,2)
             scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{3,r} = mean(roi_extraction);% mean
             scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{4,r} = median(roi_extraction);% median
             scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{5,r} = svd(roi_extraction,0); %first
+            
             %eignevariate
             catch
             end

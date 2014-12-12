@@ -1,4 +1,4 @@
-function scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process)
+function scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process, scantype)
 %sVBM_DARTEL_registration_to_new SPM12b DARTEL register to new template
 %   Detailed explanation goes here
 % Syntax:  scans_to_process = sVBM_DARTEL_registration_to_new( scans_to_process)

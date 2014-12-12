@@ -60,16 +60,22 @@ scans_to_process = sVBM_multiply_segments_with_change(scans_to_process,'dv');
 
 %% Transform Longitudinal Images to Group/MNI space
 scantype = 'timepointdv';
-scans_to_process = sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+
+scantype = 'timepointj';
+sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+
+%% DARTEL registration of Timepoint Images to Existing DARTEL Template
+scantype = 'timepoint';
+scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templatepath, scantype);
 
 %% Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
-
-sVBM_warp_timepoint_to_MNI_via_long;
+sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, dartelpath);
 
 %% Warp ROIs from Atlas Space to Native Timepoint Space via Longitudinal Image Warp
 
 %% Extract ROI volumes from warped MNI images
-scans_to_process = sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs);
+scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs);
 ROIextractions = sVBM_export_ROI_values(scans_to_process, 'mean'); % 'mean','median','sum','eigenvariate' 
 
 

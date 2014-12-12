@@ -28,7 +28,7 @@ switch scantype
     case 'timepoint'
         for subject = 1:size(scans_to_process,2) % for every subject
             
-            for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
+            for timepoint = 1%:size(scans_to_process(subject).Timepoint,2) % for every timepoint
                 
                 rc1file = fullfile( scans_to_process(subject).Timepoint{timepoint}.Fullpath, ['rc1' scans_to_process(subject).Timepoint{timepoint}.File.name]  ) ;
                 rc1file = strrep(rc1file, 'img', 'nii');
