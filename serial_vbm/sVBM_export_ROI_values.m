@@ -20,7 +20,7 @@ function  ROIextractions = sVBM_export_ROI_values(scans_to_process,metric)
 % Author: Suneth Attygalle
 % Created 12/3/2014
 % Revisions:
-switch lower(metric)
+switch lower(metric) % this should be  class
     case 'sum'
         metricrow = 2;
     case 'mean'
@@ -29,6 +29,8 @@ switch lower(metric)
         metricrow = 4;
     case 'svd'
         metricrow = 5;
+    case 'peak'
+        metricrow = 6;
 end
 
 numROIs= size(scans_to_process(1).Timepoint{1}.ROI, 1); 
