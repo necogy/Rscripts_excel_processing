@@ -9,13 +9,13 @@ classdef sVBM_participant
         Group
         Timepoint
         Deltatime
-<<<<<<< HEAD
+
         BaselineROIVolumes
         BaselineTissueVolumes
         
-=======
+
         Slope
->>>>>>> 2ea8f1bf3c01b2c3b13fc1d8f3cc0b0ecca92b1c
+
     end
     
     methods
