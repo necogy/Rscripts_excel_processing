@@ -27,12 +27,12 @@ clear
 clear classes
 
 %load parameters:
-sVBM_config % or name of edited config file 
-%scandatafolder='R:\groups\rosen\longitudinalVBM\SD_floor_project\serial_svPPA_oct2014\pidn_dir'
+%sVBM_config % or name of edited config file 
+scandatafolder='R:\groups\rosen\longitudinalVBM\SD_floor_project\serial_svPPA_oct2014\pidn_dir'
 
 %set scan data folder where image were placed using image_finder.sh
 
-DARTEL_template_path = templatepath;
+%DARTEL_template_path = templatepath;
 
 %read in directories and store info in scans_to_process structure
 scans_to_process = sVBM_load_rawdata( scandatafolder );
@@ -65,6 +65,7 @@ sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
 scantype = 'timepointj';
 sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
 
+<<<<<<< HEAD
 
 %% DARTEL registration of Timepoint Images to Existing DARTEL Template
 scantype = 'timepoint';
@@ -79,6 +80,16 @@ scans_to_process = sVBM_extract_baseline_vols(scans_to_process,pathtoROIs);
 
 
 
+=======
+%% DARTEL registration of Timepoint Images to Existing DARTEL Template (not longitudinal)
+scantype = 'timepoint';
+scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templatepath, scantype);
+
+%% Warp timepoint one to MNI (not longitudinal) for baseline volumes.
+scantype = 'timepoint';
+sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+
+>>>>>>> 2ea8f1bf3c01b2c3b13fc1d8f3cc0b0ecca92b1c
 %% Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
 sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, dartelpath);
 

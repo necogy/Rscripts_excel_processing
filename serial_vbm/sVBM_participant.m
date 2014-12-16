@@ -3,19 +3,37 @@ classdef sVBM_participant
     %   Detailed explanation goes here
     
     properties
-        
         PIDN
         Fullpath
         Datapath
         Group
         Timepoint
         Deltatime
+<<<<<<< HEAD
         BaselineROIVolumes
         BaselineTissueVolumes
         
+=======
+        Slope
+>>>>>>> 2ea8f1bf3c01b2c3b13fc1d8f3cc0b0ecca92b1c
     end
     
     methods
+        
+        function value = get.Slope(obj)
+            numTimepoints = size(obj.Timepoint,2);
+            numROIs = size(obj.Timepoint{1}.ROI);
+            metricrow  = 3;
+            for nTimepoint = 1:numTimepoints
+                xdates(nTimepoint) = obj.Timepoint{nTimepoint}.Datenum;
+                for nROI = 1:numROIs
+                    yvalues(nROI)= obj.Timepoint{nTimepoint}.ROI{metricrow, nROI};
+                    p = polyfit(xdates, yvalues);
+                    value(nROI) = p(1); % get slope
+                    clear yvalues;
+                end
+            end
+        end % value = get.Slope(obj)
         
         function sp = sVBM_participant(pidn, datapath)
             if nargin > 0 % Support calling with 0 arguments
@@ -33,30 +51,29 @@ classdef sVBM_participant
                     
                     for datedir= 1: numtimepoints
                         scandates(datedir) = datenum(t(datedir).name, 'yyyy-mm-dd');
-
-                    end
-
-                     [~, timeindex] = sort(scandates);
                         
-                        % resort t
-                        t = t(timeindex);
+                    end
+                    
+                    [~, timeindex] = sort(scandates);
+                    
+                    % resort t
+                    t = t(timeindex);
                     % create sVBM_timepoint for each date and store in
                     % array
-                    for timepointindex = 1: numtimepoints     
+                    for timepointindex = 1: numtimepoints
                         sp.Timepoint{timepointindex} = sVBM_timepoint( fullfile( sp.Fullpath,  t(timepointindex).name) );
                         
                     end
                     
                 catch err
-                   error(['problem with PIDN:' num2str(pidn)])
-                   rethrow(err)
+                    error(['problem with PIDN:' num2str(pidn)])
+                    rethrow(err)
                 end
                 
-                
-            end
+            end % nargin > 0
             
-        end
+        end %  function sp = sVBM_participant(pidn, datapath)
         
-    end
+    end % methods
     
-end
+end % classdef sVBM_participant
