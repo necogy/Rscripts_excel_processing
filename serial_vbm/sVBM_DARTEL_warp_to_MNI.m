@@ -46,10 +46,15 @@ for subject = 1:size(scans_to_process,2) % for every subject
             case 'baseline'
                 filelist = {c1file, c2file, c3file};
                 modulation =1;
+                u_rcfile = SAinsertStr2Paths(    scans_to_process(subject).Timepoint{timepoint}.File.name, 'u_rc1');
+                u_rcfile  = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, strrep(u_rcfile, 'img', 'nii'));
+                
                 
             case 'timepoint'
                 filelist = {c1file, c2file, c3file};
                 modulation =1;
+                u_rcfile = SAinsertStr2Paths(    scans_to_process(subject).Timepoint{timepoint}.File.name, 'u_rc1');
+                u_rcfile  = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, strrep(u_rcfile, 'img', 'nii'));
                 
             case 'timepointdv'
                 prefix= 'avgdv_';
@@ -57,6 +62,8 @@ for subject = 1:size(scans_to_process,2) % for every subject
                 c1file = ['c1' prefix basefile];
                 c2file = ['c2' prefix basefile];
                 filelist = {c1file, c2file};
+                avgfilename =['u_rc1avg_' strrep(scans_to_process(subject).Timepoint{1}.File.name, 'img', 'nii')];
+                u_rcfile = fullfile(scans_to_process(subject).Fullpath, 'avg', avgfilename);
                 
             case 'timepointj'
                 prefix = 'avgj_';
@@ -64,12 +71,13 @@ for subject = 1:size(scans_to_process,2) % for every subject
                 c1file = ['c1' prefix basefile];
                 c2file = ['c2' prefix basefile];
                 filelist = {c1file, c2file};
+                avgfilename =['u_rc1avg_' strrep(scans_to_process(subject).Timepoint{1}.File.name, 'img', 'nii')];
+                u_rcfile = fullfile(scans_to_process(subject).Fullpath, 'avg', avgfilename);
                 
         end
         
         files = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, filelist);
-        avgfilename =['u_rc1avg_' strrep(scans_to_process(subject).Timepoint{1}.File.name, 'img', 'nii')];
-        u_rcfile = fullfile(scans_to_process(subject).Fullpath, 'avg', avgfilename);
+        
         
         disp(['Now Warping from DARTEL to MNI, PIDN : ' num2str(scans_to_process(subject).PIDN )])
         disp(['Timepoint: ' num2str(timepoint)])

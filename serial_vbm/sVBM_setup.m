@@ -65,9 +65,19 @@ sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
 scantype = 'timepointj';
 sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
 
+
 %% DARTEL registration of Timepoint Images to Existing DARTEL Template
 scantype = 'timepoint';
 scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templatepath, scantype);
+
+scantype = 'baseline';
+sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+
+% extract ROI volumes
+scans_to_process = sVBM_extract_baseline_vols(scans_to_process,pathtoROIs);
+
+
+
 
 %% Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
 sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, dartelpath);

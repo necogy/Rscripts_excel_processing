@@ -10,6 +10,8 @@ classdef sVBM_participant
         Group
         Timepoint
         Deltatime
+        BaselineROIVolumes
+        BaselineTissueVolumes
         
     end
     
