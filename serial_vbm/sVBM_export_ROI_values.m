@@ -1,4 +1,4 @@
-function  ROIextractions = sVBM_export_ROI_values(scans_to_process,metric)
+function  ROIextractions = sVBM_export_ROI_values(scans_to_process,metric,scantype)
 %sVBM_export_ROI_values - extract ROIs and add to scans_to_process
 %structure
 %
@@ -20,7 +20,7 @@ function  ROIextractions = sVBM_export_ROI_values(scans_to_process,metric)
 % Author: Suneth Attygalle
 % Created 12/3/2014
 % Revisions:
-switch lower(metric) % this should be  class
+switch lower(metric) % this should be class
     case 'sum'
         metricrow = 2;
     case 'mean'
@@ -33,17 +33,39 @@ switch lower(metric) % this should be  class
         metricrow = 6;
 end
 
-numROIs= size(scans_to_process(1).Timepoint{1}.ROI, 1); 
+switch lower(scantype)
+    case 'baseline'
+        numROIs= size(scans_to_process(1).BaselineROIVolumes, 1);
+        
+    case 'timepoint'
+        numROIs= size(scans_to_process(1).Timepoint{1}.ROI, 1);
+        
+end
+
+
 numSubjects=  size(scans_to_process,2);
 
 for nROI = 1:numROIs
     clear output
     
     for  nSubject = 1: numSubjects
-        for nTimepoint = 1:size(scans_to_process(nSubject).Timepoint,2)
-            output(nSubject, nTimepoint) = scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{metricrow, nROI};
+        
+        if strcmp(scantype, 'baseline')
+            ROIextractions(nSubject,nROI) = scans_to_process(nSubject).BaselineROIVolumes{metricrow, nROI};
+            
+        elseif strcmp(scantype, 'timepoint')
+            for nTimepoint = 1:size(scans_to_process(nSubject).Timepoint,2)
+                ROIextractions{nROI}(nSubject, nTimepoint) = scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{metricrow, nROI};
+            end
+            
         end
+        
     end
     
-    ROIextractions{nROI} = output;
+   % ROIextractions{nROI} = output;
+    
 end
+end
+
+
+
