@@ -9,29 +9,37 @@ classdef sVBM_participant
         Group
         Timepoint
         Deltatime
-
+        
         BaselineROIVolumes
         BaselineTissueVolumes
         
-
+        
         Slope
-
+        
     end
     
     methods
         
         function value = get.Slope(obj)
+            % need to add error if ROI values not extracted
             numTimepoints = size(obj.Timepoint,2);
-            numROIs = size(obj.Timepoint{1}.ROI);
+            numROIs = size(obj.Timepoint{1}.ROI,2);
             metricrow  = 3;
-            for nTimepoint = 1:numTimepoints
-                xdates(nTimepoint) = obj.Timepoint{nTimepoint}.Datenum;
-                for nROI = 1:numROIs
-                    yvalues(nROI)= obj.Timepoint{nTimepoint}.ROI{metricrow, nROI};
-                    p = polyfit(xdates, yvalues);
-                    value(nROI) = p(1); % get slope
-                    clear yvalues;
+            
+            for nROI = 1:numROIs
+                
+                for nTimepoint = 1:numTimepoints
+                    xdates(nTimepoint) = (obj.Timepoint{nTimepoint}.Datenum - obj.Timepoint{1}.Datenum)/365;
+                    
+                    yvalues(nTimepoint)= obj.Timepoint{nTimepoint}.ROI{metricrow, nROI};
+                    
                 end
+                
+                p = polyfit(xdates,yvalues,1);
+                value(nROI) = p(2); % get slope
+                clear yvalues;
+                
+                
             end
         end % value = get.Slope(obj)
         

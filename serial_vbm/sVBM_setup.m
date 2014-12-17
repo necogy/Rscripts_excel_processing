@@ -27,7 +27,7 @@ clear
 clear classes
 
 %load parameters:
-%sVBM_config % or name of edited config file 
+sVBM_config % or name of edited config file 
 scandatafolder='R:\groups\rosen\longitudinalVBM\SD_floor_project\serial_svPPA_oct2014\pidn_dir'
 
 %set scan data folder where image were placed using image_finder.sh
