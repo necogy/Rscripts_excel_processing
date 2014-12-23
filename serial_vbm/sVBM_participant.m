@@ -11,14 +11,22 @@ classdef sVBM_participant
         Deltatime
         
         BaselineROIVolumes
-        BaselineTissueVolumes
-        
+        BaselineTissueVolumes       
         
         Slope
         
     end
     
     methods
+        
+        function value = get.Deltatime(obj)
+            numTimepoints= size(obj.Timepoint);
+            value(numTimepoints) = [];
+            for nTimepoint = 1:numTimepoints
+                value(nTimepoint) = (obj.Timepoint{nTimepoint}.Datenum - obj.Timepoint{1}.Datenum)/365; 
+            end          
+            
+        end
         
         function value = get.Slope(obj)
             % need to add error if ROI values not extracted
@@ -27,10 +35,9 @@ classdef sVBM_participant
             metricrow  = 3;
             
             for nROI = 1:numROIs
-                
+                xdates = obj.Deltatime;
                 for nTimepoint = 1:numTimepoints
-                    xdates(nTimepoint) = (obj.Timepoint{nTimepoint}.Datenum - obj.Timepoint{1}.Datenum)/365;
-                    
+                    %xdates(nTimepoint) = (obj.Timepoint{nTimepoint}.Datenum - obj.Timepoint{1}.Datenum)/365;
                     yvalues(nTimepoint)= obj.Timepoint{nTimepoint}.ROI{metricrow, nROI};
                     
                 end
