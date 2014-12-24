@@ -20,8 +20,8 @@ classdef sVBM_participant
     methods
         
         function value = get.Deltatime(obj)
-            numTimepoints= size(obj.Timepoint);
-            value(numTimepoints) = [];
+            numTimepoints= size(obj.Timepoint,2);
+            value(numTimepoints) = 0;
             for nTimepoint = 1:numTimepoints
                 value(nTimepoint) = (obj.Timepoint{nTimepoint}.Datenum - obj.Timepoint{1}.Datenum)/365; 
             end          

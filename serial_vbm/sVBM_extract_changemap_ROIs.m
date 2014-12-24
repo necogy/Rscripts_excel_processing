@@ -40,7 +40,7 @@ for  nSubject = 1:size(scans_to_process,2)
         for r = 1:size(ROInames,2)
             roi = fullfile(pathtoROIs, ROInames{r});
             try
-            roi_extraction = spm_summarise(imagetoextractfrom, roi);
+            roi_extraction = spm_summarise(imagetoextractfrom, roi,'litres');
             
             scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{1,r} = ROInames{r}(1:end-4) ;%name
             scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{2,r} = sum(roi_extraction);% sum (average)

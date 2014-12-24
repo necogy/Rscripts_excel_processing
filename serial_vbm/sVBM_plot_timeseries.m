@@ -1,4 +1,4 @@
-function sVBM_plot_timeseries(scans_to_process, scantype)
+function sVBM_plot_timeseries(scans_to_process, metric)
 %sVBM_plot_timeseries - generate various time series plots of change
 %structure
 %
@@ -41,22 +41,53 @@ numROIs =  size(scans_to_process(1).Timepoint{1}.ROI,2);
 numSubjects=  size(scans_to_process,2);
 
 for nROI = 1:numROIs
- 
+    
     % grab a subjects data and time for all time points
     for nSubject = 1: numSubjects
-           ROIdates(nSubject) = scans_to_process(nSubject).Deltatime;
+        ROIdates(nSubject,1:size(scans_to_process(nSubject).Deltatime,2)) = 365*scans_to_process(nSubject).Deltatime;
         for nTimepoint = 1:size(scans_to_process(nSubject).Timepoint,2)
-           ROIextractions{nROI}(nSubject, nTimepoint) = ... 
-                scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{metricrow, nROI};  
-        end   
+            ROIextractions(nSubject, nTimepoint) = ...
+                scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{metricrow, nROI};
+            
+            
+        end
+        
+       
+        
     end
-end
+     %ROIdates(ROIdates==0) = [];
+        ROIextractions(ROIextractions==0) =NaN;
+        
+        % plot all
+        f=figure();
+        
+        plot(ROIdates', ROIextractions','LineWidth', 3)
+        ylim([min(ROIextractions(ROIextractions>0)) max(ROIextractions(:))])
+        xlabel('Days from first scan')
+        ylabel('ROI Volume in liters from c1avg*jd')
+        title(scans_to_process(1).Timepoint{1}.ROI(1,nROI),'Interpreter', 'none')
+        
+        figurefolder = fileparts(fileparts(scans_to_process(1).Fullpath));
+        plotpath = fullfile(figurefolder,'figures','roi_vol_by_time');
+        mkdir(plotpath);
+        filename = fullfile(plotpath, [scans_to_process(1).Timepoint{1}.ROI{1,nROI} '_ROIvols']);
+        
+        print(f,'-dpdf',filename);
+        close(f)
+    
+    
+    
+    
+    % print figure
+    
+    
+    
+    clear ROIdates;
+    clear ROIextractions;
+    
+end % for nROI = 1:numROIs
 
-% plot all
 
 
-% print figure
-
-
-end
+end % function sVBM_plot_timeseries(scans_to_process, scantype)
 
