@@ -101,10 +101,11 @@ scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs);
 
 
 %% Generate ROI time series 
-sVBM_plot_timeseries(scans_to_process, 'mean')
-
-
-
+sVBM_plot_timeseries(scans_to_process2, 'sum')
+sVBM_plot_timeseries(scans_to_process2, 'mean')
+sVBM_plot_timeseries(scans_to_process2, 'median')
+sVBM_plot_timeseries(scans_to_process2, 'svd')
+%sVBM_plot_timeseries(scans_to_process2, 'peak') % peak is noisy
 
 
 

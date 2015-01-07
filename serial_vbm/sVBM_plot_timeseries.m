@@ -33,7 +33,7 @@ switch lower(metric) % this should be class
         metricrow = 4;
     case 'svd'
         metricrow = 5;
-    case 'peak'
+    case 'peak' % peak is very noisy, avoid 
         metricrow = 6;
 end
 
@@ -64,7 +64,10 @@ for nROI = 1:numROIs
         plot(ROIdates', ROIextractions','LineWidth', 2)
         ylim([min(ROIextractions(ROIextractions>0)) max(ROIextractions(:))])
         xlabel('Days from first scan')
-        ylabel('ROI Volume in liters from c1avg*jd')
+        
+        
+        %ylabel('ROI Volume in liters from c1avg*jd')
+        
         title([scans_to_process(1).Timepoint{1}.ROI(1,nROI) ' ' metric],'Interpreter', 'none')
         
         figurefolder = fileparts(fileparts(scans_to_process(1).Fullpath));
