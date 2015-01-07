@@ -28,7 +28,7 @@ clear classes
 
 %load parameters:
 sVBM_config % or name of edited config file 
-scandatafolder='R:\groups\rosen\longitudinalVBM\SD_floor_project\serial_svPPA_oct2014\pidn_dir'
+scandatafolder='R:\groups\rosen\longitudinalVBM\SD_floor_project\serial_svPPA_oct2014\pidn_dir';
 
 %set scan data folder where image were placed using image_finder.sh
 
@@ -91,6 +91,7 @@ sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
 sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, dartelpath);
 
 %% Warp ROIs from Atlas Space to Native Timepoint Space via Longitudinal Image Warp
+sVBM_warp_ROIs_to_avg_and_to_timepoint_(scans_to_process)
 
 %% Extract ROI volumes from warped MNI images
 scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs);

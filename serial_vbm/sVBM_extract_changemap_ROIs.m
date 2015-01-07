@@ -43,11 +43,11 @@ for  nSubject = 1:size(scans_to_process,2)
             roi_extraction = spm_summarise(imagetoextractfrom, roi,'litres');
             
             scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{1,r} = ROInames{r}(1:end-4) ;%name
-            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{2,r} = sum(roi_extraction);% sum (average)
-            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{3,r} = mean(roi_extraction);% mean
-            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{4,r} = median(roi_extraction);% median
-            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{5,r} = svd(roi_extraction,0); %first
-            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{6,4} = max(roi_extraction); %peak
+            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{r,2} = sum(roi_extraction);% sum (average)
+            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{r,3} = mean(roi_extraction);% mean
+            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{r,4} = median(roi_extraction);% median
+            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{r,5} = svd(roi_extraction,0); %first
+            scans_to_process(nSubject).Timepoint{nTimepoint}.ROI{r,6} = max(roi_extraction); %peak
             
             %eignevariate
             catch
