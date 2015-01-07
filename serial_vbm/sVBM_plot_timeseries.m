@@ -61,16 +61,16 @@ for nROI = 1:numROIs
         % plot all
         f=figure();
         
-        plot(ROIdates', ROIextractions','LineWidth', 3)
+        plot(ROIdates', ROIextractions','LineWidth', 2)
         ylim([min(ROIextractions(ROIextractions>0)) max(ROIextractions(:))])
         xlabel('Days from first scan')
         ylabel('ROI Volume in liters from c1avg*jd')
-        title(scans_to_process(1).Timepoint{1}.ROI(1,nROI),'Interpreter', 'none')
+        title([scans_to_process(1).Timepoint{1}.ROI(1,nROI) ' ' metric],'Interpreter', 'none')
         
         figurefolder = fileparts(fileparts(scans_to_process(1).Fullpath));
-        plotpath = fullfile(figurefolder,'figures','roi_vol_by_time');
+        plotpath = fullfile(figurefolder,'figures',['roi_vol_by_time_' metric]);
         mkdir(plotpath);
-        filename = fullfile(plotpath, [scans_to_process(1).Timepoint{1}.ROI{1,nROI} '_ROIvols']);
+        filename = fullfile(plotpath, [scans_to_process(1).Timepoint{1}.ROI{1,nROI} '_ROIvols_' metric]);
         
         print(f,'-dpdf',filename);
         close(f)
