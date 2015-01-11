@@ -42,7 +42,7 @@ for sub = 1:size(scans_to_process,2)
         images = {c1image, c2image};
         [c1c2path, c1c2image, c1c2ext] = fileparts(c2image);
         
-        SA_SPM12_imcalc(images, formula, ['c1' c1c2image '.nii'] );
+ %       SA_SPM12_imcalc(images, formula, ['c1' c1c2image '.nii'] );
         
         %take hessian of FA image
         matNI_DTI_hessian_cardan(FAimage, 2)
@@ -52,33 +52,14 @@ for sub = 1:size(scans_to_process,2)
         hessFAimage=  SAinsertStr2Paths(FAimage, 'hess_2_');
         [status,result]= runflirt(c1c2file,hessFAimage);
         % gunzip coregisted FA
-%        gunzip([SAinsertStr2Paths(hessFAimage, 'flirt') '.gz']);
+     %  gunzip([SAinsertStr2Paths(hessFAimage, 'flirt') '.gz']);
         
         %apply generated mat file to origina FA image
-%         spm('defaults', 'PET');
-%         spm_jobman('initcfg');
-%         matlabbatch{1}.spm.util.reorient.srcfiles = cellstr(FAimage);
-%         flirtmat = dlmread( fullfile( fileparts(c1c2file), 'flirt_FAtoT1.mat' ));
-%         matlabbatch{1}.spm.util.reorient.transform.transM =flirtmat;
-%         matlabbatch{1}.spm.util.reorient.prefix = 'flirtaffined';
-%         spm_jobman('run',matlabbatch);
-%         
-%         clear matlabbatch
 
-% target = spm_vol(FAimage)
-% target=spm_vol(targetPath)
-% M =spm_get_space(FAimage)
-% 
-% source = spm_vol(T1image)
-% flirtmat = dlmread( fullfile( fileparts(c1c2file), 'flirt_FAtoT1.mat' ))
-% spm_get_space(FAimage,inv(flirtmat))
-
-
-% flags= struct('interp',5,'mask',0,'mean',0,'which',1,'wrap',[0 0 0]')
-%         spm_reslice({c1c2file, FAimage}, flags)
    omat = fullfile( fileparts(c1c2file), 'flirt_FAtoT1.mat' );
 
     applyflirt(FAimage, omat, c1c2file);
+    gunzip([SAinsertStr2Paths(FAimage, 'flirted') '.gz'])
     end
     
 end
