@@ -32,7 +32,7 @@ for sub = 1:size(scans_to_process,2)
         FAimage = scans_to_process(sub).Timepoint{iTimepoint}.Image_FA.path; %FA image
         
         %segment T1image
-%        SA_SPM12_segment(T1image,'native');
+       SA_SPM12_segment(T1image,'native');
         
         %Add c1 and c2 together
         formula = 'i1+i2';
@@ -42,7 +42,7 @@ for sub = 1:size(scans_to_process,2)
         images = {c1image, c2image};
         [c1c2path, c1c2image, c1c2ext] = fileparts(c2image);
         
- %       SA_SPM12_imcalc(images, formula, ['c1' c1c2image '.nii'] );
+       SA_SPM12_imcalc(images, formula, ['c1' c1c2image '.nii'] );
         
         %take hessian of FA image
         matNI_DTI_hessian_cardan(FAimage, 2)

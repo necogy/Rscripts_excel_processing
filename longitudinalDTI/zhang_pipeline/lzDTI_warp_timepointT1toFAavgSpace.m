@@ -28,9 +28,9 @@ spm_jobman('initcfg');
 
 for sub = 1:size(scans_to_process,2)
     for iTimepoint= 1:size(scans_to_process(sub).Timepoint,2)
-        y_FAtoFAavg= SAinsertStr2Paths(scans_to_process(sub).Timepoint{ iTimepoint}.Image_FA.path, 'y_flirt');
+        y_FAtoFAavg= SAinsertStr2Paths(scans_to_process(sub).Timepoint{ iTimepoint}.Image_FA.path, 'y_flirted');
         T1image = scans_to_process(sub).Timepoint{iTimepoint}.Image_T1.path;
-        FAavgfile = SAinsertStr2Paths(scans_to_process(sub).Timepoint{ 1}.Image_FA.path, 'avg_flirt'); %same for time 1 and 2
+        FAavgfile = SAinsertStr2Paths(scans_to_process(sub).Timepoint{ 1}.Image_FA.path, 'avg_flirted'); %same for time 1 and 2
         
         matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def = {y_FAtoFAavg};
         matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {T1image};
