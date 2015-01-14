@@ -30,7 +30,7 @@ nSubjects = size(scans_to_process,2);
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %individual subject processing;
-for iSubject=1:nSubjects% find(ind)%
+for iSubject=24%1:nSubjects% find(ind)%
     sprintf(['now pre-processing subject ' num2str(iSubject)])
     try
         
@@ -56,8 +56,11 @@ for iSubject=1:nSubjects% find(ind)%
     end
 end
 
+lzDTI_DARTEL_registration_to_new(scans_to_process)
+
+
 %% subs to redo (use find(ind) for previous loop to redo subjects)
-substoredo = {'9440'};
+substoredo = {'8108'};
 ind=zeros(1,size(scans_to_process,2));
 for isubs = 1:length(substoredo)
     ind =ind+SA_FindStringInStructArray(scans_to_process, 'PIDN', substoredo{isubs});
@@ -69,6 +72,7 @@ end
 % Group processing
 
 % 1.Run DARTEL on T1 averages
+%SA_check_processing_inputs(scans_to_process, 'rc1_avg_w') ; 
 lzDTI_DARTEL_registration_to_new(scans_to_process)
 
 % 2. move dartel template to somewhre convenient
