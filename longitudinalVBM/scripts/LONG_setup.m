@@ -73,6 +73,7 @@ scans_to_process = LONG_generatemeanmaps(scans_to_process, SD_PIDNs, 'SDLR');
 scans_to_process = LONG_generatemeanmaps(scans_to_process, HC_PIDNs, 'HC');
 
 %% Transform time1 and time2 data to mni using intermediate longitudinal image warp
+% This step might be broken.
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time1');
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time2');
 
