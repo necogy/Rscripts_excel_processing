@@ -28,8 +28,8 @@ spm_jobman('initcfg');
 
 for sub = 1:size(scans_to_process,2)
     
-    time1FA = SAinsertStr2Paths(      scans_to_process(sub).Timepoint{1}.Image_FA.path, 'rT1');
-    time2FA = SAinsertStr2Paths(      scans_to_process(sub).Timepoint{2}.Image_FA.path, 'rT1');    
+    time1FA = SAinsertStr2Paths(      scans_to_process(sub).Timepoint{1}.Image_FA.path, 'flirted');
+    time2FA = SAinsertStr2Paths(      scans_to_process(sub).Timepoint{2}.Image_FA.path, 'flirted');    
     deltatime =  (scans_to_process(sub).Timepoint{2}.Datenum - scans_to_process(sub).Timepoint{1}.Datenum)/365;
     matlabbatch{1}.spm.tools.longit{1}.pairwise.vols1 = {time1FA};
     matlabbatch{1}.spm.tools.longit{1}.pairwise.vols2 = {time2FA};

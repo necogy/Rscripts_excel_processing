@@ -1,9 +1,9 @@
-function scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process, scantype)
-%sVBM_DARTEL_registration_to_new SPM12b DARTEL register to new template
+function scans_to_process = lzDTI_DARTEL_registration_to_new(scans_to_process)
+%lzDTI_DARTEL_registration_to_new SPM12 DARTEL register to new template
 %   Detailed explanation goes here
-% Syntax:  scans_to_process = sVBM_DARTEL_registration_to_new( scans_to_process)
+% Syntax:  scans_to_process = lzDTI_DARTEL_registration_to_new( scans_to_process)
 %
-% Inputs: scans_to_process - array of objects of class sVBM_participant,
+% Inputs: scans_to_process - array of objects of class lzDTI_participant,
 %         DARTEL_template_path - path to the desired DARTEL tempalte
 %
 % Outputs: scans_to_process - updated array with run status
@@ -24,14 +24,13 @@ function scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process, sc
 
 for subject = 1:size(scans_to_process,2) % for every subject
     
-    avgfile = fullfile(scans_to_process(subject).Fullpath,'avg', scans_to_process(subject).Timepoint{1}.File.name);
-    
-    avgfile=strrep(avgfile, '.img', '.nii');
-    avgfile = SAinsertStr2Paths(avgfile, 'rc1avg_');
+    avgfile = scans_to_process(subject).Timepoint{1}.Image_T1.path   ;
+    avgfile = strrep(avgfile, '.img', '.nii');
+    avgfile = SAinsertStr2Paths(avgfile, 'rc1avg_w');
     volume = avgfile;
     
-    rc1files(subject) = avgfile;
-    rc2files(subject) = strrep(avgfile, 'rc1', 'rc2');
+    rc1files{subject} = avgfile;
+    rc2files{subject} = strrep(avgfile, 'rc1', 'rc2');
     
     
 end
@@ -39,8 +38,8 @@ end
 disp('now running DARTEL registration to a new template')
 spm('defaults', 'PET');
 spm_jobman('initcfg');
-matlabbatch{1}.spm.tools.dartel.warp.images{1} = rc1files(:,1)     ;
-matlabbatch{1}.spm.tools.dartel.warp.images{2} = rc2files(:,1)    ;
+matlabbatch{1}.spm.tools.dartel.warp.images{1} = rc1files   ;
+matlabbatch{1}.spm.tools.dartel.warp.images{2} = rc2files    ;
 matlabbatch{1}.spm.tools.dartel.warp.settings.template = 'Template';
 matlabbatch{1}.spm.tools.dartel.warp.settings.rform = 0;
 matlabbatch{1}.spm.tools.dartel.warp.settings.param(1).its = 3;
