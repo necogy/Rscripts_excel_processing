@@ -1,14 +1,14 @@
 function scans_to_process = LONG_run_registration( scans_to_process )
-%LONG_run_registration - SPM12b Longitudinal Registration
+%LONG_run_registration - SPM12 Pairwise Longitudinal Registration
 %
-% Syntax:  participantstructure = LONG_run_registration(listname)
+% Syntax:  participantstructure = LONG_run_registration(scans_to_process)
 %
 % Inputs: scans_to_process - array of objects of class LONG_participant
 %
 % Outputs: scans_to_process - updated array with run status
 %
-%
-% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12b
+% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12,
+% LONG_buildvolumelist.m
 % Subfunctions:
 %
 % MAT-files required: none

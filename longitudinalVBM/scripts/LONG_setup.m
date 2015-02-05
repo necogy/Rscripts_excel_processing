@@ -3,60 +3,60 @@
 % pipeline. Set all of your paths first in LONG_config.  Create a copy of this file if you make edits to for a specific data
 % set.
 
-%make sure to add spm12b folder and longitudinalVBM folder with subfolders
+%make sure to add spm12 folder and longitudinalVBM folder with subfolders
 %to matlab path.
+
+%use image_finder.sh to pull images into the correct folder structure, or
+%do it yourself as follows /14929/2015-01-01/MP-LAS.nii , /14929/2015-09-31/MP-LAS.nii
 
 % enable cell evaluation in matlab settings for easier use of this script
 clear
 
-%load parameters:
-LONG_config
-
-%scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
-%scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_Mar2014_reprocess_2','images','images_dir');
-scans_to_process = LONG_load_inputfile( scandatafolder );
-
-%path to SPM12b folder 
-%spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');
-
-
 %% steps to run:
 
-%% Longitudinal registration to generate mean images
+%% 1. Initialize: 
+clear
+% a. Load parameters:
+LONG_config %<-------------- OPEN THIS and replace with paths specific to your study
+
+% b. Load Data
+scans_to_process = LONG_load_inputfile( scandatafolder );
+
+%% 2. Longitudinal registration to generate subject average images 
 scans_to_process = LONG_run_registration( scans_to_process ); 
 
-%% Segment mean images generated from longitudinal toolbox 
+%% 3. Segment mean images generated from longitudinal toolbox 
 scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath ); 
 
 %% rigidly realign and reslice mean images for DARTEL
 % this step doesn't work because the new segment doesn't create the
 % appropriate fields, but it might work in future SPM versions
-
 %voxelsize =1;
 %scans_to_process = LONG_DARTELimport( scans_to_process, voxelsize ); 
 
-%% inter-subject registration of mean images using Dartel (requires template
+%% 4. inter-subject registration of mean images using Dartel (requires template
 % or create a new one
 
-%specify subjects to include to generate a new template(subset of all available patients in your
+% specify subjects to include to generate a new template(subset of all available patients in your
 %study  to include in the template as follows:) 
-DARTELnorms = [841;1124;1362;1416;1418;1813;2046;2062;2557;2679;2680;2688;2692;2699;2715;2720;2732;2735;2743;2744;2774;2801;3015;3027;3530;3773;4062;4063;4348;4943;5061;5064;5436;5595;5627;5844;65;3884;6248;6842;6867;6868;6908;6909;6935;6976;7142;7396;7397;7418;7802;7811;7837;7838;7851;7938;8193;8538;8565;8590;8593;8601;8698;9320;9440;9757;10445;10683;11241;11247;11296;11727];
-DARTELpatients =[98;588;951;1004;1176;1319;1340;1463;1586;2275;2500;2711;3521;4160;4375;4379;4471;5468;5830;6110;10114;10880;11735;11965;12555;13108;13138;13185;13272;13512;13919;14427;15774;84;278;1615;2522;3690;3824;4747;6600;9283;10032;10434;11028;11704;11773;13962];
+% if you want to use all the available subjects set PIDNlist = [];
+DARTELnorms = [841;1124;1362;1416;1418;1813;2046;10683;11241;11247;11296;11727];
+DARTELpatients =[98;588;951;1004;1176;1319;13919;14427;15774;84;11028;11704;11773;13962];
 PIDNlist = [DARTELnorms ; DARTELpatients];
 scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist);  %create new template
 
-% After generating a template in the previous step, MOVE GENERATED TEMPLATE FILES TO the TEMPLATE FOLDER specified in LONG_config 
+% After generating a template in the previous step, MOVE GENERATED TEMPLATE FILES TO the TEMPLATE FOLDER you specify in LONG_config 
 scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath);
+
+%% 5. multiply segmented mean images with longitudinal change maps
+scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
+
+%% 6. Transform longitudinal images to group/MNI space
+scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 
 %% Segment time1 and time2 images:
 scans_to_process = LONG_run_segmentation( scans_to_process, 'time1', spmpath ); 
 scans_to_process = LONG_run_segmentation( scans_to_process, 'time2', spmpath ); 
-
-%% multiply segmented mean images with longitudinal change maps
-scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
-
-%% Transform longitudinal images to group/MNI space
-scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 
 %% Group results:
 
@@ -87,18 +87,16 @@ scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 %% extract mean/median change values in ROIs and save to scans_to_process
 %structure
 %pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
-ROIprefix = '^rr';
+ROIprefix = '^s';
 changemapprefix = 'wl_c1avg_jd_';
 scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); %extract ROI values and add to scans_to_process structure
 [ROImeans, ROImedians] = LONG_exportROIs(scans_to_process); %pull out mean and median values from scans_to_process in a convenient format
 
 %% extract mean/median changes values from combined GM/WM change maps
-
 ROIprefix = '^rr';
 changemapprefix = 'wl_c*avg_jd_';
 scans_to_process = LONG_extractWMGMROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix)
 [ROImeans, ROImedians] = LONG_exportROIs(scans_to_process); %pull out mean and median values from scans_to_process in a convenient format
-
 
 %% Extract ROIs from change maps in Dartel Space
 scans_to_process = LONG_extractROIsinDARTEL(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); 
