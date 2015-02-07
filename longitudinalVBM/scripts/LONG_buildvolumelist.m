@@ -6,7 +6,7 @@ function volumepaths = LONG_buildvolumelist( scans_to_process, prefixes )
 % Inputs: scans_to_process
 % Outputs: volumepaths
 %
-% Other m-files required: SPM12b
+% Other m-files
 % Subfunctions:
 %
 % MAT-files required: none
@@ -35,6 +35,5 @@ e = cellfun(@(x) strcat(prefixes, x) , cellstr(d), 'UniformOutput', false); % ad
 volumepaths(:,2) = fullfile(a,b,c, e);
 
 %volumepaths(:,3) = {scans_to_process.DeltaTime};
-
 
 end

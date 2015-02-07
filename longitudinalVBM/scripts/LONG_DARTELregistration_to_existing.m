@@ -1,5 +1,5 @@
 function scans_to_process = LONG_DARTELregistration_to_existing( scans_to_process, templatepath)
-%LONG_run_LONG_DARTELregistration_to_exiswting - SPM12b DARTEL registration
+%LONG_run_LONG_DARTELregistration_to_existing - SPM12 DARTEL registration
 %to existing template based 
 %
 % Syntax:  scans_to_process = LONG_DARTELregistration_to_existing( scans_to_process, templatepath)
@@ -9,7 +9,7 @@ function scans_to_process = LONG_DARTELregistration_to_existing( scans_to_proces
 %
 % Outputs: scans_to_process - updated array with run status
 %
-% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12b
+% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12
 % Subfunctions:
 % MAT-files required: none
 %

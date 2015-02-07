@@ -1,12 +1,12 @@
 function scans_to_process = LONG_load_inputfile( scandatafolder )
-%FUNCTION_NAME - Set up patient dataset to input into longitudinal processing
+%LONG_load_inputfile - Set up patient dataset to input into longitudinal processing
 % Creates an array of objects of the class LONG_participant
 %
 % Syntax:  participants_to_process = LONG_load_inputfile( scandatafolder )
 %
 % Inputs: scandatafolder - folder that has all the PIDNs that you will
 % process, each PIDN folder should only have two timepoints of data inside
-% it
+% it as follows /14929/2015-01-01/MP-LAS.nii , /14929/2015-09-31/MP-LAS.nii
 %    
 % Outputs: scans_to_process - array of objects of class LONG_participant
 %    
@@ -25,7 +25,7 @@ function scans_to_process = LONG_load_inputfile( scandatafolder )
 % Created 2/12/14
 %
 % Revisions:
-%scandatafolder = 'R:\groups\rosen\longitudinalVBM\testfolder';
+
 datapath = fullfile(scandatafolder);
 d=SAdir(fullfile(datapath), '\d');
 

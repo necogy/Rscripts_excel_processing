@@ -8,8 +8,7 @@ function scans_to_process = LONG_DARTELimport( scans_to_process, voxelsize)
 %
 % Outputs: scans_to_process - updated array with run status
 %
-%
-% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12b
+% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12
 % Subfunctions:
 %
 % MAT-files required: none
@@ -23,7 +22,6 @@ function scans_to_process = LONG_DARTELimport( scans_to_process, voxelsize)
 % Created 02/21/2014
 %
 % Revisions:
-
 
 prefixes ='avg_' ; % use c1 images to make sure segmentatoin occured.
 
