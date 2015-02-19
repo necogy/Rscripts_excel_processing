@@ -34,7 +34,7 @@ for subject = 1:size(scans_to_process,2)
 
     
     spm_jobman('initcfg');
-    matlabbatch{1}.spm.tools.dartel.mni_norm.template = cellstr(template);
+    matlabbatch{1}.spm.tools.dartel.mni_norm.template = {''};% cellstr(template); as of 2/19/2015 i recommend not using this affine transformation and use the ICBM transform instead.
     matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.flowfields = cellstr(flowfield);
     
     for image = 1:size(imageprefixes,2)    

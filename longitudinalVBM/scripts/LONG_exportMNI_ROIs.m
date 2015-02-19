@@ -24,9 +24,9 @@ function nativeROIvolumes = LONG_exportNativeROIs(scans_to_process, timepoint)
 
 switch lower(timepoint)
     case 'time2'
-        fieldname = 'MNI_ROIextractionsTime2';
+        fieldname = 'MNI_ROIvolumesTime2';
     case 'time1'
-        fieldname = 'MNI_ROIextractionsTime1';
+        fieldname = 'MNI_ROIvolumesTime1';
 end
 
 nativeROIvolumes = zeros(size(scans_to_process,2), size([scans_to_process(1).(fieldname).mean{2,:}],2)) ;

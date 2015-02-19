@@ -1,6 +1,3 @@
-% warp step by step
-
-
 function scans_to_process = LONG_sequential_warp_to_MNI( scans_to_process, dartelpath)
 %LONG_sequential_warp_to_MNI - warp timepoints to MNI in multiple steps
 % this warps 1. from timepoint to subject average, then 2. subj average to
@@ -28,8 +25,8 @@ function scans_to_process = LONG_sequential_warp_to_MNI( scans_to_process, darte
 % Revisions:
 %----------------------
 spm_jobman('initcfg')
-for subject = 2 :size(scans_to_process,2)
-    for timepoint = 1:2
+for subject = 1 %:size(scans_to_process,2)
+    for timepoint = 1%:2
         clear matlabbatch
          timept1 = fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, scans_to_process(subject).Time1file);     
                 timept1nii = strrep(timept1, 'img', 'nii'); %avg filenames sometimes were img not nii
@@ -95,22 +92,5 @@ for subject = 2 :size(scans_to_process,2)
 end
 
 end
-
-
-
-% matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.def = {'R:\groups\rosen\longitudinalVBM\SD_floor_project\test_timepointwarping02_2015\0065\2010-04-29\y_MP-LAS_GHB243X1.nii'};
-% matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {'R:\groups\rosen\longitudinalVBM\SD_floor_project\test_timepointwarping02_2015\0065\2010-04-29\c1MP-LAS_GHB243X1.nii'};
-% matlabbatch{1}.spm.util.defs.out{1}.push.fnames = {
-%                                                    'R:\groups\rosen\longitudinalVBM\SD_floor_project\test_timepointwarping02_2015\0065\2010-04-29\cc1MP-LAS_GHB243X1.nii'
-%                                                    'R:\groups\rosen\longitudinalVBM\SD_floor_project\test_timepointwarping02_2015\0065\2010-04-29\cc2MP-LAS_GHB243X1.nii'
-%                                                    'R:\groups\rosen\longitudinalVBM\SD_floor_project\test_timepointwarping02_2015\0065\2010-04-29\cc3MP-LAS_GHB243X1.nii'
-%                                                    };
-% matlabbatch{1}.spm.util.defs.out{1}.push.weight = {''};
-% matlabbatch{1}.spm.util.defs.out{1}.push.savedir.savesrc = 1;
-% matlabbatch{1}.spm.util.defs.out{1}.push.fov.file = {'R:\groups\rosen\longitudinalVBM\SD_floor_project\test_timepointwarping02_2015\0065\2010-04-29\avg_MP-LAS_GHB243X1.nii'};
-% matlabbatch{1}.spm.util.defs.out{1}.push.preserve = 0;
-% matlabbatch{1}.spm.util.defs.out{1}.push.fwhm = [0 0 0];
-
-
 
 
