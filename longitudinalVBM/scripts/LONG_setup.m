@@ -81,12 +81,13 @@ LONG_pushDARTELtoICBM(scans_to_process, templatepath);
 
 %%%%%%% up to here revised 02/19/15
 
+%% SMOOTHING: pick one of the two following smoothing methods:
 
 %% Smooth individual participant change maps images for stats 
 fwhm = 6 ; % <-- this should be changed depending on the data
 scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 
-%% T-Spoon for stats ( you might not want to use this vs normal smoothing below)
+%% T-Spoon for stats ( you might not want to use this vs normal smoothing)
 % T-spoon smoothing is an improved algorithm for smoothing that reduces the
 % effect of smoothing the brain outside of the actual brain
 scans_to_process = LONG_tspoon_changemaps(scans_to_process);
@@ -158,8 +159,8 @@ scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'ti
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time2', ROImodulationon);
 
 %export native ROI volumes
+
 nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process, 'time1')';
 nativeROIvolumes_time2 = LONG_exportNativeROIs(scans_to_process, 'time2')';
-
 
 
