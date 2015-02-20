@@ -27,7 +27,7 @@ spmpath = fileparts(which('spm'));
 %path to dartel template for your study (or where a dartel template will
 %be created if it doesn't exist yet):
 templatepath = 'path_to_dartel_template'; % set this to the new template folder name.
-templatepath='R:\groups\rosen\longitudinalVBM\darteltemplates\Aug2014_SD_NORM'
+templatepath='R:\groups\rosen\longitudinalVBM\SD_floor_project'
 
 %path to ROIs to use to extract mean/median change values from a specific
 %ROI:
@@ -73,8 +73,8 @@ scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 % statistical analysis, you might want to smooth the images using the
 % following steps.
 
-
-%% pop to ICBM registration
+%% Generate population to ICBM registration deformation field
+SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
 
 %% push dartel images to ICBM 
 
