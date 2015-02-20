@@ -67,7 +67,7 @@ scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templat
 %% 5. multiply segmented mean images with longitudinal change maps
 scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
 
-%% 6. Transform longitudinal images to group/MNI space
+%% 6. Transform longitudinal images to group DARTEL space
 scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 % at this point you have generated warped change maps that can be used for
 % statistical analysis, you might want to smooth the images using the
@@ -77,7 +77,7 @@ scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
 
 %% push dartel images to ICBM 
-
+LONG_pushDARTELtoICBM(scans_to_process, templatepath);
 
 %%%%%%% up to here revised 02/19/15
 
