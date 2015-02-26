@@ -18,7 +18,7 @@ import EPI_distortion_correction
 #
 #
 #
-_log = logging.getLogger("__EPI_distortion_correction__")
+_log = logging.getLogger("__Arterial_Spin_Labeling__")
 #
 # Global function
 # 
@@ -121,10 +121,10 @@ class Protocol( object ):
             #
             # make a directory for the Anterior- Posterior-Commissure (ACPC) aligned T2        
             self.ACPC_Alignment_ = os.path.join(self.patient_dir_, 'ACPC_Alignment')
-#            os.mkdir(self.ACPC_Alignment_)
+            os.mkdir(self.ACPC_Alignment_)
             # make a directory for the Partial Volume Extraction (PVE) T1
             self.PVE_Segmentation_ = os.path.join(self.patient_dir_, 'PVE_Segmentation')
-#            os.mkdir(self.PVE_Segmentation_)
+            os.mkdir(self.PVE_Segmentation_)
         #
         #
         except Exception as inst:
@@ -141,7 +141,7 @@ class Protocol( object ):
     #
     #
     def initialization( self ):
-        """Initialize all the data. This function convert DICOMs images (T1, T2, ASL) into niftii. The ASL images are sorted/renamed following their even number (untagged) and odd number (tagged). Then, images are brain extracted using BET.
+        """Initialize all the data. This function convert DICOMs images (T1, T2, ASL) into niftii. The ASL images are sorted/renamed following their even number (untagged -- control) and odd number (tagged). Then, images are brain extracted using BET.
         """
         try:
             #
@@ -210,34 +210,9 @@ class Protocol( object ):
             #
             if not os.path.exists( os.path.join(self.patient_dir_, 'ASL-raw', asl_sub_dir) ):
                 raise Exception("ASL-raw sub-directory does not exist." )
-            #
-            # Create a variable for the dicom directory
-            self.ASL_dicom_ = os.path.join(self.patient_dir_, 'ASL-raw', asl_sub_dir);
-            # sort/rename even numbered (untagged), odd numbered (tagged), and m0 EPIs
-            os.mkdir( os.path.join(self.ASL_dicom_, 'tagged') )
-            os.mkdir( os.path.join(self.ASL_dicom_, 'untagged') )
-            # Place even numbered acquistions in untagged folder, 
-            # and odd acquisitions in tagged folder
-            for file_name in os.listdir( self.ASL_dicom_ ):
-                if file_name == 'tagged' or file_name == 'untagged':
-                    pass; # skipp dir names
-                elif float(file_name[9:12])%2 == 0 and file_name[9:12] != '001':
-                    # copy odd file
-                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
-                                 os.path.join(self.ASL_dicom_, 'untagged','untagged_' + file_name[9:12]) );
-                elif float(file_name[9:12])%2 != 0 and file_name[9:12] != '001':
-                    # copy even file
-                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
-                                 os.path.join(self.ASL_dicom_, 'tagged','tagged_' + file_name[9:12]) );
-                elif file_name[9:12] == '001':
-                    # create m0 from first non-perfusion weighted EPI
-                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
-                                 os.path.join(self.ASL_dicom_, 'm0') );
-            # Store variables for tagged and untagged dirs, move a copy of m0 to each
-            shutil.copy( os.path.join(self.ASL_dicom_, 'm0'),  
-                         os.path.join(self.ASL_dicom_, 'tagged') )
-            shutil.copy( os.path.join(self.ASL_dicom_, 'm0'),  
-                         os.path.join(self.ASL_dicom_, 'untagged') )
+            else:
+                # Create a variable for the dicom directory
+                self.ASL_dicom_ = os.path.join(self.patient_dir_, 'ASL-raw', asl_sub_dir)
         #
         #
         except Exception as inst:
@@ -272,11 +247,14 @@ class Protocol( object ):
                 if file_name != "tagged" and file_name != "untagged" and file_name != "nii_all":
                     cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %file_name
                     generic_unix_cmd(cmd)
+
+            #
             # move into the nii_all dir and skull-strip/realign
             for nii_file in os.listdir( self.ASL_dicom_ ):
                 if nii_file.endswith('.nii'):
                     shutil.move( os.path.join(self.ASL_dicom_, nii_file), 
                                  os.path.join(self.ASL_dicom_, 'nii_all') );
+
             #
             # Run FSL BET() again
             os.chdir( os.path.join(self.ASL_dicom_, 'nii_all') );
@@ -289,20 +267,21 @@ class Protocol( object ):
             for file_name in os.listdir(os.getcwd()):
                 if file_name.endswith('brain.nii'):
                     stripped_list.append(file_name);
-            # Sort the list to be realigned and remove m0 from the end
+            # Sort the list to be realigned on m0
             stripped_list.sort();
-            m0 = stripped_list.pop();
-            # because m0 = file-0001,nii
-            if m0 != "m0_brain.nii":
-                raise Exception("Error: EPI %s was incorectly excluded from realignment" %m0 )
+#            m0 = stripped_list.pop();
+#            # because m0 = file-0001,nii
+#            if m0 != "m0_brain.nii":
+#                raise Exception("Error: EPI %s was incorectly excluded from realignment" %m0 )
             #
-            # Run spm_realign to realign EPIs to first in sequence 
+            # Run spm_realign to realign EPIs to first 'm0' in sequence 
             self.run_spm_realign(os.getcwd(), stripped_list)
             # Move the stripped and realigned EPIs to seperate dir
             for realigned_file in os.listdir( os.path.join(self.ASL_dicom_, 'nii_all') ):
                 if realigned_file.startswith('r'):
                     shutil.move( os.path.join(self.ASL_dicom_, 'nii_all', realigned_file), 
                                  os.path.join(self.ASL_dicom_, 'nii_all', 'realigned_stripped') )
+
             #
             # Rename first EPI aquisition m0 (non PWI image) and create 4D nii 
             # to run asl_subtract on: (subtracts even-untagged from odd-tagged volumes).
@@ -317,14 +296,17 @@ class Protocol( object ):
                                              brain_file) ); 
             #
             os.chdir('realigned_stripped');
+            # merge the files with fslmerge. Option '-t' preserve the temporality
             os.system('fslmerge -t asl.nii r*');
             # asl_file
             # --data
             # --ntis we have X repeats all at single inflow-time 'asl.nii': ntis=1
-            # --iaf inflow-time contains tag-control pairs (with tag coming as the first volume)
+            # --iaf inflow-time contains 
+            #   * 'tc' tag-control pairs (with tag coming as the first volume)
+            #   * 'ct' control-tag pairs (with control coming as the first volume)
             # --out diff between tag-control
             # --mean average of diff between tag-control
-            cmd='asl_file --data=asl.nii --ntis=1 --iaf=tc --diff --out=diffdata --mean=diffdata_mean'
+            cmd='asl_file --data=asl.nii --ntis=1 --iaf=ct --diff --out=diffdata --mean=diffdata_mean'
             generic_unix_cmd(cmd)
             os.system('gunzip *.nii.gz')
             all_aligned_dir = os.getcwd()
@@ -344,7 +326,7 @@ class Protocol( object ):
     #
     #
     def CBFscale_PWI_data( self ):
-        """Scale PWI for time lag and compute CBF."""
+        """Scale PWI for time lag and compute CBF. CBF_Scaled_PWI.nii don't provide CBF. To produce CBF the map as to be normalized with m0 map"""
         #
         #
         all_aligned_dir = os.path.join( self.ASL_dicom_, 'nii_all/realigned_stripped' )
@@ -357,7 +339,7 @@ class Protocol( object ):
     #
     #
     #
-    def EPI_realignment( self ):
+    def EPI_realignment_( self ):
         """Realigning the EPIs to the non-perfusion weighted m0 using spm_realign. """
         try: 
             #
@@ -410,6 +392,37 @@ class Protocol( object ):
     def perfusion_calculation( self ):
         """Function sums and avgs skull stripped/aligned EPIs for tagged and untagged aquisitions."""
         try: 
+            #
+            # sort/rename even numbered (untagged), odd numbered (tagged), and m0 EPIs
+            os.mkdir( os.path.join(self.ASL_dicom_, 'tagged') )
+            os.mkdir( os.path.join(self.ASL_dicom_, 'untagged') )
+            # Place even numbered acquistions in untagged folder, 
+            # and odd acquisitions in tagged folder
+            for file_name in os.listdir( self.ASL_dicom_ ):
+                if file_name == 'tagged' or file_name == 'untagged':
+                    pass; # skipp dir names
+                elif float(file_name[9:12])%2 == 0 and file_name[9:12] != '001':
+                    # copy odd file
+                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
+                                 os.path.join(self.ASL_dicom_, 'untagged','untagged_' + file_name[9:12]) );
+                elif float(file_name[9:12])%2 != 0 and file_name[9:12] != '001':
+                    # copy even file
+                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
+                                 os.path.join(self.ASL_dicom_, 'tagged','tagged_' + file_name[9:12]) );
+                elif file_name[9:12] == '001':
+                    # create m0 from first non-perfusion weighted EPI
+                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
+                                 os.path.join(self.ASL_dicom_, 'm0') );
+            # Store variables for tagged and untagged dirs, move a copy of m0 to each
+            shutil.copy( os.path.join(self.ASL_dicom_, 'm0'),  
+                         os.path.join(self.ASL_dicom_, 'tagged') )
+            shutil.copy( os.path.join(self.ASL_dicom_, 'm0'),  
+                         os.path.join(self.ASL_dicom_, 'untagged') )
+
+            #
+            # Realigned the EPI on m0
+            self.EPI_realignment_()
+
             #
             #
             aligned_list =[]
@@ -512,72 +525,73 @@ class Protocol( object ):
         """registration between T2 and PWI."""
         try: 
             #
-            # Extract skull from T2
-            self.run_bet( self.ACPC_Alignment_ )
+            # Start in Anterior/Posterior Commissure
+            os.chdir( self.ACPC_Alignment_ )
+            #
+            # Extract skull from T2 and the mask. TODO, some tests can be done with the mask instead.
+            self.run_bet( self.ACPC_Alignment_, 0.6, True, True)
             #
             T2_skull_stripped = ""
             for file_name in os.listdir( self.ACPC_Alignment_ ):
-                if file_name.endswith("brain.nii.gz") and not file_name.startswith("B0"):
+                if file_name.endswith("brain.nii") or file_name.endswith("brain.nii.gz"):
                     T2_skull_stripped = file_name
             #
             os.system( "gunzip %s"%T2_skull_stripped ) 
+
             #
             # Create PWI.nii
-#            os.mkdir("PWI")
-            os.chdir("PWI")
-            pwi_list = []
-            # tempo
-            self.ASL_dicom_ = "/mnt/macdata/groups/imaging_core/yann/PPG0246-1_Shearer,Robert/ASL-raw/pASL_700_1700_1800_aah_21/"
-#            for file_name in os.listdir(os.path.join(self.ASL_dicom_, "nii_all")):
-#                # check we are not selecting file-0001.* with m0.* (same file)
-#                if file_name.endswith("brain.nii") and not file_name.startswith("m0"):
-#                    shutil.copy( os.path.join(self.ASL_dicom_, "nii_all", file_name), 
-#                                 "." )
-#                    pwi_list.append(file_name)
-#            #
-#            # Realign on m0 (file-0001.*) and merge in one file
-#            self.run_spm_realign( os.path.join( self.ACPC_Alignment_, "PWI"), 
-#                                  pwi_list )
-#            # remove text file
-#            for file_name in os.listdir( os.path.join(self.ACPC_Alignment_, "PWI") ):
-#                if file_name.endswith('.txt'):
-#                    os.remove( os.path.join(self.ACPC_Alignment_, "PWI", file_name) )
-#                if file_name.startswith('rmean'):
-#                    os.remove( os.path.join(self.ACPC_Alignment_, "PWI", file_name) )
-#            #
-#            os.system('fslmerge -t PWI.nii r*');
-#            # Coregister m0 with T2
-#            os.chdir( self.ACPC_Alignment_ )
-#            flt = fsl.FLIRT()
-#            flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_,
-#                                                      "PWI","rIM-0013-0001_brain.nii")
-#            flt.inputs.reference       = os.path.join(self.ACPC_Alignment_, T2_skull_stripped[:-3])
-#            flt.inputs.out_file        = "B0_registration.nii.gz"
-#            flt.inputs.out_matrix_file = "registration.mat"
-#            res = flt.run() 
-#            #
-#            os.system("gunzip B0_registration.nii.gz")
-            ## Coregister PWI.nii with T2
-            #flt = fsl.FLIRT() 
-            #flt.inputs.in_file        = os.path.join(self.ACPC_Alignment_, "PWI", "PWI.nii.gz")
-            #flt.inputs.reference      = os.path.join(self.ACPC_Alignment_, T2_skull_stripped[:-3])
-            #flt.inputs.out_file       = "PWI_registered.nii.gz"
-            #flt.inputs.in_matrix_file = "registration.mat"
-            #flt.inputs.apply_xfm      = True
-            #res = flt.run() 
+            os.mkdir("PWI")
+            # Distortion will be done on m0, and th correction will be done on CBF_Scaled_PWI.nii
+            DeltaM   = os.path.join(self.ACPC_Alignment_, "PWI", "CBF_Scaled_PWI.nii")
+            shutil.copy( os.path.join(self.ASL_dicom_, "nii_all", "realigned_stripped","CBF_Scaled_PWI.nii"), DeltaM )
             #
-            # Call deformation object
+            M0_brain = os.path.join(self.ACPC_Alignment_, "PWI", "m0_brain.nii")
+            for file_name in os.listdir( os.path.join(self.ASL_dicom_, "nii_all") ):
+                if file_name[9:12] != '0001' and file_name.endswith("brain.nii"):
+                    shutil.copy( os.path.join(self.ASL_dicom_, "nii_all", file_name), 
+                                 M0_brain );
+ 
+            #
+            # Rigid registration of T2 (or mask) in m0 with repading; degree of freedom = 12
+            T2_registration = os.path.join(self.ACPC_Alignment_, "PWI", "T2_registration.nii.gz" )
+            #
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_, T2_skull_stripped[:-3])
+            flt.inputs.reference       = M0_brain
+            flt.inputs.out_file        = T2_registration
+            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "PWI", "T22m0.mat")
+            flt.inputs.args            = "-dof 12"
+            res = flt.run() 
+            #
+            os.system("gunzip PWI/T2_registration.nii.gz")
+
+            # 
+            # Distortion correction
             distortion = EPI_distortion_correction.EPI_distortion_correction()
             distortion.working_dir_ = os.path.join(self.ACPC_Alignment_, "test_wd")
-            distortion.control_     = os.path.join(self.ACPC_Alignment_, "B0_registration.nii")
-            distortion.t2_          = os.path.join(self.ACPC_Alignment_, T2_skull_stripped[:-3])
-            distortion.transform_   = os.path.join(self.ACPC_Alignment_, "PWI_correction.nii")
-            distortion.control_corrected_ = os.path.join(self.ACPC_Alignment_, 
-                                                         "PWI_registered_T2_corrected.nii")
-            # run distortion estimation
+            distortion.control_     = M0_brain
+            distortion.t2_          = T2_registration[:-3]
+            distortion.transform_   = os.path.join(self.ACPC_Alignment_, "field_correction.nii")
+            distortion.control_corrected_ = os.path.join(self.ACPC_Alignment_, "m0_brain_corrected.nii")
             distortion.calculate_transform()
-#            # apply diformation
+            # Apply transform on m0
+            distortion.apply_transform()
+            # Apply transform on DeltaM
+            distortion.control_ = DeltaM
+            distortion.control_corrected_ = os.path.join(self.ACPC_Alignment_, "PWI_corrected.nii")
+            distortion.apply_transform()
+
+#            distortion = EPI_distortion_correction.EPI_distortion_correction()
+#            distortion.working_dir_ = os.path.join(self.ACPC_Alignment_, "test_wd")
+#            distortion.control_     = os.path.join(self.ACPC_Alignment_, "PWI", "m0_brain.nii" )
+#            distortion.t2_          = os.path.join(self.ACPC_Alignment_, "PWI", "T2_brain_m0.nii" )
+#            distortion.transform_   = os.path.join(self.ACPC_Alignment_, "PWI_correction.nii")
+#            distortion.control_corrected_ = os.path.join(self.ACPC_Alignment_, 
+#                                                         "PWI_registered_T2_corrected.nii")
+#            distortion.calculate_transform()
 #            distortion.apply_transform()
+
+
         #
         #
         except Exception as inst:
@@ -593,7 +607,7 @@ class Protocol( object ):
     #
     #
     #
-    def run_bet( self, Directory, Frac = 0.6, Robust = True):
+    def run_bet( self, Directory, Frac = 0.6, Robust = True, Mask = False):
         """ Function uses FSL Bet to skullstrip all the niftii files."""
         os.chdir( Directory );
         for file_name in os.listdir( os.getcwd() ):
@@ -602,6 +616,7 @@ class Protocol( object ):
                 btr.inputs.in_file = file_name;
                 btr.inputs.frac    = Frac;
                 btr.inputs.robust  = Robust;
+                btr.inputs.mask    = Mask;
                 print "Extracting brain from epi %s......" %(file_name)
                 res = btr.run();
     #
@@ -624,18 +639,16 @@ class Protocol( object ):
         """ Run the complete Arterial Spin Labeling process"""
         self.check_environment()
         _log.debug("Protocol ASL - check environment -- pass")
-#        self.initialization()
-#        _log.debug("Protocol ASL - initialization -- pass")
-#        self.EPI_realignment()
-#        _log.debug("Protocol ASL - EPI realignment -- pass")
-#        self.perfusion_weighted_imaging()
-#        _log.debug("Protocol ASL - perfusion weighted imaging -- pass")
-#        self.CBFscale_PWI_data()
-#        _log.debug("Protocol ASL - CBFscale PWI data -- pass")
+        self.initialization()
+        _log.debug("Protocol ASL - initialization -- pass")
+        self.perfusion_weighted_imaging()
+        _log.debug("Protocol ASL - perfusion weighted imaging -- pass")
+        self.CBFscale_PWI_data()
+        _log.debug("Protocol ASL - CBFscale PWI data -- pass")
 #        self.perfusion_calculation()
 #        _log.debug("Protocol ASL - perfusion calculation -- pass")
-#        self.run_spm_segmentT1()
-#        _log.debug("Protocol ASL - run spm segmentT1 -- pass")
+        self.run_spm_segmentT1()
+        _log.debug("Protocol ASL - run spm segmentT1 -- pass")
         self.T2_PWI_registration()
         _log.debug("Protocol ASL - registration between T2 and PWI -- pass")
     
