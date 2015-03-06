@@ -79,7 +79,13 @@ SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % gener
 %% push dartel images to ICBM 
 LONG_pushDARTELtoICBM(scans_to_process, templatepath);
 
-%%%%%%% up to here revised 02/19/15
+%% WARP MNI ROIs to DARTEL
+SA_SPM12_warpMNI_ROIstoDARTEL(fullfile(templatepath, 'y_Template_6_2mni.nii'),fullfile(templatepath, 'Template_6.nii'), pathtoROIs)
+
+
+%% %%%%% up to here revised 02/19/15
+
+
 
 %% SMOOTHING: pick one of the two following smoothing methods:
 
