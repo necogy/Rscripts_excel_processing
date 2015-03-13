@@ -83,7 +83,7 @@ spm_jobman('initcfg');
 matlabbatch{1}.spm.tools.dartel.popnorm.template = {dartelpath};
 spm_jobman('run',matlabbatch)
 clear matlabbatch
-
+%%
 % 4. Generate Combined warps and Apply to FA images.
 for iSubject=1:nSubjects% find(ind)%
     sprintf(['now warping ' num2str(iSubject)])
