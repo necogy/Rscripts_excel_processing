@@ -1,17 +1,18 @@
 function scans_to_process = LONG_DARTELregistration_to_new( scans_to_process, PIDNlist)
-%LONG_run_LONG_DARTELregistration_to_new - SPM12b DARTEL generation of new
+%LONG_run_LONG_DARTELregistration_to_new - SPM12 DARTEL generation of new
 %template based on average images in longitudinal pipeline and specified
-%PIDNs
+%PIDNs. Check the template after running and move it to a new directory and
+%specify the new path in LONG_config.m
 %
 % Syntax:  scans_to_process = LONG_DARTELregistration_to_new( scans_to_process, PIDNlist)
-%           
+%
 % Inputs: scans_to_process - array of objects of class LONG_participant,
 %         PIDNlist - list of PIDNs you want to include from full set
 %           to creat template, probably matched in some way to the patients
 %
 % Outputs: scans_to_process - updated array with run status
 %
-% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12b
+% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12
 % Subfunctions:
 % MAT-files required: none
 %
@@ -27,17 +28,22 @@ function scans_to_process = LONG_DARTELregistration_to_new( scans_to_process, PI
 
 allPIDNs = {scans_to_process.PIDN};
 
+
 for subject = 1:size(allPIDNs,2)
-    keep(subject) = ismember( str2double(allPIDNs{subject}) , PIDNlist)     ;
+    if ~isempty(PIDNlist)
+        keep(subject) = ismember( str2double(allPIDNs{subject}) , PIDNlist)     ;
+    else
+        keep(subject) = 1;
+    end
 end
 
-prefixes ='rc1avg_' ; % use c1 images to make sure segmentatoin occured.
+prefixes ='rc1avg_' ; % use c1 images to make sure segmentation occured.
 c1volumes = LONG_buildvolumelist(scans_to_process(keep), prefixes);
-  c1volumes = strrep(c1volumes, 'img', 'nii');
+c1volumes = strrep(c1volumes, 'img', 'nii');
 
-prefixes ='rc2avg_' ; % use c1 images to make sure segmentatioin occured.
+prefixes ='rc2avg_' ; % use c1 images to make sure segmentation occured.
 c2volumes = LONG_buildvolumelist(scans_to_process(keep), prefixes);
- c2volumes = strrep(c2volumes, 'img', 'nii');
+c2volumes = strrep(c2volumes, 'img', 'nii');
 
 spm('defaults', 'PET');
 spm_jobman('initcfg');
@@ -45,8 +51,8 @@ spm_jobman('initcfg');
 % matlabbatch{1}.spm.tools.dartel.warp.images = {
 %                                                c1volumes(:,1) c2volumes(:,1)
 %                                                }';
-matlabbatch{1}.spm.tools.dartel.warp.images{1} = c1volumes(:,1)     ;                  
-matlabbatch{1}.spm.tools.dartel.warp.images{2} = c2volumes(:,1)    ;                           
+matlabbatch{1}.spm.tools.dartel.warp.images{1} = c1volumes(:,1)     ;
+matlabbatch{1}.spm.tools.dartel.warp.images{2} = c2volumes(:,1)    ;
 matlabbatch{1}.spm.tools.dartel.warp.settings.template = 'Template';
 matlabbatch{1}.spm.tools.dartel.warp.settings.rform = 0;
 matlabbatch{1}.spm.tools.dartel.warp.settings.param(1).its = 3;
@@ -78,8 +84,6 @@ matlabbatch{1}.spm.tools.dartel.warp.settings.optim.cyc = 3;
 matlabbatch{1}.spm.tools.dartel.warp.settings.optim.its = 3;
 
 spm_jobman('run',matlabbatch);
-
-
 
 % add code to move generated templates
 end

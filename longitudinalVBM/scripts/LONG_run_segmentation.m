@@ -1,5 +1,7 @@
 function scans_to_process = LONG_run_segmentation( scans_to_process, scantype, spmpath)
-%LONG_run_segmentation - SPM12b Segmentation for Longitudinal processing
+%LONG_run_segmentation - SPM12 Segmentation for Longitudinal processing
+% It will either segment the subject average images or the timepoitns
+% depending on scantype input
 %
 % Syntax:  participantstructure = LONG_run_segmentation(scans_to_process )
 %
@@ -10,7 +12,9 @@ function scans_to_process = LONG_run_segmentation( scans_to_process, scantype, s
 % Outputs: scans_to_process - updated array with run status
 %
 %
-% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12b
+% Other m-files required: LONG_participant.m, LONG_setup.m, SPM12,
+% LONG_buildvolumelist.m
+%
 % Subfunctions:
 %
 % MAT-files required: none

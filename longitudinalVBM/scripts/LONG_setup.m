@@ -3,110 +3,145 @@
 % pipeline. Set all of your paths first in LONG_config.  Create a copy of this file if you make edits to for a specific data
 % set.
 
-%make sure to add spm12b folder and longitudinalVBM folder with subfolders
+%make sure to add spm12 folder and longitudinalVBM folder with subfolders
 %to matlab path.
+
+%use image_finder.sh to pull images into the correct folder structure, or
+%do it yourself as follows /14929/2015-01-01/MP-LAS.nii , /14929/2015-09-31/MP-LAS.nii
 
 % enable cell evaluation in matlab settings for easier use of this script
 clear
 
-%load parameters:
-LONG_config
-
-%scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','testfolder');
-%scandatafolder = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','FLOOR_Mar2014_reprocess_2','images','images_dir');
-scans_to_process = LONG_load_inputfile( scandatafolder );
-
-%path to SPM12b folder 
-%spmpath = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','spm12b');
-
-
 %% steps to run:
 
-%% Longitudinal registration to generate mean images
+%% 1. Initialize: 
+clear
+% a. Load parameters:
+%LONG_config %<-------------- OPEN THIS and replace with paths specific to your study
+%path to data:
+scandatafolder = fullfile('R:\groups\rosen\longitudinalVBM\SD_floor_project\test_timepointwarping02_2015\');
+
+%path to spm12 folder:
+spmpath = fileparts(which('spm'));
+
+%path to dartel template for your study (or where a dartel template will
+%be created if it doesn't exist yet):
+templatepath = 'path_to_dartel_template'; % set this to the new template folder name.
+templatepath='R:\groups\rosen\longitudinalVBM\SD_floor_project'
+
+%path to ROIs to use to extract mean/median change values from a specific
+%ROI:
+pathtoROIs = 'path_to_ROIs_for_extraction';% set this to the new template folder name. Make sure the ROIs are in the same space as your images to extract from
+
+% b. Load Data
+scans_to_process = LONG_load_inputfile( scandatafolder );
+
+%% PREPROCESSING (Steps 2-6)
+
+%% 2. Longitudinal registration to generate subject average images 
 scans_to_process = LONG_run_registration( scans_to_process ); 
 
-%% Segment mean images generated from longitudinal toolbox 
+%% 3. Segment mean images generated from longitudinal toolbox 
 scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath ); 
 
 %% rigidly realign and reslice mean images for DARTEL
 % this step doesn't work because the new segment doesn't create the
 % appropriate fields, but it might work in future SPM versions
-
 %voxelsize =1;
 %scans_to_process = LONG_DARTELimport( scans_to_process, voxelsize ); 
 
-%% inter-subject registration of mean images using Dartel (requires template
+%% 4. Inter-subject registration of mean images using Dartel (requires template)
 % or create a new one
 
-%specify subjects to include to generate a new template(subset of all available patients in your
+% specify subjects to include to generate a new template(subset of all available patients in your
 %study  to include in the template as follows:) 
-DARTELnorms = [841;1124;1362;1416;1418;1813;2046;2062;2557;2679;2680;2688;2692;2699;2715;2720;2732;2735;2743;2744;2774;2801;3015;3027;3530;3773;4062;4063;4348;4943;5061;5064;5436;5595;5627;5844;65;3884;6248;6842;6867;6868;6908;6909;6935;6976;7142;7396;7397;7418;7802;7811;7837;7838;7851;7938;8193;8538;8565;8590;8593;8601;8698;9320;9440;9757;10445;10683;11241;11247;11296;11727];
-DARTELpatients =[98;588;951;1004;1176;1319;1340;1463;1586;2275;2500;2711;3521;4160;4375;4379;4471;5468;5830;6110;10114;10880;11735;11965;12555;13108;13138;13185;13272;13512;13919;14427;15774;84;278;1615;2522;3690;3824;4747;6600;9283;10032;10434;11028;11704;11773;13962];
+% if you want to use all the available subjects set PIDNlist = [];
+DARTELnorms = [841;1124;1362;1416;1418;1813;2046;10683;11241;11247;11296;11727];
+DARTELpatients =[98;588;951;1004;1176;1319;13919;14427;15774;84;11028;11704;11773;13962];
 PIDNlist = [DARTELnorms ; DARTELpatients];
 scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist);  %create new template
 
-% After generating a template in the previous step, MOVE GENERATED TEMPLATE FILES TO the TEMPLATE FOLDER specified in LONG_config 
+% After generating a template in the previous step, MOVE GENERATED TEMPLATE FILES TO the TEMPLATE FOLDER you then specify in LONG_config 
 scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath);
+
+%% 5. multiply segmented mean images with longitudinal change maps
+scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
+
+%% 6. Transform longitudinal images to group DARTEL space
+scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
+% at this point you have generated warped change maps that can be used for
+% statistical analysis, you might want to smooth the images using the
+% following steps.
+
+%% Generate population to ICBM registration deformation field
+SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
+
+%% push dartel images to ICBM 
+LONG_pushDARTELtoICBM(scans_to_process, templatepath);
+
+%% WARP MNI ROIs to DARTEL
+SA_SPM12_warpMNI_ROIstoDARTEL(fullfile(templatepath, 'y_Template_6_2mni.nii'),fullfile(templatepath, 'Template_6.nii'), pathtoROIs)
+
+
+%% %%%%% up to here revised 02/19/15
+
+
+
+%% SMOOTHING: pick one of the two following smoothing methods:
+
+%% Smooth individual participant change maps images for stats 
+fwhm = 6 ; % <-- this should be changed depending on the data
+scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
+
+%% T-Spoon for stats ( you might not want to use this vs normal smoothing)
+% T-spoon smoothing is an improved algorithm for smoothing that reduces the
+% effect of smoothing the brain outside of the actual brain
+scans_to_process = LONG_tspoon_changemaps(scans_to_process);
+
+
+%% extract mean/median change values in ROIs and save to scans_to_process
+% paths to ROI folder should be set in LONG_config
+ROIprefix = '^s'; % <-- the ROIs that will be used to to extract will start with the prefix here
+changemapprefix = 'wl_c1avg_jd_'; % <---Specify  the image you want to extract from by including the prefix of the file here
+scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); %extract GM ROI values and add to scans_to_process structure
+scans_to_process = LONG_extractWMGMROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); % if you want combined GM/WM extractions, run this line instead.
+
+[ROImeans, ROImedians] = LONG_exportROIs(scans_to_process); %pull out mean and median values from scans_to_process in a convenient format
+
+%% optional steps
+
+%% Generate average maps of warped c_jd/dv maps and wholebrain for plotting
+% you can specify the PIDNs so you can plot averages of subsets of subjects
+% (e.g by group/disease) use PIDNlist = []; to use all subjects
+PIDNsforAverage = [98;588;951;1004;1176;1319;1340;1463;1586;2275;2500;2711;3521;4160;4375;4379;4471;5468;5830;6110;10114;10880;11735;11965;12555;13108;13138;13185;13272;13512;13919;14427;15774];
+%scans_to_process = LONG_generatemeanmaps(scans_to_process, PIDNlistforgroup, 'titletoprependtoaverageimage');
+scans_to_process = LONG_generatemeanmaps(scans_to_process,PIDNsforAverage, 'titleForImage');
 
 %% Segment time1 and time2 images:
 scans_to_process = LONG_run_segmentation( scans_to_process, 'time1', spmpath ); 
 scans_to_process = LONG_run_segmentation( scans_to_process, 'time2', spmpath ); 
 
-%% multiply segmented mean images with longitudinal change maps
-scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
+%% %%%%%%% USE STEPS BELOW AT YOUR OWN RISK, not all fully vetted %%%%%%%%%%%%%
+templatepath = 'R:\groups\rosen\longitudinalVBM\SD_floor_project';
+scans_to_process = LONG_sequential_warp_to_MNI(scans_to_process, templatepath);
 
-%% Transform longitudinal images to group/MNI space
-scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
-
-%% Group results:
-
-%% generate average maps of c_jd/dv maps and wholebrain 
-LSD_PIDNs = [98;588;951;1004;1176;1319;1340;1463;1586;2275;2500;2711;3521;4160;4375;4379;4471;5468;5830;6110;10114;10880;11735;11965;12555;13108;13138;13185;13272;13512;13919;14427;15774];
-RSD_PIDNs = [84;278;1615;2522;3690;3824;4747;6600;9283;10032;10434;11028;11704;11773;13962];
-SD_PIDNs = [LSD_PIDNs; RSD_PIDNs];
-HC_PIDNs = [841;1124;1362;1416;1418;1813;2046;2062;2557;2679;2680;2688;2692;2699;2702;2703;2715;2720;2732;2735;2743;2744;2774;2801;3015;3027;3530;3773;4062;4063;4348;4943;5061;5064;5436;5595;5627;5844;65;1641;3700;3884;5133;5888;6248;6741;6838;6842;6857;6860;6867;6868;6908;6909;6922;6934;6935;6976;6977;7142;7396;7397;7411;7418;7444;7749;7792;7793;7802;7811;7813;7837;7838;7850;7851;7938;8182;8193;8510;8533;8538;8545;8565;8590;8592;8593;8594;8601;8619;8627;8698;8706;8913;9320;9440;9621;9757;10445;10683;11241;11247;11296;11329;11463;11727];
-%scans_to_process = LONG_generatemeanmaps(scans_to_process, PIDNlistforgroup, 'titletoprependtoaverageimage');
-
-scans_to_process = LONG_generatemeanmaps(scans_to_process, LSD_PIDNs, 'SDL');
-scans_to_process = LONG_generatemeanmaps(scans_to_process, RSD_PIDNs, 'SDR');
-scans_to_process = LONG_generatemeanmaps(scans_to_process, SD_PIDNs, 'SDLR');
-scans_to_process = LONG_generatemeanmaps(scans_to_process, HC_PIDNs, 'HC');
 
 %% Transform time1 and time2 data to mni using intermediate longitudinal image warp
+% This step might be broken.
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time1');
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time2');
-
-%% T-Spoon for stats ( you might not want to use this vs normal smoothing below)
-scans_to_process = LONG_tspoon_changemaps(scans_to_process);
-
-%% Smooth individual participant change maps images for stats 
-fwhm = 6 ;
-scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
-
-%% extract mean/median change values in ROIs and save to scans_to_process
-%structure
-%pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
-ROIprefix = '^rr';
-changemapprefix = 'wl_c1avg_jd_';
-scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); %extract ROI values and add to scans_to_process structure
-[ROImeans, ROImedians] = LONG_exportROIs(scans_to_process); %pull out mean and median values from scans_to_process in a convenient format
-
-%% extract mean/median changes values from combined GM/WM change maps
-
-ROIprefix = '^rr';
-changemapprefix = 'wl_c*avg_jd_';
-scans_to_process = LONG_extractWMGMROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix)
-[ROImeans, ROImedians] = LONG_exportROIs(scans_to_process); %pull out mean and median values from scans_to_process in a convenient format
-
 
 %% Extract ROIs from change maps in Dartel Space
 scans_to_process = LONG_extractROIsinDARTEL(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); 
 
-
 %% extract mean/median change values from warped timepoints (MNI) and save to scans_to_process
 %pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
+pathtoROIs = 'R:\groups\rosen\longitudinalVBM\SD_floor_project\ROIs15'
 scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time1'); %extract ROI values and add to scans_to_process structure
 scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time2'); %extract ROI values and add to scans_to_process structure
+
+scans_to_process = LONG_extractMNItimepointROIVolumes(scans_to_process, pathtoROIs, 'time1'); %extract ROI values and add to scans_to_process structure
+scans_to_process = LONG_extractMNItimepointROIVolumes(scans_to_process, pathtoROIs, 'time2'); %extract ROI values and add to scans_to_process structure
 
 nativeROIvolumes_time1 = LONG_exportMNI_ROIs(scans_to_process, 'time1');
 nativeROIvolumes_time2 = LONG_exportMNI_ROIs(scans_to_process, 'time2');
@@ -114,7 +149,6 @@ nativeROIvolumes_time2 = LONG_exportMNI_ROIs(scans_to_process, 'time2');
 %% extract time 1 and time 2 volumes
 scans_to_process = LONG_extractVolumes(scans_to_process, 'time1'); 
 scans_to_process = LONG_extractVolumes(scans_to_process, 'time2'); 
-
 
 %% DTI related scripts below %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -131,8 +165,8 @@ scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'ti
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time2', ROImodulationon);
 
 %export native ROI volumes
+
 nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process, 'time1')';
 nativeROIvolumes_time2 = LONG_exportNativeROIs(scans_to_process, 'time2')';
-
 
 

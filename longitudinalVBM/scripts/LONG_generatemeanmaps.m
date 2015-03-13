@@ -28,9 +28,11 @@ function scans_to_process = LONG_generatemeanmaps( scans_to_process, PIDNlist, g
 allPIDNs = {scans_to_process.PIDN};
 
 % get indices of PIDNs to check against scans_to_process
-for subject = 1:size(allPIDNs,2)
-    keep(subject) = ismember( str2double(allPIDNs{subject}) , PIDNlist)     ;
-end
+  if ~isempty(PIDNlist)
+        keep(subject) = ismember( str2double(allPIDNs{subject}) , PIDNlist)     ;
+    else
+        keep(subject) = 1;
+    end
 trimmed_scans = scans_to_process(keep);
 
 %imageprefixes = {'wl_c1avg_jd','wl_c1avg_dv','wl_c2avg_jd','wl_c2avg_dv', 'wavg', 'wc1avg', 'wc2avg' };
