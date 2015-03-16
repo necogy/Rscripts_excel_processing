@@ -151,13 +151,20 @@ class Protocol( object ):
             # Find the T2 nifti file
             T2file = ""
             for fname in os.listdir( self.patient_dir_ ):
-                if fname.startswith('T2_') and fname.endswith('.nii'):
+                if fname.startswith('T2_') and ( fname.endswith('.nii') ):
                     T2File = fname;
             #
             if not os.path.isfile( os.path.join(self.patient_dir_, T2File) ):
                 raise Exception("T2 file does not exist." )
             else:
-                shutil.copy( os.path.join(self.patient_dir_, T2File), self.ACPC_Alignment_)
+                if T2File.endswith('.hdr'):
+                    _log.warning("T2 is ANALYZE file format and not treated yet.")
+                    image = "%s%s"%(T2File[:-3],"img")
+                    shutil.copy( os.path.join(self.patient_dir_, T2File), self.ACPC_Alignment_)
+                    shutil.copy( os.path.join(self.patient_dir_, image), self.ACPC_Alignment_)
+                else:
+                    shutil.copy( os.path.join(self.patient_dir_, T2File), self.ACPC_Alignment_)
+
             #
             # Find the T1 nifti file
             T1File = ""
@@ -165,6 +172,10 @@ class Protocol( object ):
                 if fname.startswith('MP-LAS-long') and fname.endswith('.nii'):
                     T1File = fname;
                     shutil.copy( os.path.join(self.patient_dir_,T1File), self.PVE_Segmentation_ );
+                    break;
+                elif fname.startswith('MP-LAS') and fname.endswith('.nii'):
+                    T1File = fname;
+                    shutil.copy( os.path.join(self.patient_dir_, T1File), self.PVE_Segmentation_);
                     break;
                 elif fname.startswith('MP-LAS-long') and fname.endswith('.zip'):
                     T1File = fname;
@@ -174,10 +185,8 @@ class Protocol( object ):
                         zf_name.extractall();
                     cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n *'
                     generic_unix_cmd(cmd)
-                    break;
-                elif fname.startswith('MP-LAS') and fname.endswith('.nii'):
-                    T1File = fname;
-                    shutil.copy( os.path.join(self.patient_dir_, T1File), self.PVE_Segmentation_);
+                    cmd = 'rm c*.nii o*.nii'
+                    generic_unix_cmd(cmd)
                     break;
                 elif fname.startswith('MP-LAS') and fname.endswith('.zip'):
                     T1File = fname;
@@ -187,6 +196,15 @@ class Protocol( object ):
                         zf_name.extractall();
                     cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n *'
                     generic_unix_cmd(cmd)
+                    cmd = 'rm c*.nii o*.nii'
+                    generic_unix_cmd(cmd)
+                    break;
+                elif fname.startswith('MP-LAS') and fname.endswith('.hdr'):
+                    _log.warning("T1 is ANALYZE file format and not treated yet.")
+                    T1File = fname;
+                    image = "%s%s"%(T1File[:-3],"img")
+                    shutil.copy( os.path.join(self.patient_dir_, T1File), self.PVE_Segmentation_);
+                    shutil.copy( os.path.join(self.patient_dir_, image), self.PVE_Segmentation_);
                     break;
             #
             if T1File == "":
@@ -275,6 +293,7 @@ class Protocol( object ):
 #                raise Exception("Error: EPI %s was incorectly excluded from realignment" %m0 )
             #
             # Run spm_realign to realign EPIs to first 'm0' in sequence 
+            # TODO: check it is a rigid registration
             self.run_spm_realign(os.getcwd(), stripped_list)
             # Move the stripped and realigned EPIs to seperate dir
             for realigned_file in os.listdir( os.path.join(self.ASL_dicom_, 'nii_all') ):
@@ -306,7 +325,7 @@ class Protocol( object ):
             #   * 'ct' control-tag pairs (with control coming as the first volume)
             # --out diff between tag-control
             # --mean average of diff between tag-control
-            cmd='asl_file --data=asl.nii --ntis=1 --iaf=ct --diff --out=diffdata --mean=diffdata_mean'
+            cmd='asl_file --data=asl.nii --ntis=1 --iaf=tc --diff --out=diffdata --mean=diffdata_mean'
             generic_unix_cmd(cmd)
             os.system('gunzip *.nii.gz')
             all_aligned_dir = os.getcwd()
@@ -484,7 +503,7 @@ class Protocol( object ):
     #
     #
     def run_spm_segmentT1( self ):
-        """Run SPM new segmentation."""
+        """Run SPM new segmentation. The results will be aligned within the T2 framework for the partial volume estimation (PVE) and the partial volume correction of the cerebral blood flow analysise. """
         try: 
             #
             # Go into dir with acpc_aligned t1 and find the t1 filename
@@ -492,20 +511,90 @@ class Protocol( object ):
             for file_name in os.listdir( self.PVE_Segmentation_ ):
                 if file_name.endswith(".nii.gz"):
                     T1_file = file_name
-                    os.system('gunzip %s' %T1)
-                    T1_file = T1[:-3]
+                    os.system('gunzip %s'%T1_file )
+                    T1_file = file_name[:-3]
                 elif file_name.endswith(".nii"):
                     T1_file = file_name
+#                elif file_name.endswith(".hdr"):
+#                    T1_file = file_name
             #
             if not os.path.isfile( os.path.join(self.PVE_Segmentation_, T1_file) ):
-                raise Exception("No T1 nifti file found" )
+                raise Exception( "No T1 nifti file found" )
+            else:
+                T1_file = os.path.join(self.PVE_Segmentation_, T1_file)
             #
             # Run Spm_NewSegment on the T1 to get GM,WM,ventricles
             os.chdir( self.PVE_Segmentation_ )
             seg = spm.NewSegment();
-            seg.inputs.channel_files = os.path.join(self.PVE_Segmentation_, T1_file) ;
-            seg.inputs.channel_info = (0.0001, 60, (True, True))
+            seg.inputs.channel_files = T1_file;
+            seg.inputs.channel_info  = (0.0001, 60, (True, True))
             seg.run();
+
+            #
+            # Gather GM, WM and CSF
+            c1_file = "" # GM
+            c2_file = "" # WM
+            c3_file = "" # CSF
+            for file_name in os.listdir( self.PVE_Segmentation_ ):
+                if file_name.startswith("c1"):
+                    c1_file = file_name
+                if file_name.startswith("c2"):
+                    c2_file = file_name
+                if file_name.startswith("c3"):
+                    c3_file = file_name
+                if file_name.startswith("m"):
+                    T1_file = os.path.join( self.PVE_Segmentation_, file_name )
+
+            #
+            # Need T2 for the registration: next step
+            T2_file = ""
+            for file_name in os.listdir( self.ACPC_Alignment_ ):
+                if file_name.startswith("T2") and file_name.endswith("nii") and "brain" not in file_name:
+                    T2_file = os.path.join( self.ACPC_Alignment_, file_name ) 
+            # check we have the file
+            if not os.path.isfile( T2_file ):
+                raise Exception( "No T2 nifti file found" )
+
+            #
+            # T1, c1, c2, c2 Rigid registration on T2; degree of freedom = 6 (rotation, translation)
+            matrix_T1_in_T2 = os.path.join(self.PVE_Segmentation_, "T1_in_T2.mat")
+            # T1
+            T1_in_T2 = "%s_T2.nii.gz"%(T1_file[:-4])
+            #
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = T1_file
+            flt.inputs.reference       = T2_file
+            flt.inputs.out_file        = T1_in_T2
+            flt.inputs.out_matrix_file = matrix_T1_in_T2
+            flt.inputs.args            = "-dof 6"
+            res = flt.run() 
+            # c1
+            c1_in_T2 = "%s_T2.nii.gz"%(c1_file[:-4])
+            #
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = c1_file
+            flt.inputs.reference       = T2_file
+            flt.inputs.out_file        = c1_in_T2
+            flt.inputs.apply_xfm       = True
+            flt.inputs.in_matrix_file  = matrix_T1_in_T2
+            flt.inputs.args            = "-dof 6"
+            res = flt.run()
+            # c2
+            c2_in_T2 = "%s_T2.nii.gz"%(c2_file[:-4])
+            #
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = c2_file
+            flt.inputs.reference       = T2_file
+            flt.inputs.out_file        = c2_in_T2
+            flt.inputs.apply_xfm       = True
+            flt.inputs.in_matrix_file  = matrix_T1_in_T2
+            flt.inputs.args            = "-dof 6"
+            res = flt.run() 
+            #
+            os.system("gunzip %s"%(T1_in_T2))
+            os.system("gunzip %s"%(c1_in_T2))
+            os.system("gunzip %s"%(c2_in_T2))
+
         #
         #
         except Exception as inst:
@@ -547,10 +636,10 @@ class Protocol( object ):
             #
             M0_brain = os.path.join(self.ACPC_Alignment_, "PWI", "m0_brain.nii")
             for file_name in os.listdir( os.path.join(self.ASL_dicom_, "nii_all") ):
-                if file_name[9:12] != '0001' and file_name.endswith("brain.nii"):
+                if file_name[9:12] == "001" and file_name.endswith("brain.nii"):
                     shutil.copy( os.path.join(self.ASL_dicom_, "nii_all", file_name), 
                                  M0_brain );
- 
+
             #
             # Rigid registration of T2 (or mask) in m0 with repading; degree of freedom = 12
             T2_registration = os.path.join(self.ACPC_Alignment_, "PWI", "T2_registration.nii.gz" )
@@ -574,23 +663,124 @@ class Protocol( object ):
             distortion.transform_   = os.path.join(self.ACPC_Alignment_, "field_correction.nii")
             distortion.control_corrected_ = os.path.join(self.ACPC_Alignment_, "m0_brain_corrected.nii")
             distortion.calculate_transform()
+            #
             # Apply transform on m0
             distortion.apply_transform()
+            # Filter the maps. Using 3D filter, we assume the blood flow being the same in the neighboring voxels
+            maths = fsl.ImageMaths( in_file   = distortion.control_corrected_, 
+                                    op_string = '-fmean -kernel 3D ', 
+                                    out_file  = "%s_3D.nii.gz" %(distortion.control_corrected_[:-4]) )
+            maths.run();
+            #
             # Apply transform on DeltaM
             distortion.control_ = DeltaM
             distortion.control_corrected_ = os.path.join(self.ACPC_Alignment_, "PWI_corrected.nii")
             distortion.apply_transform()
+            # Filter the maps. Using 3D filter, we assume the blood flow being the same in the neighboring voxels
+            maths = fsl.ImageMaths( in_file   = distortion.control_corrected_, 
+                                    op_string = '-fmean -kernel 3D ', 
+                                    out_file  = "%s_3D.nii.gz" %(distortion.control_corrected_[:-4]) )
+            maths.run();
 
-#            distortion = EPI_distortion_correction.EPI_distortion_correction()
-#            distortion.working_dir_ = os.path.join(self.ACPC_Alignment_, "test_wd")
-#            distortion.control_     = os.path.join(self.ACPC_Alignment_, "PWI", "m0_brain.nii" )
-#            distortion.t2_          = os.path.join(self.ACPC_Alignment_, "PWI", "T2_brain_m0.nii" )
-#            distortion.transform_   = os.path.join(self.ACPC_Alignment_, "PWI_correction.nii")
-#            distortion.control_corrected_ = os.path.join(self.ACPC_Alignment_, 
-#                                                         "PWI_registered_T2_corrected.nii")
-#            distortion.calculate_transform()
-#            distortion.apply_transform()
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    #
+    def Cerebral_blood_flow( self ):
+        """Cerebral blood flow processing."""
+        try: 
+            #
+            # realigne PWI with m0
+            os.chdir( self.ACPC_Alignment_ )
+            # Rigid registration of T2 (or mask) in m0 with repading; degree of freedom = 12
+            PWI_corrected_m0 = os.path.join(self.ACPC_Alignment_, "PWI_corrected_3D_m0.nii.gz" )
+            #
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_, "PWI_corrected_3D.nii.gz" )
+            flt.inputs.reference       = os.path.join(self.ACPC_Alignment_, "m0_brain_corrected_3D.nii.gz" )
+            flt.inputs.out_file        = PWI_corrected_m0
+            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "PWI2m0.mat")
+            flt.inputs.args            = "-dof 12"
+            res = flt.run() 
+            #
+            #os.system("gunzip %s")%(PWI_corrected_m0)
+            
+            #
+            # Partial Volume Estimation (PVE)
+            #
+           
+            #
+            # Gather GM, WM and CSF
+            c1_file = "" # GM
+            c2_file = "" # WM
+            c3_file = "" # CSF
+            for file_name in os.listdir( self.PVE_Segmentation_ ):
+                if file_name.startswith("c1") and file_name.endswith("T2.nii"):
+                    c1_file = file_name
+                if file_name.startswith("c2"):
+                    c2_file = file_name
+                if file_name.startswith("c3"):
+                    c3_file = file_name
+                if file_name.startswith("m"):
+                    T1_file = os.path.join( self.PVE_Segmentation_, file_name )
 
+            #
+            # Rigid registration of T2 (or mask) in m0 with repading; degree of freedom = 12
+            if not os.path.isfile( os.path.join(self.PVE_Segmentation_, c1_file) ):
+                raise Exception( "No gray matter found." )
+            #
+            GM_m0 = os.path.join(self.ACPC_Alignment_, "GM_m0.nii.gz" )
+            #
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = os.path.join( self.PVE_Segmentation_, c1_file )
+            flt.inputs.reference       = os.path.join( self.ACPC_Alignment_, "m0_brain_corrected.nii" )
+            flt.inputs.out_file        = GM_m0
+            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "GM2m0.mat")
+            flt.inputs.args            = "-dof 12"
+            res = flt.run() 
+            #
+            #os.system("gunzip %s")%(GM_m0)
+            print "je passe 1"
+            #
+            GM_m0_warped = os.path.join(self.ACPC_Alignment_, "GM_warped_m0.nii.gz" )
+            # warp GW in m0 framework (low resolution)
+            aw = fsl.ApplyWarp()
+            aw.inputs.in_file    = os.path.join( self.PVE_Segmentation_, c1_file )
+            aw.inputs.ref_file   = os.path.join( self.ACPC_Alignment_, "m0_brain_corrected.nii" )
+            aw.inputs.out_file   = GM_m0_warped
+            aw.inputs.premat     = os.path.join(self.ACPC_Alignment_, "GM2m0.mat")
+            aw.inputs.args       = "--super --interp=spline --superlevel=4"
+            res = aw.run()
+            #
+            #os.system("gunzip %s")%(GM_m0)
+            print "je passe 2"
+            #
+            # Cerebral blood flow within gray matter
+            #
+            
+            #
+            # CBF
+            maths = fsl.ImageMaths( in_file   = "PWI_corrected_3D.nii.gz", 
+                                    op_string = "-div m0_brain_corrected_3D.nii.gz",
+                                    out_file  = "CBF.nii.gz")
+            maths.run();
+            #
+            maths = fsl.ImageMaths( in_file   = "CBF.nii.gz", 
+                                    op_string = "-mul GM_m0",
+                                    out_file  = "CBF_GM.nii.gz")
+            maths.run();
+            print "je passe 3"
 
         #
         #
@@ -651,4 +841,5 @@ class Protocol( object ):
         _log.debug("Protocol ASL - run spm segmentT1 -- pass")
         self.T2_PWI_registration()
         _log.debug("Protocol ASL - registration between T2 and PWI -- pass")
-    
+        self.Cerebral_blood_flow()
+        _log.debug("Protocol ASL - Cerebral blood flow -- pass")
