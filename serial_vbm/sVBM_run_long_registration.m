@@ -45,13 +45,13 @@ for subject = 1:size(scans_to_process,2) % for every subject
     %compute timedeltas
     timedeltas = (times-times(1))/365.25 ;
     
-    disp(['Now running longitudinal Registration on: ' num2str(scans_to_process(subject).PIDN )])
+    disp(['Now running longitudinal Registration on: ' num2str(scans_to_process(subject).PIDN ) ' at ' datestr(now)])
     
     % check for existing avg files
     
     avgdirectory = fullfile(scans_to_process(subject).Fullpath, 'avg');
-    % d = SAdir(avgdirectory, '^avg_*');
-    if 1%size(d,1)<1
+    d = SAdir(avgdirectory, '^avg_*');
+    if size(d,1)<1
         try
             registersubject(volumes, timedeltas); % call subfunction to process that subject
             mkdir(avgdirectory)
