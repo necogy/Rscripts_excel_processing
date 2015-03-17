@@ -24,6 +24,14 @@ spm('defaults', 'PET');
 spm_jobman('initcfg');
 
 for subject = 1:size(scans_to_process,2) % for every subject
+    clear volumes
+    clear times
+    clear file
+    clear fullpath
+    clear timedeltas
+    clear avgdirectory
+    clear d
+    
     for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
         
         file = scans_to_process(subject).Timepoint{timepoint}.File.name;
@@ -42,15 +50,15 @@ for subject = 1:size(scans_to_process,2) % for every subject
     % check for existing avg files
     
     avgdirectory = fullfile(scans_to_process(subject).Fullpath, 'avg');
-    d = SAdir(avgdirectory, '^avg_*');
-    if size(d,1)<1
+    % d = SAdir(avgdirectory, '^avg_*');
+    if 1%size(d,1)<1
         try
             registersubject(volumes, timedeltas); % call subfunction to process that subject
             mkdir(avgdirectory)
             avgfile = fullfile(scans_to_process(subject).Timepoint{1}.Fullpath, scans_to_process(subject).Timepoint{1}.File.name);
             avgfile=strrep(avgfile, '.img', '.nii');
             avgfile = SAinsertStr2Paths(avgfile, 'avg_');
-            [status,message,~]=movefile(avgfile,avgdirectory)     
+            [status,message,~]=movefile(avgfile,avgdirectory)
         catch
             disp(['problem registering: ' num2str(scans_to_process(subject).PIDN )])
         end
@@ -60,9 +68,7 @@ for subject = 1:size(scans_to_process,2) % for every subject
     end
     
 end
-clear volumes
-clear times
-clear timedeltas
+
 end
 
 function registersubject(volumes, timedeltas)
