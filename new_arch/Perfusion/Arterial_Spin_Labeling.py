@@ -151,31 +151,40 @@ class Protocol( object ):
             # Find the T2 nifti file
             T2file = ""
             for fname in os.listdir( self.patient_dir_ ):
-                if fname.startswith('T2_') and ( fname.endswith('.nii') ):
+                if fname.startswith('T2_') and fname.endswith('.nii'):
                     T2File = fname;
+            print "passe 1", T2File
             #
-            if not os.path.isfile( os.path.join(self.patient_dir_, T2File) ):
-                raise Exception("T2 file does not exist." )
+            if T2File.endswith('.nii'):
+                shutil.copy( os.path.join(self.patient_dir_, T2File), self.ACPC_Alignment_ )
             else:
+                for fname in os.listdir( self.patient_dir_ ):
+                    if fname.startswith('T2_') and fname.endswith('.hdr'):
+                        T2File = fname;
+                #
                 if T2File.endswith('.hdr'):
-                    _log.warning("T2 is ANALYZE file format and not treated yet.")
+                    _log.warning("T2 is ANALYZE file format.")
                     image = "%s%s"%(T2File[:-3],"img")
-                    shutil.copy( os.path.join(self.patient_dir_, T2File), self.ACPC_Alignment_)
-                    shutil.copy( os.path.join(self.patient_dir_, image), self.ACPC_Alignment_)
+                    shutil.copy( os.path.join(self.patient_dir_, T2File), self.ACPC_Alignment_ )
+                    shutil.copy( os.path.join(self.patient_dir_, image),  self.ACPC_Alignment_ )
                 else:
-                    shutil.copy( os.path.join(self.patient_dir_, T2File), self.ACPC_Alignment_)
+                    raise Exception("T2 file does not exist.")
+            print "passe n"
 
             #
             # Find the T1 nifti file
             T1File = ""
+            T1_nii = False
             for fname in os.listdir(self.patient_dir_):
                 if fname.startswith('MP-LAS-long') and fname.endswith('.nii'):
                     T1File = fname;
                     shutil.copy( os.path.join(self.patient_dir_,T1File), self.PVE_Segmentation_ );
+                    T1_nii = True
                     break;
                 elif fname.startswith('MP-LAS') and fname.endswith('.nii'):
                     T1File = fname;
                     shutil.copy( os.path.join(self.patient_dir_, T1File), self.PVE_Segmentation_);
+                    T1_nii = True
                     break;
                 elif fname.startswith('MP-LAS-long') and fname.endswith('.zip'):
                     T1File = fname;
@@ -187,6 +196,7 @@ class Protocol( object ):
                     generic_unix_cmd(cmd)
                     cmd = 'rm c*.nii o*.nii'
                     generic_unix_cmd(cmd)
+                    T1_nii = True
                     break;
                 elif fname.startswith('MP-LAS') and fname.endswith('.zip'):
                     T1File = fname;
@@ -198,17 +208,25 @@ class Protocol( object ):
                     generic_unix_cmd(cmd)
                     cmd = 'rm c*.nii o*.nii'
                     generic_unix_cmd(cmd)
+                    T1_nii = True
                     break;
-                elif fname.startswith('MP-LAS') and fname.endswith('.hdr'):
-                    _log.warning("T1 is ANALYZE file format and not treated yet.")
-                    T1File = fname;
-                    image = "%s%s"%(T1File[:-3],"img")
-                    shutil.copy( os.path.join(self.patient_dir_, T1File), self.PVE_Segmentation_);
-                    shutil.copy( os.path.join(self.patient_dir_, image), self.PVE_Segmentation_);
-                    break;
+                else:
+                    T1_nii = False
+            
+            #
+            # If no nifti found, then use analyse
+            if T1_nii == False:
+                for fname in os.listdir(self.patient_dir_):
+                    if fname.startswith('MP-LAS') and fname.endswith('.hdr'):
+                        _log.warning("T1 is ANALYZE file format.")
+                        T1File = fname;
+                        image = "%s%s"%(T1File[:-3],"img")
+                        shutil.copy( os.path.join(self.patient_dir_, T1File), self.PVE_Segmentation_);
+                        shutil.copy( os.path.join(self.patient_dir_, image), self.PVE_Segmentation_);
             #
             if T1File == "":
                 raise Exception("T1 file does not exist.")
+
             #
             # Set the ASL-raw folder
             asl_rawz_file = ""
@@ -751,7 +769,6 @@ class Protocol( object ):
             res = flt.run() 
             #
             #os.system("gunzip %s")%(GM_m0)
-            print "je passe 1"
             #
             GM_m0_warped = os.path.join(self.ACPC_Alignment_, "GM_warped_m0.nii.gz" )
             # warp GW in m0 framework (low resolution)
@@ -764,7 +781,6 @@ class Protocol( object ):
             res = aw.run()
             #
             #os.system("gunzip %s")%(GM_m0)
-            print "je passe 2"
             #
             # Cerebral blood flow within gray matter
             #
@@ -780,8 +796,6 @@ class Protocol( object ):
                                     op_string = "-mul GM_m0",
                                     out_file  = "CBF_GM.nii.gz")
             maths.run();
-            print "je passe 3"
-
         #
         #
         except Exception as inst:
