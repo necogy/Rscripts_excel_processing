@@ -14,44 +14,12 @@ from zipfile import ZipFile as zf
 #
 #
 #
+import Image_tools
 import EPI_distortion_correction
 #
 #
 #
 _log = logging.getLogger("__Arterial_Spin_Labeling__")
-#
-# Global function
-# 
-def generic_unix_cmd( Command ):
-    #
-    #
-    try:
-        #
-        # 
-        _log.debug( Command )
-        #
-        proc = subprocess.Popen( Command, shell = True,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE )
-        (output, error) = proc.communicate()
-        if error: 
-            raise Exception(error)
-        if output: 
-            _log.info(output)
-        if proc.returncode != 0:
-            raise Exception( Command + ': exited with error\n' + error )
-            #
-            #
-    except Exception as inst:
-        print inst
-        _log.error(inst)
-        quit(-1)
-    except IOError as e:
-        print "I/O error({0}): {1}".format(e.errno, e.strerror)
-        quit(-1)
-    except:
-        print "Unexpected error:", sys.exc_info()[0]
-        quit(-1)
 #
 #
 #
@@ -92,9 +60,15 @@ class Protocol( object ):
             # public variables
             self.patient_dir_ = "" # Patient directory
             # private variables
+            # T2
             self.ACPC_Alignment_   = ""
+            self.T2_file_          = []
+            # T1
             self.PVE_Segmentation_ = ""
+            self.T1_file_          = []
+            # ASL
             self.ASL_dicom_        = "";
+            self.ASL_file_         = []
         #
         #
         except Exception as inst:
@@ -146,109 +120,115 @@ class Protocol( object ):
         try:
             #
             # Check on the requiered files
-            # 
             #
-            # Find the T2 nifti file
-            T2file = ""
-            for fname in os.listdir( self.patient_dir_ ):
-                if fname.startswith('T2_') and fname.endswith('.nii'):
-                    T2File = fname;
-            print "passe 1", T2File
-            #
-            if T2File.endswith('.nii'):
-                shutil.copy( os.path.join(self.patient_dir_, T2File), self.ACPC_Alignment_ )
-            else:
-                for fname in os.listdir( self.patient_dir_ ):
-                    if fname.startswith('T2_') and fname.endswith('.hdr'):
-                        T2File = fname;
-                #
-                if T2File.endswith('.hdr'):
-                    _log.warning("T2 is ANALYZE file format.")
-                    image = "%s%s"%(T2File[:-3],"img")
-                    shutil.copy( os.path.join(self.patient_dir_, T2File), self.ACPC_Alignment_ )
-                    shutil.copy( os.path.join(self.patient_dir_, image),  self.ACPC_Alignment_ )
-                else:
-                    raise Exception("T2 file does not exist.")
-            print "passe n"
+            seeker = Image_tools.Seek_files( self.patient_dir_ )
 
             #
+            # Find the T2 nifti file
+            if seeker.seek_nifti( "T2_" ):
+                self.T2_file_ = seeker.get_files()
+                shutil.copy( os.path.join(self.patient_dir_, self.T2_file_[0]), self.ACPC_Alignment_ )
+            elif seeker.seek_analyze( "T2_" ):
+                self.T2_file_ = seeker.get_files()
+                shutil.copy( os.path.join(self.patient_dir_, self.T2_file_[0]), self.ACPC_Alignment_ )
+                shutil.copy( os.path.join(self.patient_dir_, self.T2_file_[1]), self.ACPC_Alignment_ )
+                # change into nifti
+                os.chdir(self.ACPC_Alignment_)
+                ana2nii = spm.Analyze2nii();
+                ana2nii.inputs.analyze_file = self.T2_file_[0]
+                ana2nii.nifti_file          = "%s.nii"%(self.T2_file_[0][:-4])
+                ana2nii.run();
+                #
+                os.remove( os.path.join(self.ACPC_Alignment_, self.T2_file_[0]) )
+                os.remove( os.path.join(self.ACPC_Alignment_, self.T2_file_[1]) )
+                self.T2_file_[0] = ana2nii.nifti_file
+                self.T2_file_[1] = ""
+                #
+                os.chdir(self.patient_dir_)
+            else:
+                raise Exception("T2 file does not exist.")
+                
+            #
             # Find the T1 nifti file
-            T1File = ""
-            T1_nii = False
-            for fname in os.listdir(self.patient_dir_):
-                if fname.startswith('MP-LAS-long') and fname.endswith('.nii'):
-                    T1File = fname;
-                    shutil.copy( os.path.join(self.patient_dir_,T1File), self.PVE_Segmentation_ );
-                    T1_nii = True
-                    break;
-                elif fname.startswith('MP-LAS') and fname.endswith('.nii'):
-                    T1File = fname;
-                    shutil.copy( os.path.join(self.patient_dir_, T1File), self.PVE_Segmentation_);
-                    T1_nii = True
-                    break;
-                elif fname.startswith('MP-LAS-long') and fname.endswith('.zip'):
-                    T1File = fname;
-                    shutil.copy( os.path.join(self.patient_dir_, T1File), self.PVE_Segmentation_ );
-                    os.chdir(self.PVE_Segmentation_);
-                    with zf(T1File) as zf_name:
-                        zf_name.extractall();
-                    cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n *'
-                    generic_unix_cmd(cmd)
-                    cmd = 'rm c*.nii o*.nii'
-                    generic_unix_cmd(cmd)
-                    T1_nii = True
-                    break;
-                elif fname.startswith('MP-LAS') and fname.endswith('.zip'):
-                    T1File = fname;
-                    shutil.copy( os.path.join(self.patient_dir_,T1File), self.PVE_Segmentation_ );
-                    os.chdir(self.PVE_Segmentation_);
-                    with zf(T1File) as zf_name:
-                        zf_name.extractall();
-                    cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n *'
-                    generic_unix_cmd(cmd)
-                    cmd = 'rm c*.nii o*.nii'
-                    generic_unix_cmd(cmd)
-                    T1_nii = True
-                    break;
-                else:
-                    T1_nii = False
-            
-            #
-            # If no nifti found, then use analyse
-            if T1_nii == False:
-                for fname in os.listdir(self.patient_dir_):
-                    if fname.startswith('MP-LAS') and fname.endswith('.hdr'):
-                        _log.warning("T1 is ANALYZE file format.")
-                        T1File = fname;
-                        image = "%s%s"%(T1File[:-3],"img")
-                        shutil.copy( os.path.join(self.patient_dir_, T1File), self.PVE_Segmentation_);
-                        shutil.copy( os.path.join(self.patient_dir_, image), self.PVE_Segmentation_);
-            #
-            if T1File == "":
+            if seeker.seek_nifti( "MP-LAS-long" ):
+                self.T1_file_ = seeker.get_files()
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+            elif seeker.seek_nifti( "MP-LAS-3DC" ):
+                self.T1_file_ = seeker.get_files()
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+            elif seeker.seek_zip( "MP-LAS-long" ):
+                self.T1_file_ = seeker.get_files()
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+                # unzip
+                os.chdir(self.PVE_Segmentation_);
+                with zf( self.T1_file_[0] ) as zf_name:
+                    zf_name.extractall();
+                # change into nifti
+                cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n *'
+                Image_tools.generic_unix_cmd(cmd)
+                cmd = 'rm c*.nii o*.nii'
+                Image_tools.generic_unix_cmd(cmd)
+                # replace extention
+                for fname in os.listdir(  self.PVE_Segmentation_ ):
+                    if fname.endswith( "nii" ):
+                        self.T1_file_[0] = fname
+                # Back to the orignal directory
+                os.chdir(self.patient_dir_);
+            elif seeker.seek_analyze( "MP-LAS-long" ):
+                self.T1_file_ = seeker.get_files()
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
+                # change into nifti
+                os.chdir(self.PVE_Segmentation_);
+                ana2nii = spm.Analyze2nii();
+                ana2nii.inputs.analyze_file = self.T1_file_[0]
+                ana2nii.nifti_file          = "%s.nii"%(self.T1_file_[0][:-4])
+                ana2nii.run();
+                #
+                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[0]) )
+                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[1]) )
+                self.T1_file_[0] = ana2nii.nifti_file
+                self.T1_file_[1] = ""
+                #
+                os.chdir(self.patient_dir_);
+            elif seeker.seek_analyze( "MP-LAS-3DC" ):
+                self.T1_file_ = seeker.get_files()
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
+                 # change into nifti
+                os.chdir(self.PVE_Segmentation_);
+                ana2nii = spm.Analyze2nii();
+                ana2nii.inputs.analyze_file = self.T1_file_[0]
+                ana2nii.nifti_file          = "%s.nii"%(self.T1_file_[0][:-4])
+                ana2nii.run();
+                #
+                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[0]) )
+                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[1]) )
+                self.T1_file_[0] = ana2nii.nifti_file
+                self.T1_file_[1] = ""
+                #
+                os.chdir(self.patient_dir_);
+            else:
                 raise Exception("T1 file does not exist.")
 
             #
             # Set the ASL-raw folder
-            asl_rawz_file = ""
-            for fname in os.listdir( self.patient_dir_ ):
-                if fname.startswith('ASL-raw') and fname.endswith('.zip'):
-                    asl_rawz_file = os.path.join(self.patient_dir_, fname)
-            #
-            if not os.path.isfile( asl_rawz_file ):
-                raise Exception("ASL-raw zip file does not exist." )
-            # unzips the raw asl dicom dir
-            with zf(asl_rawz_file) as zf_dir:
-                zf_dir.extractall( os.path.join(self.patient_dir_, 'ASL-raw') )
-            #
-            asl_sub_dir = ""
-            for fname in os.listdir( os.path.join(self.patient_dir_, 'ASL-raw') ):
-                asl_sub_dir = fname;
-            #
-            if not os.path.exists( os.path.join(self.patient_dir_, 'ASL-raw', asl_sub_dir) ):
-                raise Exception("ASL-raw sub-directory does not exist." )
+            if seeker.seek_zip( "ASL-raw" ):
+                self.ASL_file_ = seeker.get_files()
+                with zf( os.path.join(self.patient_dir_, self.ASL_file_[0]) ) as zf_dir:
+                    zf_dir.extractall( os.path.join(self.patient_dir_, 'ASL-raw') )
+                # Create subdirectories
+                asl_sub_dir = ""
+                for fname in os.listdir( os.path.join(self.patient_dir_, 'ASL-raw') ):
+                    asl_sub_dir = fname;
+                #
+                if not os.path.exists( os.path.join(self.patient_dir_, 'ASL-raw', asl_sub_dir) ):
+                    raise Exception("ASL-raw sub-directory does not exist." )
+                else:
+                    # Create a variable for the dicom directory
+                    self.ASL_dicom_ = os.path.join(self.patient_dir_, 'ASL-raw', asl_sub_dir)
             else:
-                # Create a variable for the dicom directory
-                self.ASL_dicom_ = os.path.join(self.patient_dir_, 'ASL-raw', asl_sub_dir)
+                raise Exception("ASL file does not exist.")
         #
         #
         except Exception as inst:
@@ -282,7 +262,7 @@ class Protocol( object ):
             for file_name in os.listdir( os.getcwd() ):
                 if file_name != "tagged" and file_name != "untagged" and file_name != "nii_all":
                     cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %file_name
-                    generic_unix_cmd(cmd)
+                    Image_tools.generic_unix_cmd(cmd)
 
             #
             # move into the nii_all dir and skull-strip/realign
@@ -294,7 +274,7 @@ class Protocol( object ):
             #
             # Run FSL BET() again
             os.chdir( os.path.join(self.ASL_dicom_, 'nii_all') );
-            self.run_bet( os.path.join(self.ASL_dicom_, 'nii_all') )
+            Image_tools.run_bet( os.path.join(self.ASL_dicom_, 'nii_all') )
             os.system('gunzip *brain.nii.gz');
             # Make skull-stripped_realigned dir
             os.mkdir(os.path.join( self.ASL_dicom_, 'nii_all', 'realigned_stripped') );
@@ -344,7 +324,7 @@ class Protocol( object ):
             # --out diff between tag-control
             # --mean average of diff between tag-control
             cmd='asl_file --data=asl.nii --ntis=1 --iaf=tc --diff --out=diffdata --mean=diffdata_mean'
-            generic_unix_cmd(cmd)
+            Image_tools.generic_unix_cmd(cmd)
             os.system('gunzip *.nii.gz')
             all_aligned_dir = os.getcwd()
         #
@@ -392,11 +372,11 @@ class Protocol( object ):
                 for file_name in os.listdir(directory):
                     if file_name.startswith(pref):
                         cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %file_name
-                        generic_unix_cmd(cmd)
+                        Image_tools.generic_unix_cmd(cmd)
                     elif file_name.startswith('m0'):
                         cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %file_name
-                        generic_unix_cmd(cmd)
-                self.run_bet( directory, 0.7 )
+                        Image_tools.generic_unix_cmd(cmd)
+                Image_tools.run_bet( directory, 0.7 )
                 # Realign the brain files
                 for file_name in os.listdir(directory):
                     if file_name.endswith('brain.nii.gz'):
@@ -524,25 +504,24 @@ class Protocol( object ):
         """Run SPM new segmentation. The results will be aligned within the T2 framework for the partial volume estimation (PVE) and the partial volume correction of the cerebral blood flow analysise. """
         try: 
             #
-            # Go into dir with acpc_aligned t1 and find the t1 filename
-            T1_file = ""
-            for file_name in os.listdir( self.PVE_Segmentation_ ):
-                if file_name.endswith(".nii.gz"):
-                    T1_file = file_name
-                    os.system('gunzip %s'%T1_file )
-                    T1_file = file_name[:-3]
-                elif file_name.endswith(".nii"):
-                    T1_file = file_name
-#                elif file_name.endswith(".hdr"):
-#                    T1_file = file_name
+            # Go into dir with PVE t1 and find the t1 filename
+            os.chdir( self.PVE_Segmentation_ )
+            # 
+            T1_file = self.T1_file_[0]
+            print T1_file
+            print self.T1_file_[0]
+            print self.T1_file_
+            if T1_file.endswith(".nii.gz"):
+                os.system('gunzip %s'%self.T1_file_[0] )
+                T1_file = "%s.nii"%(self.T1_file_[0][:-4])
             #
             if not os.path.isfile( os.path.join(self.PVE_Segmentation_, T1_file) ):
                 raise Exception( "No T1 nifti file found" )
             else:
                 T1_file = os.path.join(self.PVE_Segmentation_, T1_file)
+
             #
             # Run Spm_NewSegment on the T1 to get GM,WM,ventricles
-            os.chdir( self.PVE_Segmentation_ )
             seg = spm.NewSegment();
             seg.inputs.channel_files = T1_file;
             seg.inputs.channel_info  = (0.0001, 60, (True, True))
@@ -636,7 +615,7 @@ class Protocol( object ):
             os.chdir( self.ACPC_Alignment_ )
             #
             # Extract skull from T2 and the mask. TODO, some tests can be done with the mask instead.
-            self.run_bet( self.ACPC_Alignment_, 0.6, True, True)
+            Image_tools.run_bet( self.ACPC_Alignment_, 0.6, True, True)
             #
             T2_skull_stripped = ""
             for file_name in os.listdir( self.ACPC_Alignment_ ):
@@ -721,7 +700,7 @@ class Protocol( object ):
             #
             # realigne PWI with m0
             os.chdir( self.ACPC_Alignment_ )
-            # Rigid registration of T2 (or mask) in m0 with repading; degree of freedom = 12
+            # Rigid registration of PWI in m0; degree of freedom = 12
             PWI_corrected_m0 = os.path.join(self.ACPC_Alignment_, "PWI_corrected_3D_m0.nii.gz" )
             #
             flt = fsl.FLIRT()
@@ -754,7 +733,7 @@ class Protocol( object ):
                     T1_file = os.path.join( self.PVE_Segmentation_, file_name )
 
             #
-            # Rigid registration of T2 (or mask) in m0 with repading; degree of freedom = 12
+            # Rigid registration of GM in m0 with repading; degree of freedom = 12
             if not os.path.isfile( os.path.join(self.PVE_Segmentation_, c1_file) ):
                 raise Exception( "No gray matter found." )
             #
@@ -808,21 +787,6 @@ class Protocol( object ):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             quit(-1)
-    #
-    #
-    #
-    def run_bet( self, Directory, Frac = 0.6, Robust = True, Mask = False):
-        """ Function uses FSL Bet to skullstrip all the niftii files."""
-        os.chdir( Directory );
-        for file_name in os.listdir( os.getcwd() ):
-            if file_name.endswith(".nii"):
-                btr = fsl.BET();
-                btr.inputs.in_file = file_name;
-                btr.inputs.frac    = Frac;
-                btr.inputs.robust  = Robust;
-                btr.inputs.mask    = Mask;
-                print "Extracting brain from epi %s......" %(file_name)
-                res = btr.run();
     #
     #
     #
