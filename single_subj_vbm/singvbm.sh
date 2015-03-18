@@ -1,7 +1,12 @@
 #single_subject_vbm
 #SYNTAX: singvbm.sh PIDN-yyyy-mm-dd
 
-scannoext=`echo ${1} | rev | cut -c 5-200 | rev`
+#scannoext=`echo ${1} | rev | cut -c 5-200 | rev`
+
+red='\e[1;31m'
+NC='\e[0m'  
+lightblue='\e[1;34m'
+
 
 #Error messages_______________________________________________________________________________________________________________________
 if [ "$1" = "" ]; then
@@ -29,7 +34,7 @@ fi
 #User Prompts_________________________________________________________________________________________________________________________
 
 echo ""
-echo "AGE?"
+echo -e "${lightblue}AGE?${NC}"
 read AGE
 
 if [ "$AGE" -eq "$AGE" ] 2>/dev/null; then
@@ -39,7 +44,7 @@ if [ "$AGE" -eq "$AGE" ] 2>/dev/null; then
 fi
 
 
-echo "SEX? (1=M, 2=F)"
+echo -e "${lightblue}SEX? (1=M, 2=F)${NC}"
 read SEX
 
 if [ "$SEX" -eq "$SEX" ] 2>/dev/null; then
@@ -54,7 +59,7 @@ if [ "$SEX" -ne "1" ] && [ "$SEX" -ne "2" ] 2>/dev/null; then
 fi
 
 
-echo "NUMBER OF CONTROLS?"
+echo -e "${lightblue}NUMBER OF CONTROLS?${NC}"
 read CONNUM
 
 if [ "$CONNUM" -eq "$CONNUM" ] 2>/dev/null; then
@@ -73,8 +78,9 @@ if [ "$CONNUM" -lt 0 ] 2>/dev/null; then
   exit
 fi
 
-echo "MATCH FOR SEX? (Y/N)"
+echo -e "${lightblue}MATCH FOR SEX? (Y/N)${NC}"
 read SEXMATCH
+
 
 if [ "$SEXMATCH" != "Y" ] && [ "$SEXMATCH" != "N" ] && [ "$SEXMATCH" != "n" ] && [ "$SEXMATCH" != "y" ] && [ "$SEXMATCH" != "NO" ] && [ "$SEXMATCH" != "YES" ] && [ "$SEXMATCH" != "yes" ] && [ "$SEXMATCH" != "no" ] ; then
   echo "Response must be Y or N"
@@ -83,13 +89,6 @@ if [ "$SEXMATCH" != "Y" ] && [ "$SEXMATCH" != "N" ] && [ "$SEXMATCH" != "n" ] &&
 fi
 
 #PULLING-T1-LONG-IMAGE______________________________________________________
-
-red='\e[1;31m'
-NC='\e[0m'  
-lightblue='\e[1;34m'
-
-
-
 
 dash=`echo $1 | cut -c 5`
     if [ "$dash" = "-" ]; then
@@ -221,14 +220,19 @@ if [ $PROCEED == "n" ] || [ $PROCEED == "N" ]; then
   exit
 fi
 
+PROCEED='Y'
+
+
+
 #Segment the scan_______________________________________________________________________________________
       
       if [ $PROCEED = 'Y' ] || [ $PROCEED = 'y' ]; then
       echo ""
       echo -e "${lightblue}Segmenting ${scannoext}${NC}"
-      #matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath('../singvbm'),spm12_segment('./${FILE}','../singvbm'),quit()" 1>/dev/null;
+      matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath(strcat(pwd,'/../singvbm')),addpath(strcat(pwd,'/../singvbm/spm12b')),spm12_segment('./${FILE}','../singvbm/spm12b'),quit()" 1>/dev/null;
       echo "Check segmentation quality"
-      #LD_LIBRARY_PATH=/usr/lib; fslview ${FILE} c1${scannoext}.nii -l Red -t 0.5 c2${scannoext}.nii -l Blue -t 0.5
+      LD_LIBRARY_PATH=/usr/lib 
+      fslview ${FILE} c1${scannoext}.nii -l Red -t 0.5 c2${scannoext}.nii -l Blue -t 0.5
       fi
 
       echo "Proceed? (Y/N)"
@@ -261,13 +265,13 @@ fi
       echo "TIV = ${TIV}"
       echo "TIV = ${TIV}" >> ./tiv_${scannoext}.txt
       echo ${TIV} >> ./controls_$NOW/tivs.txt
-
+      cd $home
 #Register to pre-existing dartel template__________________________________________________________________
       echo ""
       echo -e "${lightblue}Registering rc1${scannoext}.nii and rc2${scannoext}.nii to pre-existing DARTEL template${NC}"
       rc1image=$(ls rc1${scannoext}.nii)
       rc2image=$(ls rc2${scannoext}.nii)
-     # matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath('../singvbm'),spm12_dartel('./${rc1image}','./${rc2image}','../singvbm'),quit()" 1>/dev/null;
+      matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath(strcat(pwd,'/../singvbm')),addpath(strcat(pwd,'/../singvbm/spm12b')),spm12_dartel('./${rc1image}','./${rc2image}','../singvbm'),quit()" 1>/dev/null;
       cd $home
 
 #Normalize to MNI space and smooth with 8 mm kernel________________________________________________________
@@ -276,7 +280,7 @@ fi
       echo -e "${lightblue}Normalizing c1_${scannoext}.nii to MNI space and smoothing with 8mm kernel${NC}"
       c1image=$(ls c1${scannoext}.nii)
       uimage=$(ls u_rc1${scannoext}.nii)
-      #matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath('../singvbm'),spm12_mnidartelreg('./${c1image}','./${uimage}','../singvbm'),quit()" 1>/dev/null
+      matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath(strcat(pwd,'/../singvbm')),addpath(strcat(pwd,'/../singvbm/spm12b')),spm12_mnidartelreg('./${c1image}','./${uimage}','../singvbm'),quit()" 1>/dev/null
       cd $home
       fi
 
@@ -286,17 +290,15 @@ fi
       echo "Generating model"
       mkdir ./results_$NOW
       smwc1image=$(ls smwc1${scannoext}.nii)
-      matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath('../singvbm'),spm12_model_build('./${smwc1image}','./controls_$NOW','./results_$NOW','./controls_$NOW/age.txt','./controls_$NOW/tivs.txt'),quit()" 1>/dev/null
-
+      matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath(strcat(pwd,'/../singvbm')),addpath(strcat(pwd,'/../singvbm/spm12b')),spm12_model_build('./${smwc1image}','./controls_$NOW','./results_$NOW','./controls_$NOW/age.txt','./controls_$NOW/tivs.txt'),quit()" 1>/dev/null
+      cd $home
       echo "Estimating model"
-      matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath('../singvbm'),spm12_model_estimate('./results_$NOW/SPM.mat'),quit()" 1>/dev/null
-      
+      matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath(strcat(pwd,'/../singvbm')),addpath(strcat(pwd,'/../singvbm/spm12b')),spm12_model_estimate('./results_$NOW/SPM.mat'),quit()" 1>/dev/null
       echo "Creating contrasts"
-      matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath('../singvbm'),spm12_contrasts('./results_$NOW/SPM.mat'),quit()" 1>/dev/null
-
+      matlab -nojvm -nodesktop -nodisplay -nosplash -r "addpath(strcat(pwd,'/../singvbm')),addpath(strcat(pwd,'/../singvbm/spm12b')),spm12_contrasts('./results_$NOW/SPM.mat'),quit()" 1>/dev/null
       echo "Generating results..."
-      matlab -nosplash -nodesktop -r "addpath('../singvbm'),spm12_results('./results_$NOW/SPM.mat'),quit()" 1>/dev/null
-      matlab -nojvm -nosplash -nodesktop -nodisplay -r "addpath('../singvbm'),calculate_T_value('./results_$NOW'),quit()" 1>/dev/null
+      matlab -nosplash -nodesktop -r "addpath(strcat(pwd,'/../singvbm')),addpath(strcat(pwd,'/../singvbm/spm12b')),spm12_results('./results_$NOW/SPM.mat'),quit()" 1>/dev/null
+      matlab -nojvm -nosplash -nodesktop -nodisplay -r "addpath(strcat(pwd,'/../singvbm')),addpath(strcat(pwd,'/../singvbm/spm12b')),calculate_T_value('./results_$NOW'),quit()" 1>/dev/null
       tvalue=$(cat ./results_$NOW/tvalue.txt | cut -c 1-5)
       fslmaths ./results_$NOW/spmT_0001.nii -thr $tvalue ./results_$NOW/thr001_spmT_0001.nii; 
       gunzip ./results_$NOW/thr001*gz
