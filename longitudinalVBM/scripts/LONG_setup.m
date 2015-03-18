@@ -17,12 +17,26 @@ clear
 %% 1. Initialize: 
 clear
 % a. Load parameters:
-LONG_config %<-------------- OPEN THIS and replace with paths specific to your study
+%LONG_config %<-------------- OPEN THIS and replace with paths specific to your study
+%path to data:
+scandatafolder = fullfile('R:\groups\rosen\longitudinalVBM\SD_floor_project\test_timepointwarping02_2015\');
+
+%path to spm12 folder:
+spmpath = fileparts(which('spm'));
+
+%path to dartel template for your study (or where a dartel template will
+%be created if it doesn't exist yet):
+templatepath = 'path_to_dartel_template'; % set this to the new template folder name.
+templatepath='R:\groups\rosen\longitudinalVBM\SD_floor_project'
+
+%path to ROIs to use to extract mean/median change values from a specific
+%ROI:
+pathtoROIs = 'path_to_ROIs_for_extraction';% set this to the new template folder name. Make sure the ROIs are in the same space as your images to extract from
 
 % b. Load Data
 scans_to_process = LONG_load_inputfile( scandatafolder );
 
-%%PREPROCESSING (Steps 2-6)
+%% PREPROCESSING (Steps 2-6)
 
 %% 2. Longitudinal registration to generate subject average images 
 scans_to_process = LONG_run_registration( scans_to_process ); 
@@ -47,23 +61,39 @@ DARTELpatients =[98;588;951;1004;1176;1319;13919;14427;15774;84;11028;11704;1177
 PIDNlist = [DARTELnorms ; DARTELpatients];
 scans_to_process = LONG_DARTELregistration_to_new(scans_to_process, PIDNlist);  %create new template
 
-% After generating a template in the previous step, MOVE GENERATED TEMPLATE FILES TO the TEMPLATE FOLDER you specify in LONG_config 
+% After generating a template in the previous step, MOVE GENERATED TEMPLATE FILES TO the TEMPLATE FOLDER you then specify in LONG_config 
 scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templatepath);
 
 %% 5. multiply segmented mean images with longitudinal change maps
 scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
 
-%% 6. Transform longitudinal images to group/MNI space
+%% 6. Transform longitudinal images to group DARTEL space
 scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 % at this point you have generated warped change maps that can be used for
 % statistical analysis, you might want to smooth the images using the
 % following steps.
 
+%% Generate population to ICBM registration deformation field
+SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
+
+%% push dartel images to ICBM 
+LONG_pushDARTELtoICBM(scans_to_process, templatepath);
+
+%% WARP MNI ROIs to DARTEL
+SA_SPM12_warpMNI_ROIstoDARTEL(fullfile(templatepath, 'y_Template_6_2mni.nii'),fullfile(templatepath, 'Template_6.nii'), pathtoROIs)
+
+
+%% %%%%% up to here revised 02/19/15
+
+
+
+%% SMOOTHING: pick one of the two following smoothing methods:
+
 %% Smooth individual participant change maps images for stats 
 fwhm = 6 ; % <-- this should be changed depending on the data
 scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 
-%% T-Spoon for stats ( you might not want to use this vs normal smoothing below)
+%% T-Spoon for stats ( you might not want to use this vs normal smoothing)
 % T-spoon smoothing is an improved algorithm for smoothing that reduces the
 % effect of smoothing the brain outside of the actual brain
 scans_to_process = LONG_tspoon_changemaps(scans_to_process);
@@ -92,6 +122,9 @@ scans_to_process = LONG_run_segmentation( scans_to_process, 'time1', spmpath );
 scans_to_process = LONG_run_segmentation( scans_to_process, 'time2', spmpath ); 
 
 %% %%%%%%% USE STEPS BELOW AT YOUR OWN RISK, not all fully vetted %%%%%%%%%%%%%
+templatepath = 'R:\groups\rosen\longitudinalVBM\SD_floor_project';
+scans_to_process = LONG_sequential_warp_to_MNI(scans_to_process, templatepath);
+
 
 %% Transform time1 and time2 data to mni using intermediate longitudinal image warp
 % This step might be broken.
@@ -103,8 +136,12 @@ scans_to_process = LONG_extractROIsinDARTEL(scans_to_process, changemapprefix, p
 
 %% extract mean/median change values from warped timepoints (MNI) and save to scans_to_process
 %pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
+pathtoROIs = 'R:\groups\rosen\longitudinalVBM\SD_floor_project\ROIs15'
 scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time1'); %extract ROI values and add to scans_to_process structure
 scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time2'); %extract ROI values and add to scans_to_process structure
+
+scans_to_process = LONG_extractMNItimepointROIVolumes(scans_to_process, pathtoROIs, 'time1'); %extract ROI values and add to scans_to_process structure
+scans_to_process = LONG_extractMNItimepointROIVolumes(scans_to_process, pathtoROIs, 'time2'); %extract ROI values and add to scans_to_process structure
 
 nativeROIvolumes_time1 = LONG_exportMNI_ROIs(scans_to_process, 'time1');
 nativeROIvolumes_time2 = LONG_exportMNI_ROIs(scans_to_process, 'time2');
@@ -128,8 +165,8 @@ scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'ti
 scans_to_process = LONG_extractROIsInNativeSpace(scans_to_process, ROInames, 'time2', ROImodulationon);
 
 %export native ROI volumes
+
 nativeROIvolumes_time1 = LONG_exportNativeROIs(scans_to_process, 'time1')';
 nativeROIvolumes_time2 = LONG_exportNativeROIs(scans_to_process, 'time2')';
-
 
 
