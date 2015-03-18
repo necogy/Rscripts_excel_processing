@@ -23,6 +23,10 @@ classdef LONG_participant
         MNI_ROIextractionsTime1
         MNI_ROIextractionsTime2
         
+        MNI_ROIvolumesTime1
+        MNI_ROIvolumesTime2
+        
+        
         baselineGMvol
         baselineWMvol
         baselineCSFvol
@@ -78,13 +82,13 @@ classdef LONG_participant
                 lp.Date2num = date(I(2));
                 
                 %load filenames
-                file1 = SAdir(fullfile(datapath,pidn, lp.Date1), '^MP-LAS_\S+(.img|.nii)');
+                file1 = SAdir(fullfile(datapath,pidn, lp.Date1), '^MP-LAS\S+(.img|.nii)');
                 lp.Time1file = file1.name;
                 
                 filepath1 = fullfile(datapath,pidn, lp.Date1, lp.Time1file);
                 time1header = spm_vol(filepath1);
                 %file2 = SAdir(fullfile(datapath,pidn, lp.Date2), '^MP-LAS\w+(.img|.nii)');
-                file2 = SAdir(fullfile(datapath,pidn, lp.Date2), '^MP-LAS_\S+(.img|.nii)');
+                file2 = SAdir(fullfile(datapath,pidn, lp.Date2), '^MP-LAS\S+(.img|.nii)');
 
                 lp.Time2file=file2.name;
                 filepath2 = fullfile(datapath,pidn, lp.Date2, lp.Time2file);

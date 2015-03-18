@@ -1,5 +1,5 @@
 function scans_to_process = LONG_DARTEL_to_MNI( scans_to_process, dartelpath )
-%LONG_DARTEL_to_MNI - warp DARTEL to MNI 
+%LONG_DARTEL_to_MNI - warp from subject to DARTEL
 %
 % Syntax:  scans_to_process = LONG_DARTEL_to_MNI( scans_to_process)
 %
@@ -34,7 +34,7 @@ for subject = 1:size(scans_to_process,2)
 
     
     spm_jobman('initcfg');
-    matlabbatch{1}.spm.tools.dartel.mni_norm.template = cellstr(template);
+    matlabbatch{1}.spm.tools.dartel.mni_norm.template = {''};% cellstr(template); as of 2/19/2015 i recommend not using this affine transformation and use the ICBM transform instead. -Suneth
     matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.flowfields = cellstr(flowfield);
     
     for image = 1:size(imageprefixes,2)    

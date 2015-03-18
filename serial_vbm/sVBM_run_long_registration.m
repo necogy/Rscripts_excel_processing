@@ -24,6 +24,14 @@ spm('defaults', 'PET');
 spm_jobman('initcfg');
 
 for subject = 1:size(scans_to_process,2) % for every subject
+    clear volumes
+    clear times
+    clear file
+    clear fullpath
+    clear timedeltas
+    clear avgdirectory
+    clear d
+    
     for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
         
         file = scans_to_process(subject).Timepoint{timepoint}.File.name;
@@ -37,7 +45,7 @@ for subject = 1:size(scans_to_process,2) % for every subject
     %compute timedeltas
     timedeltas = (times-times(1))/365.25 ;
     
-    disp(['Now running longitudinal Registration on: ' num2str(scans_to_process(subject).PIDN )])
+    disp(['Now running longitudinal Registration on: ' num2str(scans_to_process(subject).PIDN ) ' at ' datestr(now)])
     
     % check for existing avg files
     
@@ -50,7 +58,7 @@ for subject = 1:size(scans_to_process,2) % for every subject
             avgfile = fullfile(scans_to_process(subject).Timepoint{1}.Fullpath, scans_to_process(subject).Timepoint{1}.File.name);
             avgfile=strrep(avgfile, '.img', '.nii');
             avgfile = SAinsertStr2Paths(avgfile, 'avg_');
-            [status,message,~]=movefile(avgfile,avgdirectory)     
+            [status,message,~]=movefile(avgfile,avgdirectory)
         catch
             disp(['problem registering: ' num2str(scans_to_process(subject).PIDN )])
         end
@@ -60,9 +68,7 @@ for subject = 1:size(scans_to_process,2) % for every subject
     end
     
 end
-clear volumes
-clear times
-clear timedeltas
+
 end
 
 function registersubject(volumes, timedeltas)
