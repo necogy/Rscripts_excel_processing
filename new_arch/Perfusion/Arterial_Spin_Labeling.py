@@ -699,7 +699,45 @@ class Protocol( object ):
                                     op_string = '-fmean -kernel 3D ', 
                                     out_file  = "%s_3D.nii.gz" %(distortion.control_corrected_[:-4]) )
             maths.run();
+            
+            #
+            # Production of high definition (HD) map
+            #
 
+            #
+            # Rigid registration of m0 in T2 with repading; degree of freedom = 12
+            m0_brain_corrected_T2 = os.path.join(self.ACPC_Alignment_, "m0_brain_corrected_T2.nii.gz" )
+            #
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_, "m0_brain_corrected.nii")
+            flt.inputs.reference       = T2_skull_stripped[:-3]
+            flt.inputs.out_file        = m0_brain_corrected_T2
+            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "m02T2.mat")
+            flt.inputs.args            = "-dof 12"
+            res = flt.run() 
+            # Filter the maps. Using 3D filter, we assume the blood flow being the same 
+            # in the neighboring voxels
+            maths = fsl.ImageMaths( in_file   = m0_brain_corrected_T2, 
+                                    op_string = '-fmean -kernel 3D ', 
+                                    out_file  = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]) )
+            maths.run();
+            #
+            # Rigid registration of PWI in T2 with repading; degree of freedom = 12
+            PWI_corrected_T2 = os.path.join(self.ACPC_Alignment_, "PWI_corrected_T2.nii.gz" )
+            #
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_, "PWI_corrected.nii")
+            flt.inputs.reference       = T2_skull_stripped[:-3]
+            flt.inputs.out_file        = PWI_corrected_T2
+            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "PWI2T2.mat")
+            flt.inputs.args            = "-dof 12"
+            res = flt.run() 
+            # Filter the maps. Using 3D filter, we assume the blood flow being the same 
+            # in the neighboring voxels
+            maths = fsl.ImageMaths( in_file   = PWI_corrected_T2, 
+                                    op_string = '-fmean -kernel 3D ', 
+                                    out_file  = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]) )
+            maths.run();
         #
         #
         except Exception as inst:
@@ -721,7 +759,7 @@ class Protocol( object ):
             #
             # realigne PWI with m0
             os.chdir( self.ACPC_Alignment_ )
-            # Rigid registration of T2 (or mask) in m0 with repading; degree of freedom = 12
+            # Rigid registration of PWI in m0; degree of freedom = 12
             PWI_corrected_m0 = os.path.join(self.ACPC_Alignment_, "PWI_corrected_3D_m0.nii.gz" )
             #
             flt = fsl.FLIRT()
@@ -739,13 +777,13 @@ class Protocol( object ):
             #
            
             #
-            # Gather GM, WM and CSF
+            # Gather GM, WM and CSF registered with T2
             c1_file = "" # GM
             c2_file = "" # WM
             c3_file = "" # CSF
             for file_name in os.listdir( self.PVE_Segmentation_ ):
                 if file_name.startswith("c1") and file_name.endswith("T2.nii"):
-                    c1_file = file_name
+                    c1_file = os.path.join( self.PVE_Segmentation_, file_name )
                 if file_name.startswith("c2"):
                     c2_file = file_name
                 if file_name.startswith("c3"):
@@ -754,33 +792,30 @@ class Protocol( object ):
                     T1_file = os.path.join( self.PVE_Segmentation_, file_name )
 
             #
-            # Rigid registration of T2 (or mask) in m0 with repading; degree of freedom = 12
-            if not os.path.isfile( os.path.join(self.PVE_Segmentation_, c1_file) ):
+            # Rigid registration of GM in m0 with repading; degree of freedom = 12
+            if not os.path.isfile( c1_file ):
                 raise Exception( "No gray matter found." )
             #
             GM_m0 = os.path.join(self.ACPC_Alignment_, "GM_m0.nii.gz" )
             #
             flt = fsl.FLIRT()
-            flt.inputs.in_file         = os.path.join( self.PVE_Segmentation_, c1_file )
+            flt.inputs.in_file         = c1_file
             flt.inputs.reference       = os.path.join( self.ACPC_Alignment_, "m0_brain_corrected.nii" )
             flt.inputs.out_file        = GM_m0
             flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "GM2m0.mat")
             flt.inputs.args            = "-dof 12"
             res = flt.run() 
             #
-            #os.system("gunzip %s")%(GM_m0)
-            #
             GM_m0_warped = os.path.join(self.ACPC_Alignment_, "GM_warped_m0.nii.gz" )
             # warp GW in m0 framework (low resolution)
             aw = fsl.ApplyWarp()
-            aw.inputs.in_file    = os.path.join( self.PVE_Segmentation_, c1_file )
+            aw.inputs.in_file    = c1_file
             aw.inputs.ref_file   = os.path.join( self.ACPC_Alignment_, "m0_brain_corrected.nii" )
             aw.inputs.out_file   = GM_m0_warped
             aw.inputs.premat     = os.path.join(self.ACPC_Alignment_, "GM2m0.mat")
             aw.inputs.args       = "--super --interp=spline --superlevel=4"
             res = aw.run()
-            #
-            #os.system("gunzip %s")%(GM_m0)
+
             #
             # Cerebral blood flow within gray matter
             #
@@ -795,6 +830,24 @@ class Protocol( object ):
             maths = fsl.ImageMaths( in_file   = "CBF.nii.gz", 
                                     op_string = "-mul GM_m0",
                                     out_file  = "CBF_GM.nii.gz")
+            maths.run();
+            
+            #
+            # CBF and PWI HD
+            # CBF HD
+            maths = fsl.ImageMaths( in_file   = "PWI_corrected_T2_3D.nii.gz", 
+                                    op_string = "-div m0_brain_corrected_T2_3D.nii.gz",
+                                    out_file  = "CBF_T2.nii.gz")
+            maths.run();
+            # CBF in GM HD
+            maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz", 
+                                    op_string = "-mul %s"%(c1_file),
+                                    out_file  = "CBF_GM_T2.nii.gz")
+            maths.run();
+            # PWI in GM HD
+            maths = fsl.ImageMaths( in_file   = "PWI_corrected_T2_3D.nii.gz", 
+                                    op_string = "-mul %s"%(c1_file),
+                                    out_file  = "PWI_GM_T2.nii.gz")
             maths.run();
         #
         #
