@@ -28,13 +28,16 @@ spmpath = fileparts(which('spm')); % add this to scans_to_process structure
 imageprefixes = {'l_c1avg_jd','l_c1avg_dv','l_c2avg_jd','l_c2avg_dv' };
 
 for subject = 1:size(scans_to_process,2)
+      flowfield =  fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, ['u_rc1avg_'  scans_to_process(subject).Time1file]);
+    flowfield = strrep(flowfield, 'img', 'nii'); 
     matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.inv.comp{1}.def  = {fullfile(templatepath, 'y_Template_6_2mni.nii')};
-    matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.inv.space
-    matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.flowfield
+    matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{1}.inv.space={fullfile(spmpath,'toolbox','DARTEL','icbm152.nii')};
+    matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.flowfield = {flowfield} 
     matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.times = [1 0];
     matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.K = 6;
     matlabbatch{1}.spm.util.defs.comp{1}.inv.comp{2}.dartel.template = {''};
-    
+    matlabbatch{1}.spm.util.defs.comp{1}.inv.space = {fullfile(spmpath,'toolbox','DARTEL','icbm152.nii')};
+
     for image = 1:size(imageprefixes,2)
         d=SAdir(fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1), ['^' imageprefixes{image} '.*nii']);
         imagetowarp = fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1, d.name) ;
@@ -48,6 +51,7 @@ for subject = 1:size(scans_to_process,2)
     matlabbatch{1}.spm.util.defs.out{1}.push.fwhm = [0 0 0];
     spm_jobman('run',matlabbatch);
     clear matlabbatch
+    clear flowfield
 end % subject = 1:size(scans_to_process,2)
 
 end % LONG_pushAVGtoICBMviaDARTEL(scans_to_process, templatepath)
