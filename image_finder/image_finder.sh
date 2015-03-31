@@ -12,7 +12,7 @@ NOW=$(date +"%Y%m%d%H%M%S")
 #Error messages_______________________________________________________________________________________________________________________
 if [ "$1" = "" ]; then
 	echo "SYNTAX: image_finder.sh input.txt"
-  echo "IMAGE TYPES: T1-LONG, T1-LONG-3DC, ADNI-T1, T1-SHORT, T1-SHORT-3DC, T2, T2-3DC, FLAIR, FLAIR-3DC, rsfMRI, DTI-v1, DTI-v2, DTI-v4, ASL";
+  echo "IMAGE TYPES: T1-LONG, T1-LONG-3DC, ADNI-T1, T1-SHORT, T1-SHORT-3DC, T2, T2-3DC, FLAIR, FLAIR-3DC, rsfMRI, DTI-v1, DTI-v2, DTI-v4, ASL, ASL-MoCo";
   echo "INPUT TEXT FILE FORMAT: PIDN-YYYY-MM-DD"
 	exit 
 fi
@@ -38,7 +38,7 @@ fi
 
 if [ "$TYPE" != "DTI-v1" ] && [ "$TYPE" != "DTI-v2" ] && [ "$TYPE" != "DTI-v5" ] && [ "$TYPE" != "ADNI-T1" ] && [ "$TYPE" != "T1-LONG" ] && [ "$TYPE" != "T1-LONG-3DC" ] && [ "$TYPE" != "T2" ] && [ "$TYPE" != "T2-3DC" ] && [ "$TYPE" != "rsfMRI" ] && [ "$TYPE" != "FLAIR" ] && [ "$TYPE" != "FLAIR-3DC" ] && [ "$TYPE" != "ASL" ] && [ "$TYPE" != "ASL-MoCo" ] && [ "$TYPE" != "T1-SHORT" ] && [ "$TYPE" != "T1-SHORT-3DC" ] && [ "$TYPE" != "DTI-v4" ]; then
 	echo "Image type not recognized";
-	echo "IMAGE TYPES: T1-LONG, T1-LONG-3DC, ADNI-T1, T1-SHORT, T1-SHORT-3DC, T2, T2-3DC, FLAIR, FLAIR-3DC, rsfMRI, DTI-v1, DTI-v2, DTI-v4, DTI-v5, ASL";
+	echo "IMAGE TYPES: T1-LONG, T1-LONG-3DC, ADNI-T1, T1-SHORT, T1-SHORT-3DC, T2, T2-3DC, FLAIR, FLAIR-3DC, rsfMRI, DTI-v1, DTI-v2, DTI-v4, DTI-v5, ASL, ASL-MoCo";
 	exit;
 fi
 
