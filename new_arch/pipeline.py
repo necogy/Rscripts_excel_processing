@@ -15,4 +15,5 @@ fullpath = sys.argv[1]
 #
 asl = Arterial_Spin_Labeling.Protocol()
 asl.patient_dir_ = os.path.join( fullpath, sys.argv[2] )
+#asl.patient_dir_ = os.path.join( fullpath )
 asl.run()

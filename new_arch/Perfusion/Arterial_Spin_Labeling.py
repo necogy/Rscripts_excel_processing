@@ -2,6 +2,7 @@ import sys
 import inspect
 import shutil
 import os
+import tempfile
 import subprocess
 import logging
 import nipype
@@ -69,6 +70,9 @@ class Protocol( object ):
             # ASL
             self.ASL_dicom_        = "";
             self.ASL_file_         = []
+            # Masks
+            self.brain_mask_       = ""
+            self.gm_mask_          = ""
         #
         #
         except Exception as inst:
@@ -584,11 +588,72 @@ class Protocol( object ):
             flt.inputs.in_matrix_file  = matrix_T1_in_T2
             flt.inputs.args            = "-dof 6"
             res = flt.run() 
+            # c3
+            c3_in_T2 = "%s_T2.nii.gz"%(c3_file[:-4])
+            #
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = c3_file
+            flt.inputs.reference       = T2_file
+            flt.inputs.out_file        = c3_in_T2
+            flt.inputs.apply_xfm       = True
+            flt.inputs.in_matrix_file  = matrix_T1_in_T2
+            flt.inputs.args            = "-dof 6"
+            res = flt.run()
+
+            #
+            # Create a mask for T2 brain extraction
+            #
+
+            #
+            # Add c1 (GM), c2 (WM) and c3 (CSF) and create a binary mask
+            maths = fsl.ImageMaths( in_file   = c1_in_T2,
+                                    op_string = '-add %s -add %s'%(c2_in_T2, c3_in_T2), 
+                                    out_file  = "brain_mask.nii.gz" )
+            maths.run();
+            #
+            maths = fsl.ImageMaths( in_file   = "brain_mask.nii.gz",
+                                    op_string = '-thr 0.35  -fillh26 -bin',
+                                    out_file  = "brain_mask.nii.gz" )
+            maths.run();
+            self.brain_mask_ = os.path.join( self.PVE_Segmentation_, "brain_mask.nii.gz" )
+
+            #
+            # Croping the probability maps into the brain area
+            #
+            
+            #
+            # c1
+            maths = fsl.ImageMaths( in_file   = c1_in_T2,
+                                    op_string = '-mas %s'%(self.brain_mask_), 
+                                    out_file  = c1_in_T2 )
+            maths.run();
+            # c2
+            maths = fsl.ImageMaths( in_file   = c2_in_T2,
+                                    op_string = '-mas %s'%(self.brain_mask_), 
+                                    out_file  = c2_in_T2 )
+            maths.run();
+            # c3
+            maths = fsl.ImageMaths( in_file   = c3_in_T2,
+                                    op_string = '-mas %s'%(self.brain_mask_), 
+                                    out_file  = c3_in_T2 )
+            maths.run();
+
+            #
+            # Create a mask only for the gray matter
+            #
+            
+            #
+            # This filter will remove 0 +- epsilon values from the flow spectrum
+            maths = fsl.ImageMaths( in_file   = c1_in_T2,
+                                    op_string = '-thr 0.35  -fillh26 -bin',
+                                    out_file  = "c1_T2_mask.nii.gz")
+            maths.run();
+            self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
             #
             os.system("gunzip %s"%(T1_in_T2))
             os.system("gunzip %s"%(c1_in_T2))
             os.system("gunzip %s"%(c2_in_T2))
-
+            os.system("gunzip %s"%(c3_in_T2))
         #
         #
         except Exception as inst:
@@ -611,13 +676,14 @@ class Protocol( object ):
             # Start in Anterior/Posterior Commissure
             os.chdir( self.ACPC_Alignment_ )
             #
-            # Extract skull from T2 and the mask. TODO, some tests can be done with the mask instead.
-            Image_tools.run_bet( self.ACPC_Alignment_, 0.6, True, True)
+            # Extract skull from T2 and the mask. Using the T1 brain mask
+            # cut around the mask
+            maths = fsl.ImageMaths( in_file   = self.T2_file_[0],
+                                    op_string = '-mas %s'%(self.brain_mask_), 
+                                    out_file  = "T2_brain.nii.gz" )
+            maths.run();
             #
-            T2_skull_stripped = ""
-            for file_name in os.listdir( self.ACPC_Alignment_ ):
-                if file_name.endswith("brain.nii") or file_name.endswith("brain.nii.gz"):
-                    T2_skull_stripped = file_name
+            T2_skull_stripped = "T2_brain.nii.gz"
             #
             os.system( "gunzip %s"%T2_skull_stripped ) 
 
@@ -648,8 +714,48 @@ class Protocol( object ):
             #
             os.system("gunzip PWI/T2_registration.nii.gz")
 
+            #
+            # MNI atlas registration 
+            #
+            
+            #
+            # MNI atlas selected
+            MNI_atlas = ""
+            if os.environ.get('FSLDIR'):
+                MNI_atlas = os.path.join( os.environ.get('FSLDIR'), 
+                                          "data","atlases","MNI","MNI-maxprob-thr0-1mm.nii.gz" )
+            else:
+                raise Exception( "$FSLDIR env variable is not setup on your system" )
+            #
+            MNI_LD = os.path.join( self.ACPC_Alignment_, "MNI_T2_m0.nii.gz" )
+            MNI_HD = os.path.join( self.ACPC_Alignment_, "MNI_T2.nii.gz" )
+
+            #
+            # Registration high resolution
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = MNI_atlas
+            flt.inputs.reference       = os.path.join(self.ACPC_Alignment_, T2_skull_stripped[:-3])
+            flt.inputs.out_file        = MNI_HD
+            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "MNI2T2.mat")
+            flt.inputs.args            = "-dof 12"
+            res = flt.run() 
+
+            #
+            # Registration low resolution
+            flt = fsl.FLIRT()
+            flt.inputs.in_file         = MNI_atlas
+            flt.inputs.reference       = T2_registration[:-3]
+            flt.inputs.out_file        = MNI_LD
+            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "MNI2m0.mat")
+            flt.inputs.args            = "-dof 12"
+            res = flt.run() 
+
             # 
-            # Distortion correction
+            # EPI distortion correction
+            #
+
+            #
+            # m0 and DeltaM correction
             distortion = EPI_distortion_correction.EPI_distortion_correction()
             distortion.working_dir_ = os.path.join(self.ACPC_Alignment_, "test_wd")
             distortion.control_     = M0_brain
@@ -672,7 +778,7 @@ class Protocol( object ):
             distortion.apply_transform()
             # Filter the maps. Using 3D filter, we assume the blood flow being the same in the neighboring voxels
             maths = fsl.ImageMaths( in_file   = distortion.control_corrected_, 
-                                    op_string = '-fmean -kernel 3D ', 
+                                    op_string = '-fmean -kernel 3D', 
                                     out_file  = "%s_3D.nii.gz" %(distortion.control_corrected_[:-4]) )
             maths.run();
             
@@ -694,9 +800,15 @@ class Protocol( object ):
             # Filter the maps. Using 3D filter, we assume the blood flow being the same 
             # in the neighboring voxels
             maths = fsl.ImageMaths( in_file   = m0_brain_corrected_T2, 
-                                    op_string = '-fmean -kernel 3D ', 
+                                    op_string = '-fmean -kernel gauss 3.121 ', 
                                     out_file  = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]) )
             maths.run();
+            #
+            maths = fsl.ImageMaths( in_file   = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]),
+                                    op_string = "-mas %s"%(self.brain_mask_), 
+                                    out_file  = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]) )
+            maths.run();
+
             #
             # Rigid registration of PWI in T2 with repading; degree of freedom = 12
             PWI_corrected_T2 = os.path.join(self.ACPC_Alignment_, "PWI_corrected_T2.nii.gz" )
@@ -711,7 +823,12 @@ class Protocol( object ):
             # Filter the maps. Using 3D filter, we assume the blood flow being the same 
             # in the neighboring voxels
             maths = fsl.ImageMaths( in_file   = PWI_corrected_T2, 
-                                    op_string = '-fmean -kernel 3D ', 
+                                    op_string = '-fmean -kernel gauss 3.121 ', 
+                                    out_file  = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]) )
+            maths.run();
+            #
+            maths = fsl.ImageMaths( in_file   = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]),
+                                    op_string = "-mas %s"%(self.brain_mask_), 
                                     out_file  = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]) )
             maths.run();
         #
@@ -735,18 +852,17 @@ class Protocol( object ):
             #
             # realigne PWI with m0
             os.chdir( self.ACPC_Alignment_ )
+            # brain and GM mask
             # Rigid registration of PWI in m0; degree of freedom = 12
             PWI_corrected_m0 = os.path.join(self.ACPC_Alignment_, "PWI_corrected_3D_m0.nii.gz" )
             #
             flt = fsl.FLIRT()
             flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_, "PWI_corrected_3D.nii.gz" )
-            flt.inputs.reference       = os.path.join(self.ACPC_Alignment_, "m0_brain_corrected_3D.nii.gz" )
+            flt.inputs.reference       = os.path.join(self.ACPC_Alignment_, "PWI", "T2_registration.nii" )
             flt.inputs.out_file        = PWI_corrected_m0
-            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "PWI2m0.mat")
+            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "PWI2T2.mat")
             flt.inputs.args            = "-dof 12"
             res = flt.run() 
-            #
-            #os.system("gunzip %s")%(PWI_corrected_m0)
             
             #
             # Partial Volume Estimation (PVE)
@@ -760,65 +876,67 @@ class Protocol( object ):
             for file_name in os.listdir( self.PVE_Segmentation_ ):
                 if file_name.startswith("c1") and file_name.endswith("T2.nii"):
                     c1_file = os.path.join( self.PVE_Segmentation_, file_name )
-                if file_name.startswith("c2"):
-                    c2_file = file_name
-                if file_name.startswith("c3"):
-                    c3_file = file_name
-                if file_name.startswith("m"):
+                if file_name.startswith("c2") and file_name.endswith("T2.nii"):
+                    c2_file = os.path.join( self.PVE_Segmentation_, file_name )
+                if file_name.startswith("c3") and file_name.endswith("T2.nii"):
+                    c3_file = os.path.join( self.PVE_Segmentation_, file_name )
+                if file_name.startswith("m") and file_name.endswith("T2.nii"):
                     T1_file = os.path.join( self.PVE_Segmentation_, file_name )
 
             #
-            # Rigid registration of GM in m0 with repading; degree of freedom = 12
-            if not os.path.isfile( c1_file ):
-                raise Exception( "No gray matter found." )
+            # Rigid registration of GM in m0/T2_registration with repading; degree of freedom = 12
+            if not ( os.path.isfile( c1_file ) or 
+                     os.path.isfile( c2_file ) or 
+                     os.path.isfile( c3_file ) ):
+                raise Exception( "Missing partial volumes." )
             #
-            GM_m0 = os.path.join(self.ACPC_Alignment_, "GM_m0.nii.gz" )
+            reference     = os.path.join( self.ACPC_Alignment_, "PWI", "T2_registration.nii" )
             #
-            flt = fsl.FLIRT()
-            flt.inputs.in_file         = c1_file
-            flt.inputs.reference       = os.path.join( self.ACPC_Alignment_, "m0_brain_corrected.nii" )
-            flt.inputs.out_file        = GM_m0
-            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "GM2m0.mat")
-            flt.inputs.args            = "-dof 12"
-            res = flt.run() 
+            GM_warped_m0  = os.path.join( self.ACPC_Alignment_, "GM_warped_m0.nii.gz" )
+            self.partial_volume_warping_( c1_file, reference, GM_warped_m0 )
             #
-            GM_m0_warped = os.path.join(self.ACPC_Alignment_, "GM_warped_m0.nii.gz" )
-            # warp GW in m0 framework (low resolution)
-            aw = fsl.ApplyWarp()
-            aw.inputs.in_file    = c1_file
-            aw.inputs.ref_file   = os.path.join( self.ACPC_Alignment_, "m0_brain_corrected.nii" )
-            aw.inputs.out_file   = GM_m0_warped
-            aw.inputs.premat     = os.path.join(self.ACPC_Alignment_, "GM2m0.mat")
-            aw.inputs.args       = "--super --interp=spline --superlevel=4"
-            res = aw.run()
+            WM_warped_m0  = os.path.join( self.ACPC_Alignment_, "WM_warped_m0.nii.gz" )
+            self.partial_volume_warping_( c2_file, reference, WM_warped_m0 )
+            #
+            CSF_warped_m0 = os.path.join( self.ACPC_Alignment_, "CSF_warped_m0.nii.gz" )
+            self.partial_volume_warping_( c3_file, reference, CSF_warped_m0 )
 
             #
             # Cerebral blood flow within gray matter
             #
             
             #
-            # CBF
+            # CBF low resolution
             maths = fsl.ImageMaths( in_file   = "PWI_corrected_3D.nii.gz", 
                                     op_string = "-div m0_brain_corrected_3D.nii.gz",
                                     out_file  = "CBF.nii.gz")
             maths.run();
-            #
+            # CBF and GM
             maths = fsl.ImageMaths( in_file   = "CBF.nii.gz", 
-                                    op_string = "-mul GM_m0",
+                                    op_string = "-mul %s"%(GM_warped_m0),
                                     out_file  = "CBF_GM.nii.gz")
             maths.run();
             
             #
-            # CBF and PWI HD
-            # CBF HD
+            # CBF, PWI and CBF filter on GM in high resolution
             maths = fsl.ImageMaths( in_file   = "PWI_corrected_T2_3D.nii.gz", 
                                     op_string = "-div m0_brain_corrected_T2_3D.nii.gz",
+                                    out_file  = "CBF_T2.nii.gz")
+            maths.run();
+            # filtering around the brain mask 
+            maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz",
+                                    op_string = '-mas %s'%(self.brain_mask_), 
                                     out_file  = "CBF_T2.nii.gz")
             maths.run();
             # CBF in GM HD
             maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz", 
                                     op_string = "-mul %s"%(c1_file),
                                     out_file  = "CBF_GM_T2.nii.gz")
+            maths.run();
+            # filtering with the GM mask 
+            maths = fsl.ImageMaths( in_file   = "CBF_GM_T2.nii.gz",
+                                    op_string = '-mas %s'%(self.gm_mask_), 
+                                    out_file  = "CBF_GM_filtered_T2.nii.gz")
             maths.run();
             # PWI in GM HD
             maths = fsl.ImageMaths( in_file   = "PWI_corrected_T2_3D.nii.gz", 
@@ -840,7 +958,7 @@ class Protocol( object ):
     #
     #
     #
-    def run_spm_realign( self, Directory, List_files, Register_to_mean = False):
+    def run_spm_realign( self, Directory, List_files, Register_to_mean = False ):
         """ Function uses SPM realigne with the first run sequence."""
         os.chdir(Directory)
         List_files.sort()
@@ -850,6 +968,29 @@ class Protocol( object ):
         realign.inputs.paths            = Directory
         print "Realigning list of files ..."
         realign.run()
+    #
+    #
+    #
+    def partial_volume_warping_( self, In_file, Ref_file, Out_file ):
+        #
+        mat           = tempfile.NamedTemporaryFile(delete = False)
+        intermed_file = tempfile.NamedTemporaryFile(delete = False)
+        #
+        flt = fsl.FLIRT()
+        flt.inputs.in_file         = In_file
+        flt.inputs.reference       = Ref_file
+        flt.inputs.out_file        = intermed_file.name #GM_m0
+        flt.inputs.out_matrix_file = mat.name
+        flt.inputs.args            = "-dof 12"
+        res = flt.run() 
+        # warp PVE in m0 framework (low resolution)
+        aw = fsl.ApplyWarp()
+        aw.inputs.in_file    = In_file
+        aw.inputs.ref_file   = Ref_file
+        aw.inputs.out_file   = Out_file
+        aw.inputs.premat     = mat.name
+        aw.inputs.args       = "--super --interp=spline --superlevel=4"
+        res = aw.run()
     #
     #
     #
