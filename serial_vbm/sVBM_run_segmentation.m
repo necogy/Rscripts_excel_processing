@@ -30,7 +30,7 @@ function scans_to_process = sVBM_run_segmentation(scans_to_process, imagetype, r
 spm('defaults', 'PET');
 spm_jobman('initcfg');
 for subject = 1:size(scans_to_process,2) % for every subject
-    
+    subject
     switch imagetype
         case 'timepoints'
             for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint

@@ -69,22 +69,22 @@ scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this w
 
 %% 6. Transform longitudinal images to group DARTEL space
 scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
-% at this point you have generated warped change maps that can be used for
-% statistical analysis, you might want to smooth the images using the
-% following steps.
 
-%% Generate population to ICBM registration deformation field
+%% 7. Generate population to ICBM registration deformation field
 SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
 
-%% push dartel images to ICBM 
+
+%% push dartel images to ICBM  (better to use combined deformation
+LONG_pushAVGtoICBMviaDARTEL(scans_to_process)
+
+%% push dartel images to ICBM  (better to use combined deformation
 LONG_pushDARTELtoICBM(scans_to_process, templatepath);
 
 %% WARP MNI ROIs to DARTEL
 SA_SPM12_warpMNI_ROIstoDARTEL(fullfile(templatepath, 'y_Template_6_2mni.nii'),fullfile(templatepath, 'Template_6.nii'), pathtoROIs)
 
 
-%% %%%%% up to here revised 02/19/15
-
+%% %%%%% up to here revised 03/5/15
 
 
 %% SMOOTHING: pick one of the two following smoothing methods:
@@ -132,7 +132,7 @@ scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time1'
 scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time2');
 
 %% Extract ROIs from change maps in Dartel Space
-scans_to_process = LONG_extractROIsinDARTEL(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); 
+scans_to_process = LONG_extractROIsinDARTEL(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); % appears to not be complete
 
 %% extract mean/median change values from warped timepoints (MNI) and save to scans_to_process
 %pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
