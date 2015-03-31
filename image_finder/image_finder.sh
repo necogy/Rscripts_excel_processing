@@ -31,12 +31,12 @@ fi
 
 if [ "$1" = "help" ]; then
   echo "SYNTAX: image_finder.sh input.txt";
-  echo "IMAGE TYPES: T1-LONG, T1-LONG-3DC, ADNI-T1, T1-SHORT, T1-SHORT-3DC, T2, T2-3DC, FLAIR, FLAIR-3DC, rsfMRI, DTI-v1, DTI-v2, DTI-v4, ASL";
+  echo "IMAGE TYPES: T1-LONG, T1-LONG-3DC, ADNI-T1, T1-SHORT, T1-SHORT-3DC, T2, T2-3DC, FLAIR, FLAIR-3DC, rsfMRI, DTI-v1, DTI-v2, DTI-v4, ASL, ASL-MoCo";
   echo "INPUT TEXT FILE FORMAT: PIDN-YYYY-MM-DD"
   exit 
 fi
 
-if [ "$TYPE" != "DTI-v1" ] && [ "$TYPE" != "DTI-v2" ] && [ "$TYPE" != "DTI-v5" ] && [ "$TYPE" != "ADNI-T1" ] && [ "$TYPE" != "T1-LONG" ] && [ "$TYPE" != "T1-LONG-3DC" ] && [ "$TYPE" != "T2" ] && [ "$TYPE" != "T2-3DC" ] && [ "$TYPE" != "rsfMRI" ] && [ "$TYPE" != "FLAIR" ] && [ "$TYPE" != "FLAIR-3DC" ] && [ "$TYPE" != "ASL" ] && [ "$TYPE" != "T1-SHORT" ] && [ "$TYPE" != "T1-SHORT-3DC" ] && [ "$TYPE" != "DTI-v4" ]; then
+if [ "$TYPE" != "DTI-v1" ] && [ "$TYPE" != "DTI-v2" ] && [ "$TYPE" != "DTI-v5" ] && [ "$TYPE" != "ADNI-T1" ] && [ "$TYPE" != "T1-LONG" ] && [ "$TYPE" != "T1-LONG-3DC" ] && [ "$TYPE" != "T2" ] && [ "$TYPE" != "T2-3DC" ] && [ "$TYPE" != "rsfMRI" ] && [ "$TYPE" != "FLAIR" ] && [ "$TYPE" != "FLAIR-3DC" ] && [ "$TYPE" != "ASL" ] && [ "$TYPE" != "ASL-MoCo" ] && [ "$TYPE" != "T1-SHORT" ] && [ "$TYPE" != "T1-SHORT-3DC" ] && [ "$TYPE" != "DTI-v4" ]; then
 	echo "Image type not recognized";
 	echo "IMAGE TYPES: T1-LONG, T1-LONG-3DC, ADNI-T1, T1-SHORT, T1-SHORT-3DC, T2, T2-3DC, FLAIR, FLAIR-3DC, rsfMRI, DTI-v1, DTI-v2, DTI-v4, DTI-v5, ASL";
 	exit;
@@ -72,13 +72,47 @@ for a in $(cat $1);
     fi
 
    			if [ -d "/mnt/macdata/projects/images/${block}/${PIDN}/${DATE}/" ]; then
+
+            #ASL__________________________________________________________________________________________________
+            if [ "$TYPE" == "ASL" ] ; then
+              FILE=$(find /mnt/macdata/projects/images/${block}/${PIDN}/${DATE}/ -maxdepth 2 -name "${TYPE}-raw*zip" | head -1)
+              if [ -f "$FILE" ]; then
+              echo -e "${NC}${TYPE} exists for ${PIDN} on ${DATE} and has been pulled${NC}";
+              fileonly=$(basename $FILE)
+              echo -e "${PIDN} ${DATE} ${fileonly}" >> ./${TYPE}_${NOW}.txt;
+              mkdir -p  ./pidn_dir/${PIDN};
+              mkdir -p  ./pidn_dir/${PIDN}/${DATE};
+                      cp $FILE ./all_${TYPE}_images;
+                      cp $FILE ./pidn_dir/${PIDN}/${DATE};
+                      else echo -e "${red}${PIDN} has no ${TYPE} on ${DATE}${NC}";
+                        echo -e "${PIDN} ${DATE} NOT_FOUND" >> ./${TYPE}_${NOW}.txt;
+                      fi
+                    fi
+
+            #ASL-MoCo__________________________________________________________________________________________________
+            if [ "$TYPE" == "ASL-MoCo" ] ; then
+              FILE=$(find /mnt/macdata/projects/images/${block}/${PIDN}/${DATE}/ -maxdepth 2 -name "${TYPE}*zip" | head -1)
+              if [ -f "$FILE" ]; then
+              echo -e "${NC}${TYPE} exists for ${PIDN} on ${DATE} and has been pulled${NC}";
+              fileonly=$(basename $FILE)
+              echo -e "${PIDN} ${DATE} ${fileonly}" >> ./${TYPE}_${NOW}.txt;
+              mkdir -p  ./pidn_dir/${PIDN};
+              mkdir -p  ./pidn_dir/${PIDN}/${DATE};
+                      cp $FILE ./all_${TYPE}_images;
+                      cp $FILE ./pidn_dir/${PIDN}/${DATE};
+                      else echo -e "${red}${PIDN} has no ${TYPE} on ${DATE}${NC}";
+                        echo -e "${PIDN} ${DATE} NOT_FOUND" >> ./${TYPE}_${NOW}.txt;
+                      fi
+                    fi
+
    					
    					#DTI__________________________________________________________________________________________________
    					if [ "$TYPE" == "DTI-v2" ] || [ "$TYPE" == "DTI-v1" ] || [ "$TYPE" == "DTI-v4" ] || [ "$TYPE" == "DTI-v5" ]; then
    						FILE=$(find /mnt/macdata/projects/images/${block}/${PIDN}/${DATE}/ -maxdepth 2 -name "${TYPE}*zip" | head -1)
               if [ -f "$FILE" ]; then
    						echo -e "${NC}${TYPE} exists for ${PIDN} on ${DATE} and has been pulled${NC}";
-              echo -e "${PIDN} ${DATE} PULLED" >> ./${TYPE}_${NOW}.txt;
+              fileonly=$(basename $FILE)
+              echo -e "${PIDN} ${DATE} ${fileonly}" >> ./${TYPE}_${NOW}.txt;
    						mkdir -p  ./pidn_dir/${PIDN};
    						mkdir -p  ./pidn_dir/${PIDN}/${DATE};
                       cp $FILE ./all_${TYPE}_images;
@@ -93,7 +127,8 @@ for a in $(cat $1);
    						FILE=$(find /mnt/macdata/projects/images/${block}/${PIDN}/${DATE}/ -maxdepth 3 -name "MP-LAS_*nii" | head -1)
    						if [ -f "$FILE" ]; then
    						echo -e "${NC}${TYPE} exists for ${PIDN} on ${DATE} and has been pulled${NC}"
-              echo -e "${PIDN} ${DATE} PULLED" >> ./${TYPE}_${NOW}.txt;
+              fileonly=$(basename $FILE)
+              echo -e "${PIDN} ${DATE} ${fileonly}" >> ./${TYPE}_${NOW}.txt;
    						mkdir -p ./pidn_dir/${PIDN};
    						mkdir -p  ./pidn_dir/${PIDN}/${DATE};
                     	cp $FILE ./pidn_dir/${PIDN}/${DATE};
@@ -103,7 +138,8 @@ for a in $(cat $1);
                     		HEADER=$(find /mnt/macdata/projects/images/${block}/${PIDN}/${DATE}/ -maxdepth 3 -name "MP-LAS_*hdr" | head -1)
                     		if [ -f "$IMAGE" ] && [ -f "$HEADER" ] ; then
    							        echo -e "${NC}${TYPE} exists for ${PIDN} on ${DATE} and has been pulled${NC}"
-                        echo -e "${PIDN} ${DATE} PULLED" >> ./${TYPE}_${NOW}.txt;
+                        fileonly=$(basename $IMAGE)
+                        echo -e "${PIDN} ${DATE} ${fileonly}" >> ./${TYPE}_${NOW}.txt;
    							        mkdir -p ./pidn_dir/${PIDN};
    							        mkdir -p ./pidn_dir/${PIDN}/${DATE};
                     		cp $IMAGE  ./pidn_dir/${PIDN}/${DATE};
