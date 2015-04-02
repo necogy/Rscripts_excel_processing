@@ -66,9 +66,9 @@ class EPI_distortion_correction( Deformation.Deformation ):
             # Configuration file for EPI distortion correction program
             if Parameters_file == None:
                 self.parameters_         = None
-                self.affine_iterations_  = 500    
+                self.affine_iterations_  = 50    
                 self.scale_levels_       = 3        
-                self.diff_eq_iterations_ = 2000
+                self.diff_eq_iterations_ = 500
                 self.alpha_              = 0.1    
                 self.delta_affine_       = 0.1
                 self.delta_diffeo_       = 0.05
