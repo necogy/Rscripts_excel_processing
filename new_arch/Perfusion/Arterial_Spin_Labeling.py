@@ -346,36 +346,6 @@ class Protocol( object ):
             #
             os.system( 'gunzip %s'%(os.path.join(self.ASL_dicom_,"nii_all","m0_brain.nii.gz")) );
 
-
-#            #
-#            # Run FSL BET() again
-#            os.chdir( os.path.join(self.ASL_dicom_, 'nii_all') );
-#            Image_tools.run_bet( os.path.join(self.ASL_dicom_, 'nii_all') )
-#            os.system('gunzip *brain.nii.gz');
-#            # Make skull-stripped_realigned dir
-#            os.mkdir(os.path.join( self.ASL_dicom_, 'nii_all', 'realigned_stripped') );
-#            # Get list of all stripped EPIs in dir
-#            stripped_list = [];
-#            for file_name in os.listdir(os.getcwd()):
-#                if file_name.endswith('brain.nii'):
-#                    stripped_list.append(file_name);
-#            # Sort the list to be realigned on m0
-#            stripped_list.sort();
-##            m0 = stripped_list.pop();
-##            # because m0 = file-0001,nii
-##            if m0 != "m0_brain.nii":
-##                raise Exception("Error: EPI %s was incorectly excluded from realignment" %m0 )
-#            #
-#            # Run spm_realign to realign EPIs to first 'm0' in sequence 
-#            # TODO: check it is a rigid registration
-#            self.run_spm_realign(os.getcwd(), stripped_list)
-#            # Move the stripped and realigned EPIs to seperate dir
-#            for realigned_file in os.listdir( os.path.join(self.ASL_dicom_, 'nii_all') ):
-#                if realigned_file.startswith('r'):
-#                    shutil.move( os.path.join(self.ASL_dicom_, 'nii_all', realigned_file), 
-#                                 os.path.join(self.ASL_dicom_, 'nii_all', 'realigned_stripped') )
-
-
             #
             # Create ASL files
             #
