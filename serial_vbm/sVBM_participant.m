@@ -12,7 +12,7 @@ classdef sVBM_participant
         
         BaselineROIVolumes
         BaselineTissueVolumes       
-        
+%         
         Slope
         
     end
@@ -28,27 +28,27 @@ classdef sVBM_participant
             
         end
         
-        function value = get.Slope(obj)
-            % need to add error if ROI values not extracted
-            numTimepoints = size(obj.Timepoint,2);
-            numROIs = size(obj.Timepoint{1}.ROI,2);
-            metricrow  = 3;
-            
-            for nROI = 1:numROIs
-                xdates = obj.Deltatime;
-                for nTimepoint = 1:numTimepoints
-                    %xdates(nTimepoint) = (obj.Timepoint{nTimepoint}.Datenum - obj.Timepoint{1}.Datenum)/365;
-                    yvalues(nTimepoint)= obj.Timepoint{nTimepoint}.ROI{metricrow, nROI};
-                    
-                end
-                
-                p = polyfit(xdates,yvalues,1);
-                value(nROI) = p(2); % get slope
-                clear yvalues;
-                
-                
-            end
-        end % value = get.Slope(obj)
+%         function value = get.Slope(obj)
+%             % need to add error if ROI values not extracted
+%             numTimepoints = size(obj.Timepoint,2);
+%             numROIs = size(obj.Timepoint{1}.ROI,2);
+%             metricrow  = 3;
+%             
+%             for nROI = 1:numROIs
+%                 xdates = obj.Deltatime;
+%                 for nTimepoint = 1:numTimepoints
+%                     %xdates(nTimepoint) = (obj.Timepoint{nTimepoint}.Datenum - obj.Timepoint{1}.Datenum)/365;
+%                     yvalues(nTimepoint)= obj.Timepoint{nTimepoint}.ROI{metricrow, nROI};
+%                     
+%                 end
+%                 
+%                 p = polyfit(xdates,yvalues,1);
+%                 value(nROI) = p(2); % get slope
+%                 clear yvalues;
+%                 
+%                 
+%             end
+%         end % value = get.Slope(obj)
         
         function sp = sVBM_participant(pidn, datapath)
             if nargin > 0 % Support calling with 0 arguments

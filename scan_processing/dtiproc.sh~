@@ -90,7 +90,7 @@ for i in ${@};
   			
   			    #eddy correct the 64 direction DTI images
   			    echo "Running eddy_correct for ${sourceidv}"
-  				  eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir10b0_ecc.nii.gz 0 1>/dev/null;
+  				 # eddy_correct ${IMAGE} ./1_preproc/${sourceidv}/eddy_correct/${sourceidv}_64dir10b0_ecc.nii.gz 0 1>/dev/null;
   			
   			    #average 10 b0 images to create B0 mean image
   			    echo "Generating b0 mean image for ${sourceidv}"

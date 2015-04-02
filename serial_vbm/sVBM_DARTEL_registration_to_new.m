@@ -20,18 +20,19 @@ function scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process, sc
 % Created 07/11/2014
 %
 % Revisions:
-
+% rc1files=[];
+% rc2files=[];
 
 for subject = 1:size(scans_to_process,2) % for every subject
-    
+    scans_to_process(subject)
     avgfile = fullfile(scans_to_process(subject).Fullpath,'avg', scans_to_process(subject).Timepoint{1}.File.name);
     
     avgfile=strrep(avgfile, '.img', '.nii');
     avgfile = SAinsertStr2Paths(avgfile, 'rc1avg_');
     volume = avgfile;
     
-    rc1files(subject) = avgfile;
-    rc2files(subject) = strrep(avgfile, 'rc1', 'rc2');
+    rc1files{subject} = avgfile;
+    rc2files{subject}= strrep(avgfile, 'rc1', 'rc2');
     
     
 end
@@ -39,8 +40,8 @@ end
 disp('now running DARTEL registration to a new template')
 spm('defaults', 'PET');
 spm_jobman('initcfg');
-matlabbatch{1}.spm.tools.dartel.warp.images{1} = rc1files(:,1)     ;
-matlabbatch{1}.spm.tools.dartel.warp.images{2} = rc2files(:,1)    ;
+matlabbatch{1}.spm.tools.dartel.warp.images{1} = rc1files    ;
+matlabbatch{1}.spm.tools.dartel.warp.images{2} = rc2files    ;
 matlabbatch{1}.spm.tools.dartel.warp.settings.template = 'Template';
 matlabbatch{1}.spm.tools.dartel.warp.settings.rform = 0;
 matlabbatch{1}.spm.tools.dartel.warp.settings.param(1).its = 3;

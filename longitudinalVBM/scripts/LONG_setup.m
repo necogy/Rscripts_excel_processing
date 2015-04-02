@@ -27,7 +27,7 @@ spmpath = fileparts(which('spm'));
 %path to dartel template for your study (or where a dartel template will
 %be created if it doesn't exist yet):
 templatepath = 'path_to_dartel_template'; % set this to the new template folder name.
-templatepath='R:\groups\rosen\longitudinalVBM\SD_floor_project'
+templatepath='R:\groups\rosen\longitudinalVBM\SD_floor_project';
 
 %path to ROIs to use to extract mean/median change values from a specific
 %ROI:
@@ -74,8 +74,8 @@ scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
 
 
-%% push dartel images to ICBM  (better to use combined deformation
-LONG_pushAVGtoICBMviaDARTEL(scans_to_process)
+%% push dartel images to ICBM using combined deformation from sub avg to dartel to icbm
+LONG_pushAVGtoICBMviaDARTEL(scans_to_process, templatepath)
 
 %% push dartel images to ICBM  (better to use combined deformation
 LONG_pushDARTELtoICBM(scans_to_process, templatepath);
