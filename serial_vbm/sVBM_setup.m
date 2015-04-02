@@ -28,7 +28,7 @@ clear classes
 
 %load parameters:
 sVBM_config % or name of edited config file 
-scandatafolder='R:\groups\rosen\longitudinalVBM\SD_floor_project\serial_svPPA_oct2014\pidn_dir';
+scandatafolder='/mnt/ramdisk/';
 
 %set scan data folder where image were placed using image_finder.sh
 
@@ -40,11 +40,11 @@ scans_to_process = sVBM_load_rawdata( scandatafolder );
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Serial Longitudinal Registration (multiple timepoints)
-scans_to_process = sVBM_run_long_registration(scans_to_process); 
+scans_to_process = sVBM_run_long_registration(scans_to_process)
 
 %% Segmentation of Average Images
 reprocess = 0;
-scans_to_process = sVBM_run_segmentation(scans_to_process, 'average', reprocess); % (will segment all available timepoints in the directories)
+scans_to_process = sVBM_run_segmentation(scans_to_process, 'average', reprocess) % (will segment all available timepoints in the directories)
 
 %% DARTEL registration of Longitudinal Average Images to New DARTEL Template
 scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process);
@@ -73,7 +73,7 @@ scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templa
 scantype = 'baseline';
 sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
 
-% extract ROI volumes
+% extract ROI volumes/mnt/ramdisk/0065/avg/Template_0.nii
 scans_to_process = sVBM_extract_baseline_vols(scans_to_process,pathtoROIs);
 bROIextractions = sVBM_export_ROI_values(scans_to_process, 'sum','baseline'); % 'mean','median','sum','eigenvariate' 
 

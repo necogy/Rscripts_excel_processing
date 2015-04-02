@@ -46,20 +46,38 @@ switch scantype
         
     case 'average'
         for subject = 1:size(scans_to_process,2) % for every subject
-                       
-                rc1file = fullfile( scans_to_process(subject).Fullpath, 'avg', ['rc1avg_' scans_to_process(subject).Timepoint{1}.File.name]  ) ;
-                rc1file = strrep(rc1file, 'img', 'nii');
-                
-                rc2file = strrep(rc1file, 'rc1avg_','rc2avg_');
+            
+            rc1file = fullfile( scans_to_process(subject).Fullpath, 'avg', ['rc1avg_' scans_to_process(subject).Timepoint{1}.File.name]  ) ;
+            rc1file = strrep(rc1file, 'img', 'nii');
+            
+            rc2file = strrep(rc1file, 'rc1avg_','rc2avg_');
+            pathtofile = strrep(rc1file, 'rc1avg', 'u_rc1avg');
+            if checkifexisting(pathtofile) == 0
                 
                 disp(['Now DARTEL Registering average file for PIDN: ' num2str(scans_to_process(subject).PIDN )])
-                
                 dartelregistertimepoint(rc1file,rc2file, DARTEL_template_path) % call subfunction to process that subject
+            else
+            end
         end
         
 end
 
-
+    function fileexists = checkifexisting(pathtofile)
+        d= SAdir(fileparts(pathtofile), '^u_rc1');
+        numfiles = size(d,1);
+        
+        if numfiles == 0
+            fileexists = 0;
+        elseif numfiles >1
+            fileexists = 1;
+        %elseif numfiles ~= 1
+           % error(['More than one file found']);
+            %fileexists  = 1;
+            
+        end
+        
+        
+    end
     function dartelregistertimepoint(rc1,rc2, templatepath)
         
         clear matlabbatch
