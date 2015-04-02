@@ -1,0 +1,76 @@
+{
+    "TrioTim":{
+	"ASL":{
+	    "General":{
+		"scanner_mode":"ep2d_pasl",
+		"pixdim1":4.0,
+		"pixdim2":4.0,
+		"pixdim3":4.0
+	    },
+	    "Routine":{
+		"Slice_groupe_1":{
+		    "Slices":24,
+		    "Dist. factor":25,
+		    "Position":"isocenter",
+		    "Orientation":"Transversal",
+		    "Rotation":180.0
+		},
+		"FoV read":256.0,
+		"FoV phase":100.0,
+		"Slice thickness":4.0,
+		"TR":12.0,
+		"TE":1.0,
+		"Averages":1.0,
+		"Concentrations":1.0
+	    },
+	    "Contrast":{
+		"Inversion_time_2":1900.0,
+		"Inversion_time_1":700.0,
+		"Saturation_stop_time":1800.0,
+		"Flip_angle":90.0,
+		"Fat_suppr.":"Fat sat.",
+		"Fat sat. mode":"Strong",
+		"Averaging mode":"Long term",
+		"Reconstruction":"Magnitude",
+		"Measurments":"105",
+		"Delay in TR":0.0,
+		"Multiple series":"Off",
+		"Perfusion mode":"PICORE Q2T",
+		"Flow limit":100.0
+	    },
+	    "Resolution":{
+		"Base resolution":64.0,
+		"Phase resolution":100.0,
+		"Phase partial Fourier":"6/8",
+		"Interpolation":"Off",
+		"PAT mode":"None",
+		"Matrix coil mode":"Auto",
+		"Prescan normalize":"On",
+		"Raw filter":"Off",
+		"Elliptical filter":"Off",
+		"Hamming":"Off"
+	    },
+	    "System":{},
+	    "Physio":{},
+	    "BOLD":{
+		"GLM statistic":"Off",
+		"Dynamic t-map":"Off",
+		"Starting ignore meas":1,
+		"Ignore after transition":0,
+		"Model transition states":"Off",
+		"Temp. highpass filter":"On",
+		"Threshold":4.0,
+		"Paradigm size":4,
+		"Meas[1]":"Baseline",
+		"Meas[2]":"Active",
+		"Meas[3]":"Baseline",
+		"Meas[4]":"Active",
+		"Motion correction":"On",
+		"Interpoation":"#D-K-splace",
+		"Spacial filter":"On",
+		"Filter setting":2.0
+	    },
+	    "Sequence":{}
+	}
+    }
+}

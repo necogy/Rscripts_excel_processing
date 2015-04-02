@@ -66,20 +66,22 @@ class EPI_distortion_correction( Deformation.Deformation ):
             # Configuration file for EPI distortion correction program
             if Parameters_file == None:
                 self.parameters_         = None
-                self.affine_iterations_  = 200    
+                self.affine_iterations_  = 500    
                 self.scale_levels_       = 3        
-                self.diff_eq_iterations_ = 200
-                self.alpha_              = 0.001    
-                self.delta_affine_       = 4
-                self.delta_diffeo_       = 1
+                self.diff_eq_iterations_ = 2000
+                self.alpha_              = 0.1    
+                self.delta_affine_       = 0.1
+                self.delta_diffeo_       = 0.05
             else:
                 self.read_configuration( Parameters_file )
             #
             # Arguments
-            self.working_dir_ = tempfile.mkdtemp() # tempo directory for tempo output
-            self.control_     = "" # EPI file to correct
-            self.t2_          = "" # T2 reference for the transformation
-            self.transform_   = "" # v field deformation
+            self.working_dir_  = tempfile.mkdtemp() # tempo directory for tempo output
+            self.control_      = "" # EPI file to correct
+            self.t2_           = "" # T2 reference for the transformation
+            self.control_nhdr_ = "" # EPI file to correct nhdr
+            self.t2_nhdr_      = "" # T2 reference for the transformation nhdr
+            self.transform_    = "" # v field deformation
             # final output
             self.control_corrected_ = ""
         #
@@ -124,20 +126,20 @@ class EPI_distortion_correction( Deformation.Deformation ):
             if path.isfile( self.transform_ ):
                 raise Exception( "transform file already exists: " + self.transform_ )
             # change input file format from nii to nhdr
-            control_nhdr = path.join( self.working_dir_,
-                                      path.basename(self.control_).replace('.nii','.nhdr'))
-            t2_nhdr      = path.join( self.working_dir_, 
-                                      path.basename(self.t2_).replace('.nii','.nrrd'))
+            self.control_nhdr_ = path.join( self.working_dir_,
+                                           path.basename(self.control_).replace('.nii','.nhdr'))
+            self.t2_nhdr_      = path.join( self.working_dir_, 
+                                           path.basename(self.t2_).replace('.nii','.nrrd'))
             # get orig dim of control image, fslhd is used in get image dimension
             orig_dim = self.get_image_dimensions_(self.control_)
-            # convert to nrrd
-            self.convert_between_file_formats_(self.control_, control_nhdr)
-            self.convert_between_file_formats_(self.t2_, t2_nhdr)
+            # convert to nrrd/nhdr
+            self.convert_between_file_formats_(self.control_, self.control_nhdr_)
+            self.convert_between_file_formats_(self.t2_, self.t2_nhdr_)
             #
             # now done in nrrd with unu, padding is 'in place'
-            self.compute_and_apply_pad_( t2_nhdr, orig_dim )
+            self.compute_and_apply_pad_( self.t2_nhdr_, orig_dim )
             # return pad_dim since we need it later to unpad
-            pad_dim = self.compute_and_apply_pad_( control_nhdr, orig_dim )
+            pad_dim = self.compute_and_apply_pad_( self.control_nhdr_, orig_dim )
             self.write_config_file_( path.join(self.working_dir_,'config.txt') )
             #
             # Run EPI distortion correction
@@ -407,8 +409,8 @@ class EPI_distortion_correction( Deformation.Deformation ):
         'alpha':             self.alpha_,
         'delta_affine':      self.delta_affine_,
         'delta_diffeo':      self.delta_diffeo_,
-        'Control_nhdr' :     self.control_,
-        'T2_nhdr':           self.t2_
+        'Control_nhdr' :     self.control_nhdr_,
+        'T2_nhdr':           self.t2_nhdr_
             }
         #
         _log.debug("configuration file for EPIDistortionCorrection")
