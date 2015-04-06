@@ -72,6 +72,7 @@ class Protocol( object ):
             self.ASL_file_         = []
             # Masks
             self.brain_mask_       = ""
+            self.brain_prob_       = ""
             self.gm_mask_          = ""
         #
         #
@@ -644,6 +645,15 @@ class Protocol( object ):
             #
 
             #
+            # Create brain probability map
+            maths = fsl.ImageMaths( in_file   = c1_in_T2,
+                                    op_string = '-add %s '%(c2_in_T2), 
+                                    out_file  = "brain_map.nii.gz" )
+            maths.run();
+            #
+            self.brain_prob_ = os.path.join( self.PVE_Segmentation_, "brain_map.nii.gz" )
+
+            #
             # Add c1 (GM), c2 (WM) and c3 (CSF) and create a binary mask
             maths = fsl.ImageMaths( in_file   = c1_in_T2,
                                     op_string = '-add %s -add %s'%(c2_in_T2, c3_in_T2), 
@@ -656,29 +666,30 @@ class Protocol( object ):
             maths.run();
             self.brain_mask_ = os.path.join( self.PVE_Segmentation_, "brain_mask.nii.gz" )
 
-            #
-            # Croping the probability maps into the brain area
-            #
-            
-            #
-            # c1
-            maths = fsl.ImageMaths( in_file   = c1_in_T2,
-                                    op_string = '-mas %s'%(self.brain_mask_), 
-                                    out_file  = c1_in_T2 )
-            maths.run();
-            # c2
-            maths = fsl.ImageMaths( in_file   = c2_in_T2,
-                                    op_string = '-mas %s'%(self.brain_mask_), 
-                                    out_file  = c2_in_T2 )
-            maths.run();
-            # c3
-            maths = fsl.ImageMaths( in_file   = c3_in_T2,
-                                    op_string = '-mas %s'%(self.brain_mask_), 
-                                    out_file  = c3_in_T2 )
-            maths.run();
-
+#            #
+#            # Croping the probability maps into the brain area
+#            #
+#            
+#            #
+#            # c1
+#            maths = fsl.ImageMaths( in_file   = c1_in_T2,
+#                                    op_string = '-mas %s'%(self.brain_mask_), 
+#                                    out_file  = c1_in_T2 )
+#            maths.run();
+#            # c2
+#            maths = fsl.ImageMaths( in_file   = c2_in_T2,
+#                                    op_string = '-mas %s'%(self.brain_mask_), 
+#                                    out_file  = c2_in_T2 )
+#            maths.run();
+#            # c3
+#            maths = fsl.ImageMaths( in_file   = c3_in_T2,
+#                                    op_string = '-mas %s'%(self.brain_mask_), 
+#                                    out_file  = c3_in_T2 )
+#            maths.run();
+#
             #
             # Create a mask only for the gray matter
+            # WARNING: visualization purposes
             #
             
             #
@@ -748,11 +759,19 @@ class Protocol( object ):
             res = fnt.run()
 
             # 
-            # War the brain
+            # Warp the brain
             aw = fsl.ApplyWarp()
             aw.inputs.in_file    = "T1_brain.nii.gz"
             aw.inputs.ref_file   =  MNI_T1_2mm
             aw.inputs.out_file   = "T1_brain_MNI.nii.gz"
+            aw.inputs.field_file = "T1_to_MNI_nonlin_coeff.nii.gz"
+            res = aw.run()
+            # 
+            # Warp the GM
+            aw = fsl.ApplyWarp()
+            aw.inputs.in_file    = c1_in_T2[:-3]
+            aw.inputs.ref_file   =  MNI_T1_2mm
+            aw.inputs.out_file   = "T1_GM_MNI.nii.gz"
             aw.inputs.field_file = "T1_to_MNI_nonlin_coeff.nii.gz"
             res = aw.run()
         #
@@ -936,11 +955,11 @@ class Protocol( object ):
             maths = fsl.ImageMaths( in_file   = m0_brain_corrected_T2, 
                                     op_string = '-fmean -kernel gauss 3.121 ', 
                                     out_file  = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]) )
-            maths.run();
-            # Filter the result with brain mask
-            maths = fsl.ImageMaths( in_file   = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]),
-                                    op_string = "-mas %s"%(self.brain_mask_), 
-                                    out_file  = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]) )
+#            maths.run();
+#            # Filter the result with brain mask
+#            maths = fsl.ImageMaths( in_file   = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]),
+#                                    op_string = "-mas %s"%(self.brain_mask_), 
+#                                    out_file  = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]) )
             maths.run();
 
             #
@@ -973,11 +992,11 @@ class Protocol( object ):
                                     op_string = '-fmean -kernel gauss 3.121 ', 
                                     out_file  = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]) )
             maths.run();
-            # Filter the result with brain mask
-            maths = fsl.ImageMaths( in_file   = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]),
-                                    op_string = "-mas %s"%(self.brain_mask_), 
-                                    out_file  = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]) )
-            maths.run();
+#            # Filter the result with brain mask
+#            maths = fsl.ImageMaths( in_file   = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]),
+#                                    op_string = "-mas %s"%(self.brain_mask_), 
+#                                    out_file  = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]) )
+#            maths.run();
         #
         #
         except Exception as inst:
@@ -1070,15 +1089,20 @@ class Protocol( object ):
                                     op_string = "-div m0_brain_corrected_T2_3D.nii.gz",
                                     out_file  = "CBF_T2.nii.gz")
             maths.run();
-            # filtering around the brain mask 
-            maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz",
-                                    op_string = '-mas %s'%(self.brain_mask_), 
-                                    out_file  = "CBF_T2.nii.gz")
-            maths.run();
             # CBF in GM HD
             maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz", 
                                     op_string = "-mul %s"%(c1_file),
                                     out_file  = "CBF_GM_T2.nii.gz")
+            maths.run();
+            # CBF^2 for standard deviation purposes
+            maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz",
+                                    op_string = '-mul %s -mul %s'%("CBF_T2.nii.gz", self.brain_prob_), 
+                                    out_file  = "CBF2_T2.nii.gz")
+            maths.run();
+            # CBF estimator around the brain prob 
+            maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz",
+                                    op_string = '-mul %s'%(self.brain_prob_), 
+                                    out_file  = "CBF_brain_T2.nii.gz")
             maths.run();
             # filtering with the GM mask 
             maths = fsl.ImageMaths( in_file   = "CBF_GM_T2.nii.gz",
