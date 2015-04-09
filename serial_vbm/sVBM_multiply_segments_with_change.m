@@ -37,6 +37,7 @@ end
 
 
 for subject = 1:size(scans_to_process,2)
+    subject
     %get average file
     averagefile = fullfile(scans_to_process(subject).Fullpath, 'avg', ...
         ['avg_' scans_to_process(subject).Timepoint{1}.File.name ]);

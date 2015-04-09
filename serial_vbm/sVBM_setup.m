@@ -29,7 +29,7 @@ clear classes
 %load parameters:
 sVBM_config % or name of edited config file 
 scandatafolder='R:\groups\rosen\longitudinalVBM\SD_floor_project\serial_svPPA_oct2014\pidn_dir';
-
+scandatafolder = '/mnt/macdata/groups/rosen/longitudinalVBM/SD_floor_project/staffaroni_paper/BothFieldStrengths'
 %set scan data folder where image were placed using image_finder.sh
 
 %DARTEL_template_path = templatepath;
@@ -57,13 +57,23 @@ scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templa
 scans_to_process = sVBM_multiply_segments_with_change(scans_to_process, 'j');
 scans_to_process = sVBM_multiply_segments_with_change(scans_to_process,'dv');
 
+%% Generate population to ICBM registration deformation field
+SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
 
-%% Transform Longitudinal Images to Group/MNI space
+%% Transform longitudinal images to ICBM space
+sVBM_pushAVGspacetoICBMviaDARTEL(scans_to_process, templatepath)
+
+
+
+
+%% [Transform Longitudinal Images to Group/MNI space] (DEPRECATED)
 scantype = 'timepointdv';
 sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
 
 scantype = 'timepointj';
 sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+
+%% Non longitudinal %%%%%%%%%%%%%%%%%%%%%%
 
 
 %% DARTEL registration of Timepoint Images to Existing DARTEL Template
