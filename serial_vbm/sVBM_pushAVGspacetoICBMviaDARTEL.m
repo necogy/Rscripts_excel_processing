@@ -29,7 +29,7 @@ imageprefixes = {'c1avgj_','c1avgdv_','c2avgj_','c2avgdv_' };
 
 for subject = 1:size(scans_to_process,2) % for every subject
     
-    flowfield =  fullfile( scans_to_process(subject).Fullpath, 'avg',  scans_to_process(1).Timepoint{1}.File.name);
+    flowfield =  fullfile( scans_to_process(subject).Fullpath, 'avg',  scans_to_process(subject).Timepoint{1}.File.name);
     flowfield =  SAinsertStr2Paths(strrep(flowfield, 'img', 'nii'), 'u_rc1avg_');
     
     for timepoint = 1:size(scans_to_process(subject).Timepoint,2) % for every timepoint
