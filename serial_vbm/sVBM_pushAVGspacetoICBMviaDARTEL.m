@@ -54,7 +54,8 @@ for subject = 1:size(scans_to_process,2) % for every subject
         matlabbatch{1}.spm.util.defs.out{1}.push.fwhm = [0 0 0];
         spm_jobman('run',matlabbatch);
         clear matlabbatch
-        clear flowfield
+       
   
     end
+     clear flowfield
 end
