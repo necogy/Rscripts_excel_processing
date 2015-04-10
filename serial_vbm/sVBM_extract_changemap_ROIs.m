@@ -35,7 +35,7 @@ for  nSubject = 1:size(scans_to_process,2)
         
         basename = fullfile(scans_to_process(nSubject).Timepoint{nTimepoint}.Fullpath, ...
             scans_to_process(nSubject).Timepoint{nTimepoint}.File.name);
-        imagetoextractfrom= strrep(SAinsertStr2Paths(basename, 'wc1avgj_'),'img','nii');
+        imagetoextractfrom= strrep(SAinsertStr2Paths(basename, 'mwc1avgj_'),'img','nii');
         
         for r = 1:size(ROInames,2)
             roi = fullfile(pathtoROIs, ROInames{r});

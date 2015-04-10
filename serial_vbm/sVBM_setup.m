@@ -54,8 +54,13 @@ scantype = 'average';
 scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templatepath, scantype);
 
 %% 6. Multiply Change Maps with Segmentations
-scans_to_process = sVBM_multiply_segments_with_change(scans_to_process, 'j');
-scans_to_process = sVBM_multiply_segments_with_change(scans_to_process,'dv');
+scalebytime  =0;
+scans_to_process = sVBM_multiply_segments_with_change(scans_to_process, 'j',scalebytime);
+scans_to_process = sVBM_multiply_segments_with_change(scans_to_process,'dv',scalebytime);
+
+scalebytime  =1;
+scans_to_process = sVBM_multiply_segments_with_change(scans_to_process, 'j',scalebytime);
+scans_to_process = sVBM_multiply_segments_with_change(scans_to_process,'dv',scalebytime);
 
 %% 7. Generate population to ICBM registration deformation field
 SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
@@ -74,6 +79,12 @@ sVBM_pushAVGspacetoICBMviaDARTEL(scans_to_process, templatepath, modulationON, s
 
 %% 9. Extract ROI volumes from warped MNI images
 scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs);
+
+% export htem
+metric = 'sum';
+scantype = 'timepoint';
+ ROIextractions = sVBM_export_ROI_values(scans_to_process,metric,scantype);
+
 
 %% 10. Generate ROI time series 
 sVBM_plot_timeseries(scans_to_process2, 'sum');
@@ -118,28 +129,6 @@ scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templa
 %% Warp timepoint one to MNI (not longitudinal) for baseline volumes.
 scantype = 'timepoint';
 sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

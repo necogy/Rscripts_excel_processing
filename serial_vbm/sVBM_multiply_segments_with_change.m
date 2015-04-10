@@ -42,7 +42,7 @@ for subject = 1:size(scans_to_process,2)
     averagefile = fullfile(scans_to_process(subject).Fullpath, 'avg', ...
         ['avg_' scans_to_process(subject).Timepoint{1}.File.name ]);
     averagefile = strrep(averagefile, '.img', '.nii');
-    deltatime = scans_to_process(subject).Deltatime
+    deltatime = scans_to_process(subject).Deltatime;
     midtim = median(deltatime);
     for ntimepoint = 1:size(scans_to_process(subject).Timepoint,2)
         
@@ -54,7 +54,7 @@ for subject = 1:size(scans_to_process,2)
             [prefix scans_to_process(subject).Timepoint{ ntimepoint}.File.name ]);
         timepointJ_image = strrep(timepointJ_image, '.img', '.nii');
         
-        segments = {'c1','c2'};
+        segments = {'c1'}%,'c2'};
         
         for nseg = 1:size(segments,2)
             caveragefile = SAinsertStr2Paths(averagefile, segments{nseg});
@@ -70,6 +70,8 @@ for subject = 1:size(scans_to_process,2)
                 
             else
                 matlabbatch{1}.spm.util.imcalc.expression =[ 'i1.*i2*' num2str(timescalefactor)];
+                matlabbatch{1}.spm.util.imcalc.output = SAinsertStr2Paths(outputimage, 'dt');
+
             end
             
             
@@ -88,6 +90,10 @@ for subject = 1:size(scans_to_process,2)
         end
         
     end
+    clear midtim
+    clear tim
+    clear timescalefactor
+    clear deltatime
     
 end
 
