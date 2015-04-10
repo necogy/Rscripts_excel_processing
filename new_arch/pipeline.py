@@ -1,12 +1,14 @@
 #!/usr/bin/python
 
 #import pdb; pdb.set_trace()
+import logging
+# Create a log file
+logging.basicConfig(filename='perfusion_pipeline.log',level=logging.DEBUG)
+#
 import sys
 import os
-import logging
-import Arterial_Spin_Labeling
 #
-logging.basicConfig(filename='perfusion_pipeline.log',level=logging.DEBUG)
+import Arterial_Spin_Labeling
 
 print 'Number of arguments:', len(sys.argv), 'arguments.'
 print 'Argument List:', str(sys.argv)

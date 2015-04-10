@@ -1,10 +1,10 @@
+import logging
 import sys
 import inspect
 import shutil
 import os
 import tempfile
 import subprocess
-import logging
 import nipype
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.spm as spm
@@ -213,7 +213,24 @@ class Protocol( object ):
                 self.T1_file_[1] = ""
                 #
                 os.chdir(self.patient_dir_);
-            else:
+             elif seeker.seek_analyze( "MP-LAS" ):
+                self.T1_file_ = seeker.get_files()
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
+                 # change into nifti
+                os.chdir(self.PVE_Segmentation_);
+                ana2nii = spm.Analyze2nii();
+                ana2nii.inputs.analyze_file = self.T1_file_[0]
+                ana2nii.nifti_file          = "%s.nii"%(self.T1_file_[0][:-4])
+                ana2nii.run();
+                #
+                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[0]) )
+                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[1]) )
+                self.T1_file_[0] = ana2nii.nifti_file
+                self.T1_file_[1] = ""
+                #
+                os.chdir(self.patient_dir_);
+           else:
                 raise Exception("T1 file does not exist.")
 
             #
@@ -328,8 +345,9 @@ class Protocol( object ):
             flt.inputs.args            = "-dof 6"
             res = flt.run()
             # Re-binarise the mask in low resolution
-            maths = fsl.ImageMaths( in_file   = brain_T2_mask_m0,
-                                    op_string = '-bin',
+            maths = fsl.ImageMaths( in_file       = brain_T2_mask_m0,
+                                    op_string     = "-bin",
+                                    out_data_type = "char"
                                     out_file  = brain_T2_mask_m0 )
             maths.run();
             #
@@ -656,13 +674,19 @@ class Protocol( object ):
             #
             # Add c1 (GM), c2 (WM) and c3 (CSF) and create a binary mask
             maths = fsl.ImageMaths( in_file   = c1_in_T2,
-                                    op_string = '-add %s -add %s'%(c2_in_T2, c3_in_T2), 
+                                    op_string = '-add %s '%(c2_in_T2), 
                                     out_file  = "brain_mask.nii.gz" )
             maths.run();
             #
             maths = fsl.ImageMaths( in_file   = "brain_mask.nii.gz",
-                                    op_string = '-thr 0.3  -fillh26 -bin',
+                                    op_string = '-add %s'%(c3_in_T2), 
                                     out_file  = "brain_mask.nii.gz" )
+            maths.run();
+            #
+            maths = fsl.ImageMaths( in_file       = "brain_mask.nii.gz",
+                                    op_string     = '-thr 0.3 -fillh26 -bin',
+                                    out_data_type = "char"
+                                    out_file      = "brain_mask.nii.gz" )
             maths.run();
             self.brain_mask_ = os.path.join( self.PVE_Segmentation_, "brain_mask.nii.gz" )
 
@@ -694,9 +718,10 @@ class Protocol( object ):
             
             #
             # This filter will remove 0 +- epsilon values from the flow spectrum
-            maths = fsl.ImageMaths( in_file   = c1_in_T2,
-                                    op_string = '-thr 0.3  -fillh26 -bin',
-                                    out_file  = "c1_T2_mask.nii.gz")
+            maths = fsl.ImageMaths( in_file       = c1_in_T2,
+                                    op_string     = "-thr 0.3  -fillh26 -bin",
+                                    out_data_type = "char"
+                                    out_file      = "c1_T2_mask.nii.gz")
             maths.run();
             self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
             #
