@@ -22,7 +22,7 @@
 % Suneth Attygalle - 7/1/14 - Memory and Aging Center
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Initialize Things:
+%% 1. Initialize Things:
 clear
 clear classes
 
@@ -39,39 +39,62 @@ scans_to_process = sVBM_load_rawdata( scandatafolder );
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Serial Longitudinal Registration (multiple timepoints)
+%% 2. Serial Longitudinal Registration (multiple timepoints)
 scans_to_process = sVBM_run_long_registration(scans_to_process); 
 
-%% Segmentation of Average Images
+%% 3. Segmentation of Average Images (DARTEL import)
 reprocess = 0;
 scans_to_process = sVBM_run_segmentation(scans_to_process, 'average', reprocess); % (will segment all available timepoints in the directories)
 
-%% DARTEL registration of Longitudinal Average Images to New DARTEL Template
+%% 4. DARTEL registration of Longitudinal Average Images to New DARTEL Template
 scans_to_process = sVBM_DARTEL_registration_to_new(scans_to_process);
 
-%% DARTEL registration of Longitudinal AverageImages to Existing DARTEL Template
+%% 5. DARTEL registration of Longitudinal AverageImages to Existing DARTEL Template
 scantype = 'average';
 scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templatepath, scantype);
 
-%% Multiply Change Maps with Segmentations
+%% 6. Multiply Change Maps with Segmentations
 scans_to_process = sVBM_multiply_segments_with_change(scans_to_process, 'j');
 scans_to_process = sVBM_multiply_segments_with_change(scans_to_process,'dv');
 
-%% Generate population to ICBM registration deformation field
+%% 7. Generate population to ICBM registration deformation field
 SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
 
-%% Transform longitudinal images to ICBM space
-sVBM_pushAVGspacetoICBMviaDARTEL(scans_to_process, templatepath)
+%% 8. Transform longitudinal images to ICBM space (AKA Normalize)
+modulationON = 0; % Set to 1 to enable modulation
+smoothingFWHM = 0; % Set to FWHM mm value to smoothe during modulation 
+sVBM_pushAVGspacetoICBMviaDARTEL(scans_to_process, templatepath, modulationON, smoothingFWHM)
+
+% %% [Transform Longitudinal Images to Group/MNI space] (DEPRECATED)
+% scantype = 'timepointdv';
+% sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+% 
+% scantype = 'timepointj';
+% sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+
+%% 9. Extract ROI volumes from warped MNI images
+scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs);
+
+%% 10. Generate ROI time series 
+sVBM_plot_timeseries(scans_to_process2, 'sum');
+sVBM_plot_timeseries(scans_to_process2, 'mean');
+sVBM_plot_timeseries(scans_to_process2, 'median');
+sVBM_plot_timeseries(scans_to_process2, 'svd');
+%sVBM_plot_timeseries(scans_to_process2, 'peak') % peak is noisy
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
 
-%% [Transform Longitudinal Images to Group/MNI space] (DEPRECATED)
-scantype = 'timepointdv';
-sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+%% ??Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
+sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, dartelpath);
 
-scantype = 'timepointj';
-sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
+%% ??Warp ROIs from Atlas Space to Native Timepoint Space via Longitudinal Image Warp
+sVBM_warp_ROIs_to_avg_and_to_timepoint_(scans_to_process)
+
+
+
 
 %% Non longitudinal %%%%%%%%%%%%%%%%%%%%%%
 
@@ -88,7 +111,6 @@ scans_to_process = sVBM_extract_baseline_vols(scans_to_process,pathtoROIs);
 bROIextractions = sVBM_export_ROI_values(scans_to_process, 'sum','baseline'); % 'mean','median','sum','eigenvariate' 
 
 
-
 %% DARTEL registration of Timepoint Images to Existing DARTEL Template (not longitudinal)
 scantype = 'timepoint';
 scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templatepath, scantype);
@@ -96,28 +118,6 @@ scans_to_process = sVBM_DARTEL_registration_to_existing(scans_to_process, templa
 %% Warp timepoint one to MNI (not longitudinal) for baseline volumes.
 scantype = 'timepoint';
 sVBM_DARTEL_warp_to_MNI( scans_to_process, DARTEL_template_path, scantype );
-
-%% Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
-sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, dartelpath);
-
-%% Warp ROIs from Atlas Space to Native Timepoint Space via Longitudinal Image Warp
-sVBM_warp_ROIs_to_avg_and_to_timepoint_(scans_to_process)
-
-%% Extract ROI volumes from warped MNI images
-scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs);
-
-
-
-
-
-%% Generate ROI time series 
-sVBM_plot_timeseries(scans_to_process2, 'sum')
-sVBM_plot_timeseries(scans_to_process2, 'mean')
-sVBM_plot_timeseries(scans_to_process2, 'median')
-sVBM_plot_timeseries(scans_to_process2, 'svd')
-%sVBM_plot_timeseries(scans_to_process2, 'peak') % peak is noisy
-
-
 
 
 

@@ -1,4 +1,4 @@
-function sVBM_pushAVGtoICBMviaDARTEL(scans_to_process, templatepath)
+function sVBM_pushAVGtoICBMviaDARTEL(scans_to_process, templatepath, modulationON, smoothingFWHM)
 %sVBM_pushAVGtoICBMviaDARTEL - warp longitudinal images from subject to DARTEL
 %
 % Syntax:  scans_to_process = sVBM_pushAVGtoICBMviaDARTEL( scans_to_process,templatepath)
@@ -50,8 +50,8 @@ for subject = 1:size(scans_to_process,2) % for every subject
         matlabbatch{1}.spm.util.defs.out{1}.push.weight = {''};
         matlabbatch{1}.spm.util.defs.out{1}.push.savedir.savesrc = 1;
         matlabbatch{1}.spm.util.defs.out{1}.push.fov.file = {fullfile(spmpath,'toolbox','DARTEL','icbm152.nii')};
-        matlabbatch{1}.spm.util.defs.out{1}.push.preserve = 0;
-        matlabbatch{1}.spm.util.defs.out{1}.push.fwhm = [0 0 0];
+        matlabbatch{1}.spm.util.defs.out{1}.push.preserve = modulationON;
+        matlabbatch{1}.spm.util.defs.out{1}.push.fwhm = [smoothingFWHM smoothingFWHM smoothingFWHM];
         spm_jobman('run',matlabbatch);
         clear matlabbatch
        
