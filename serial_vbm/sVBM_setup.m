@@ -27,12 +27,7 @@ clear
 clear classes
 
 %load parameters:
-sVBM_config % or name of edited config file 
-scandatafolder='R:\groups\rosen\longitudinalVBM\SD_floor_project\serial_svPPA_oct2014\pidn_dir';
-scandatafolder = '/mnt/macdata/groups/rosen/longitudinalVBM/SD_floor_project/staffaroni_paper/BothFieldStrengths'
-%set scan data folder where image were placed using image_finder.sh
-
-%DARTEL_template_path = templatepath;
+sVBM_config % or name of edited config file %% OPEN THIS AND EDIT PATHS
 
 %read in directories and store info in scans_to_process structure
 scans_to_process = sVBM_load_rawdata( scandatafolder );
@@ -67,7 +62,7 @@ SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % gener
 
 %% 8. Transform longitudinal images to ICBM space (AKA Normalize)
 modulationON = 0; % Set to 1 to enable modulation
-smoothingFWHM = 0; % Set to FWHM mm value to smoothe during modulation 
+smoothingFWHM = 3; % Set to FWHM mm value to smoothe during modulation 
 sVBM_pushAVGspacetoICBMviaDARTEL(scans_to_process, templatepath, modulationON, smoothingFWHM)
 
 % %% [Transform Longitudinal Images to Group/MNI space] (DEPRECATED)
@@ -87,7 +82,7 @@ scantype = 'timepoint';
 
 
 %% 10. Generate ROI time series 
-sVBM_plot_timeseries(scans_to_process2, 'sum');
+sVBM_plot_timeseries(scans_to_process, 'sum');
 sVBM_plot_timeseries(scans_to_process2, 'mean');
 sVBM_plot_timeseries(scans_to_process2, 'median');
 sVBM_plot_timeseries(scans_to_process2, 'svd');

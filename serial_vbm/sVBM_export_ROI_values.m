@@ -38,7 +38,7 @@ switch lower(scantype)
         numROIs= size(scans_to_process(1).BaselineROIVolumes, 1);
         
     case 'timepoint'
-        numROIs= size(scans_to_process(1).Timepoint{1}.ROI, 1);
+        numROIs= size(scans_to_process(1).Timepoint{1}.ROI, 2);
         
 end
 
