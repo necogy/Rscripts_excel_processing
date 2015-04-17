@@ -56,15 +56,18 @@ class Make_template( object ):
             # 0. linear_registration_
             # 1. non_linear_registration_
             # 2. modulation_
-            self.queue_    = [Queue.Queue(), Queue.Queue(), Queue.Queue()]
+            self.queue_     = [Queue.Queue(), Queue.Queue(), Queue.Queue()]
+            self.queue_CBF_ =  Queue.Queue()
             #
             self.ana_dir_        = Ana_dir
             self.template_dir_   = os.path.join(self.ana_dir_, "template")
             #
-            self.linear_MNI_         = []
-            self.non_linear_MNI_     = []
-            self.warped_template_    = []
-            self.modulated_template_ = []
+            self.linear_MNI_             = []
+            self.non_linear_MNI_         = []
+            self.warped_template_        = []
+            self.modulated_template_     = []
+            self.CBF_warped_template_    = []
+            self.CBF_modulated_template_ = []
             #
             self.template_  = ""
             # thread management
@@ -339,6 +342,57 @@ class Make_template( object ):
     #
     #
     #
+    def CBF_modulation_( self ):
+        """CBF applyed GM Modulation."""
+        try:
+            #
+            #
+            # Loop on the tasks
+            while True:
+                # get the item
+                item = self.queue_CBF_.get()
+                # find the corresponding GM
+                GM_warp_coeff = "GM_%s_non_li_template_coeff.nii.gz"%(item[4:-7])
+                GM_warp_jac   = "GM_%s_non_li_template_jac.nii.gz"%(item[4:-7])
+                # apply the GM warp
+                aw = fsl.ApplyWarp()
+                aw.inputs.in_file    = os.path.join(self.ana_dir_, item )
+                aw.inputs.ref_file   = self.template_
+                aw.inputs.out_file   = os.path.join( self.template_dir_, 
+                                                     "%s_non_li_template_warped.nii.gz"%item[:-7] )
+                aw.inputs.field_file = os.path.join( self.template_dir_, GM_warp_coeff )
+                res = aw.run()
+                # Modulate with the GM jacobian
+                maths = fsl.ImageMaths() 
+                maths.inputs.in_file       =  os.path.join(self.template_dir_,
+                                                           "%s_non_li_template_warped.nii.gz"%item[:-7])
+                maths.inputs.op_string     = '-mul %s'%( os.path.join(self.template_dir_, GM_warp_jac) )
+                maths.inputs.out_file      =  os.path.join( self.template_dir_, 
+                                                            "%s_modulated.nii.gz"%item[:-7] )
+                maths.inputs.out_data_type = "float"
+                maths.run();
+                # lock and add the file
+                singlelock.acquire()
+                self.CBF_warped_template_.append( aw.inputs.out_file )
+                self.CBF_modulated_template_.append( maths.inputs.out_file )
+                singlelock.release()
+                # job is done
+                self.queue_CBF_.task_done()
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    #
     def normalization( self ):
         """Registration and Normalization. Process of normalization creates customized template in the standard space (MNI 152) and register non-linearly the tissues (GM, WM, T1, T2, ...) in the standard space."""
         try:
@@ -436,6 +490,70 @@ class Make_template( object ):
             merger.inputs.output_type  = 'NIFTI_GZ'
             merger.inputs.merged_file  =  GM_modulated_template_4D
             merger.run()
+
+            #
+            # Smooth the 4D image
+            for sigma in [2, 3, 4]:
+                GM_mod_smooth_4D = os.path.join(self.ana_dir_, "GM_modulated_template_4D_%s_sigma.nii.gz"%sigma)
+                #
+                maths = fsl.ImageMaths()
+                maths.inputs.in_file       =   GM_modulated_template_4D
+                maths.inputs.op_string     = "-fmean -kernel gauss %s"%sigma
+                maths.inputs.out_file      =   GM_mod_smooth_4D
+                maths.run()
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    #
+    def warp_CBF_map( self, CBF_list ):
+        """Apply warp to the CBF map and smooth."""
+        try:
+        #
+        #
+            #
+            # create the pool of threads
+            for i in range( self.procs_ ):
+                t = threading.Thread( target = self.CBF_modulation_ )
+                t.daemon = True
+                t.start()
+            # Stack the items
+            for item in CBF_list:
+                self.queue_CBF_.put(item)
+            # block until all tasks are done
+            self.queue_CBF_.join()
+
+            #
+            # 4D image with modulated CBF
+            CBF_modulated_template_4D = os.path.join(self.ana_dir_, "CBF_modulated_template_4D.nii.gz")
+            #
+            merger = fsl.Merge()
+            merger.inputs.in_files     =  self.CBF_modulated_template_
+            merger.inputs.dimension    = 't'
+            merger.inputs.output_type  = 'NIFTI_GZ'
+            merger.inputs.merged_file  =  CBF_modulated_template_4D
+            merger.run()
+
+            #
+            # Smooth the 4D image
+            for sigma in [2, 3, 4]:
+                CBF_mod_smooth_4D = os.path.join(self.ana_dir_, "CBF_modulated_template_4D_%s_sigma.nii.gz"%sigma)
+                #
+                maths = fsl.ImageMaths()
+                maths.inputs.in_file       =   CBF_modulated_template_4D
+                maths.inputs.op_string     = "-fmean -kernel gauss %s"%sigma
+                maths.inputs.out_file      =   CBF_mod_smooth_4D
+                maths.run()
         #
         #
         except Exception as inst:

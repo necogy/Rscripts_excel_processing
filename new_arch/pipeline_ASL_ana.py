@@ -4,7 +4,7 @@
 import logging
 import csv
 import sys, getopt
-import os
+import os, shutil
 import datetime
 
 #
@@ -20,8 +20,12 @@ date.append(today)
 
 #
 # Arguments
-study_list = sys.argv[1]
-csv_file   = open(study_list, 'rt')
+#study_list = sys.argv[1]
+if len(sys.argv) > 1:
+    csv_file   = open(sys.argv[1], 'rt')
+else:
+    print "Usage pipeline_ASL_ana.pl /path/to/file.csv"
+    quit(-1)
 
 #
 # Create a log file
@@ -47,6 +51,7 @@ ASL_study = os.path.join(os.sep,
 #
 if not os.path.exists( os.path.join(ASL_study, "ana_res-%s"%(date[0])) ):
     os.mkdir( os.path.join(ASL_study, "ana_res-%s"%(date[0])) )
+ana_res = os.path.join( ASL_study, "ana_res-%s"%(date[0]) )
 # Study specific diseases
 study = ["BV","NORM (BV)","SD","R_SD","L_SD","NORM (SD)","PNFA","NORM (PNFA)"]
 
@@ -127,84 +132,63 @@ try:
                         
     #
     # Sort and unique the the gray matter list
+    # Create the template based on th first time scan
     #
 
     #
-    # Create the study specific template
+    # Lists for GM template construction
+    GM_1_list  = []
+    CBF_1_list = []
+    
     #
-    La_list = ["c1MP-LAS-long-3DC_NIFD022X2_T2.nii",
-               "c1MP-LAS-3DC_NIFD022X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD040X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD040X1_T2.nii",
-               "c1MP-LAS-3DC_NIFD034X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD043X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD043X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD043X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD043X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD092X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD092X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD092X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD093X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD093X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD093X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD011X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD011X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD090X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD090X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD090X1_T2.nii",
-               "c1MP-LAS-3DC_NIFD001X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD001X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD001X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD015X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD015X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD015X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD085X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD085X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD085X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD038X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD038X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD038X1_T2.nii",
-               "c1MP-LAS-3DC_NIFD020X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD020X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD020X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD020X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD050X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD050X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD050X1_T2.nii",
-               "c1MP-LAS-3DC_NIFD006X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD018X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD018X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD018X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD077X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD077X2_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD077X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD030X4_T2.nii",
-               "c1MP-LAS-3DC_NIFD030X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD041X3_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD041X4_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD041X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD041X2_T2.nii",
-               "c1MP-LAS-3DC_NIFD003X1_T2.nii",
-               "c1MP-LAS-long-3DC_NIFD003X3_T2.nii",
-               "c1MP-LAS-3DC_NIFD003X2_T2.nii"]    
-    template = Analysis_tools.Make_template( "FSL", 
-                                             "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-data/ana_res/", 
-                                             La_list )
+    # 
+    for PIDN in estimators:
+        # print PIDN
+        # check we have result
+        if len( estimators[PIDN]["CBF_GM_T2"] ) > 0:
+            #
+            # GM
+            # destination: GM_"PIDN"_"multiplicity"
+            dstname_GM = "GM_%s_%s.nii"%(PIDN,"1")
+            shutil.copy( estimators[PIDN]["GM_T2"][0], 
+                         os.path.join(ana_res, dstname_GM) )
+            #
+            GM_1_list.append( dstname_GM )
+            #
+            # CBF
+            # destination: CBF_"PIDN"_"multiplicity"
+            dstname_CBF = "CBF_%s_%s.nii.gz"%(PIDN,"1")
+            shutil.copy( estimators[PIDN]["CBF_GM_T2"][0], 
+                         os.path.join(ana_res, dstname_CBF) )
+            #
+            CBF_1_list.append( dstname_CBF )
+
+
+    #
+    # Create the study specific template and warp images
+    #
+
+    #
+    # Create the study case template and apply
+    template = Analysis_tools.Make_template( "FSL", ana_res, GM_1_list )
     template.run()
+    # Warp the CBF maps
+    template.warp_CBF_map( CBF_1_list )
     
 
     #
     # Relaunch material
     #
-    print "Relaunch material"
+
+    #
+    # Check if some cases could be launch again
     production_failed.sort()
     production_set = set( production_failed )
-    #print production_set
+    #
+    for case in production_set:
+        print "%s "%case
+    
     #
     #
 finally:
     csv_file.close()
-#asl = Arterial_Spin_Labeling.Protocol()
-#asl.patient_dir_ = os.path.join( fullpath, sys.argv[2] )
-#asl.patient_dir_ = os.path.join( fullpath )
-#asl.run()

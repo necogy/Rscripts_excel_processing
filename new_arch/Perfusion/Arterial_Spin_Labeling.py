@@ -1,10 +1,9 @@
 import logging
-import sys
 import inspect
-import shutil
-import os
+import sys, os, shutil
 import tempfile
 import subprocess
+import numpy
 import nipype
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.spm as spm
@@ -129,10 +128,15 @@ class Protocol( object ):
             seeker = Image_tools.Seek_files( self.patient_dir_ )
 
             #
+            # T2 file
+            # 
+
+            #
             # Find the T2 nifti file
             if seeker.seek_nifti( "T2_" ):
                 self.T2_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T2_file_[0]), self.ACPC_Alignment_ )
+            # Find the T2 analyze file
             elif seeker.seek_analyze( "T2_" ):
                 self.T2_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T2_file_[0]), self.ACPC_Alignment_ )
@@ -153,6 +157,11 @@ class Protocol( object ):
             else:
                 raise Exception("T2 file does not exist.")
                 
+
+            #
+            # T2 file
+            # 
+
             #
             # Find the T1 nifti file
             if seeker.seek_nifti( "MP-LAS-long" ):
@@ -161,6 +170,10 @@ class Protocol( object ):
             elif seeker.seek_nifti( "MP-LAS-3DC" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+            elif seeker.seek_nifti( "MP-LAS_" ):
+                self.T1_file_ = seeker.get_files()
+                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+            # Find the T1 zip file
             elif seeker.seek_zip( "MP-LAS-long" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
@@ -179,6 +192,7 @@ class Protocol( object ):
                         self.T1_file_[0] = fname
                 # Back to the orignal directory
                 os.chdir(self.patient_dir_);
+            #  Find the T1 analyze file
             elif seeker.seek_analyze( "MP-LAS-long" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
@@ -213,11 +227,11 @@ class Protocol( object ):
                 self.T1_file_[1] = ""
                 #
                 os.chdir(self.patient_dir_);
-             elif seeker.seek_analyze( "MP-LAS" ):
+            elif seeker.seek_analyze( "MP-LAS_" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
-                 # change into nifti
+                # change into nifti
                 os.chdir(self.PVE_Segmentation_);
                 ana2nii = spm.Analyze2nii();
                 ana2nii.inputs.analyze_file = self.T1_file_[0]
@@ -230,7 +244,7 @@ class Protocol( object ):
                 self.T1_file_[1] = ""
                 #
                 os.chdir(self.patient_dir_);
-           else:
+            else:
                 raise Exception("T1 file does not exist.")
 
             #
@@ -335,6 +349,8 @@ class Protocol( object ):
             flt.inputs.out_matrix_file = head_T2_m0_mat
             flt.inputs.args            = "-dof 6"
             res = flt.run()
+            # Qulity control: load the matrix and quit if matrix is not Id
+            self.QC_registration_matrix_( head_T2_m0_mat )
             # T2 mask
             flt = fsl.FLIRT()
             flt.inputs.in_file         = self.brain_mask_
@@ -347,8 +363,8 @@ class Protocol( object ):
             # Re-binarise the mask in low resolution
             maths = fsl.ImageMaths( in_file       = brain_T2_mask_m0,
                                     op_string     = "-bin",
-                                    out_data_type = "char"
-                                    out_file  = brain_T2_mask_m0 )
+                                    out_data_type = "char",
+                                    out_file      = brain_T2_mask_m0 )
             maths.run();
             #
             # Skull stripping
@@ -448,7 +464,7 @@ class Protocol( object ):
                                                                file_name)) )
                         # Get final list of unzipped skull-stripped files
                         tagg_stripped_list.append(file_name[:-3])
-                # Run spm realign on un/tagged skull stripepd images
+                # Run spm realign on un/tagged skull stripped images
                 self.run_spm_realign( os.path.join( directory, 'skull_stripped'), 
                                       tagg_stripped_list )
                 # reset the lists
@@ -685,32 +701,12 @@ class Protocol( object ):
             #
             maths = fsl.ImageMaths( in_file       = "brain_mask.nii.gz",
                                     op_string     = '-thr 0.3 -fillh26 -bin',
-                                    out_data_type = "char"
+                                    out_data_type = "char",
                                     out_file      = "brain_mask.nii.gz" )
             maths.run();
             self.brain_mask_ = os.path.join( self.PVE_Segmentation_, "brain_mask.nii.gz" )
 
-#            #
-#            # Croping the probability maps into the brain area
-#            #
-#            
-#            #
-#            # c1
-#            maths = fsl.ImageMaths( in_file   = c1_in_T2,
-#                                    op_string = '-mas %s'%(self.brain_mask_), 
-#                                    out_file  = c1_in_T2 )
-#            maths.run();
-#            # c2
-#            maths = fsl.ImageMaths( in_file   = c2_in_T2,
-#                                    op_string = '-mas %s'%(self.brain_mask_), 
-#                                    out_file  = c2_in_T2 )
-#            maths.run();
-#            # c3
-#            maths = fsl.ImageMaths( in_file   = c3_in_T2,
-#                                    op_string = '-mas %s'%(self.brain_mask_), 
-#                                    out_file  = c3_in_T2 )
-#            maths.run();
-#
+
             #
             # Create a mask only for the gray matter
             # WARNING: visualization purposes
@@ -720,7 +716,7 @@ class Protocol( object ):
             # This filter will remove 0 +- epsilon values from the flow spectrum
             maths = fsl.ImageMaths( in_file       = c1_in_T2,
                                     op_string     = "-thr 0.3  -fillh26 -bin",
-                                    out_data_type = "char"
+                                    out_data_type = "char",
                                     out_file      = "c1_T2_mask.nii.gz")
             maths.run();
             self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
@@ -1257,6 +1253,32 @@ class Protocol( object ):
         aw.inputs.premat     = mat.name
         aw.inputs.args       = "--super --interp=spline --superlevel=4"
         res = aw.run()
+    #
+    #
+    #
+    def QC_registration_matrix_( self, Matrix_file ):
+        """ This quality control check the input matrix and reject matrices not close enough to the Id matrix."""
+        try: 
+            #
+            # Check if the file exist
+            # Load the matrix
+            matrix = numpy.loadtxt( Matrix_file ) 
+            # Check Rotation matrix diagonal
+            if matrix[0][0] < 0.85 or matrix[1][1] < 0.85 or matrix[2][2] < 0.85:
+                raise Exception( "Matrix %s should be closer to the Id matrix."%(Matrix_file) )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+        
     #
     #
     #
