@@ -28,8 +28,12 @@ def generic_unix_cmd( Command ):
             _log.info(output)
         if proc.returncode != 0:
             raise Exception( Command + ': exited with error\n' + error )
-            #
-            #
+        
+        #
+        # return output
+        return output
+    #
+    #
     except Exception as inst:
         print inst
         _log.error(inst)

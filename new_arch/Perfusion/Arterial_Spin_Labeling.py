@@ -16,6 +16,8 @@ from zipfile import ZipFile as zf
 #
 import Image_tools
 import EPI_distortion_correction
+import Quality_control
+import Motion_control as Mc
 #
 #
 #
@@ -291,7 +293,9 @@ class Protocol( object ):
         So we can use them in fsl's asl-subtract to get perfusion weighted image (PWI avg).
 
         """
-        try: 
+        try:
+            #
+            #
             os.chdir( self.ASL_dicom_ )
             os.mkdir('nii_all');
             # DICOM to nifti again ...
@@ -306,26 +310,53 @@ class Protocol( object ):
                     shutil.move( os.path.join(self.ASL_dicom_, nii_file), 
                                  os.path.join(self.ASL_dicom_, 'nii_all') );
 
+
             #
-            # Realign EPI images  
+            # Create 4D asl image
             os.chdir( os.path.join(self.ASL_dicom_, 'nii_all') );
-            # Make skull-stripped_realigned dir
-            os.mkdir(os.path.join( self.ASL_dicom_, 'nii_all', 'realigned_stripped') );
-            # Get list of all EPIs in dir
+            # asl.nii.gz file
+            realigned_stripped_dir = os.path.join( self.ASL_dicom_, 'nii_all', 'realigned_stripped')
+            os.mkdir( realigned_stripped_dir );
+            asl_4D   = os.path.join( realigned_stripped_dir, "asl_4D.nii.gz")
+            asl_file = os.path.join( realigned_stripped_dir, "asl.nii.gz")
+            m0_roi   = os.path.join( realigned_stripped_dir, "m0_brain.nii.gz")
+            # Get list of all EPIs
             stripped_list = [];
-            for file_name in os.listdir(os.getcwd()):
+            for file_name in os.listdir( os.path.join(self.ASL_dicom_, 'nii_all') ):
                 if file_name.endswith('.nii'):
-                    stripped_list.append(file_name);
+                    stripped_list.append( file_name );
             # Sort the list to be realigned on m0
             stripped_list.sort();
             #
-            # Run spm_realign to realign EPIs to first 'm0' in sequence 
-            self.run_spm_realign(os.getcwd(), stripped_list)
-            # Move the stripped and realigned EPIs to seperate dir
-            for realigned_file in os.listdir( os.path.join(self.ASL_dicom_, 'nii_all') ):
-                if realigned_file.startswith('r'):
-                    shutil.move( os.path.join(self.ASL_dicom_, 'nii_all', realigned_file), 
-                                 os.path.join(self.ASL_dicom_, 'nii_all', 'realigned_stripped') )
+            merger = fsl.Merge()
+            merger.inputs.in_files     =  stripped_list
+            merger.inputs.dimension    = 't'
+            merger.inputs.output_type  = 'NIFTI_GZ'
+            merger.inputs.merged_file  =  asl_4D
+            merger.run()
+            # Motion correction
+            mc = Mc.Motion_control( asl_4D )
+            mc.MC_flirt( asl_file )
+
+            #
+            # splite asl.nii into m0 and asl.nii
+            # how many frames do we have in asl.nii
+            cmd = 'fslnvols %s' %asl_file
+            num_of_frame = Image_tools.generic_unix_cmd(cmd)
+            # M0 frame
+            fslroi = fsl.ExtractROI()
+            fslroi.inputs.in_file  = asl_file
+            fslroi.inputs.roi_file = m0_roi
+            fslroi.inputs.t_min    = 0
+            fslroi.inputs.t_size   = 1
+            fslroi.run()
+            # asl.nii frames, m0 extracted
+            fslroi = fsl.ExtractROI()
+            fslroi.inputs.in_file  = asl_file
+            fslroi.inputs.roi_file = asl_file
+            fslroi.inputs.t_min    = 1
+            fslroi.inputs.t_size   = int(num_of_frame) - 1
+            fslroi.run()
 
             #
             # Skull stripping using SPM mask
@@ -336,9 +367,9 @@ class Protocol( object ):
             brain_T2_mask_m0 = os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped",
                                             "brain_T2_mask_m0.nii.gz")
             #
-            head_m0        = "r%s"%( stripped_list.pop(0) )
-            head_T2_m0_mat =  os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped",
-                                           "head_T2_m0.mat")
+            head_m0        = m0_roi #"r%s"%( stripped_list.pop(0) )
+            head_T2_m0_mat = os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped",
+                                          "head_T2_m0.mat")
             #
             # Register T2 and mask in EPI framwork
             # T2 head
@@ -368,32 +399,19 @@ class Protocol( object ):
             maths.run();
             #
             # Skull stripping
-            for brain_file in os.listdir(os.path.join(self.ASL_dicom_,'nii_all','realigned_stripped')):
-                if brain_file.endswith(".nii"):
-                    maths = fsl.ImageMaths( in_file   = brain_file,
-                                            op_string = "-mas %s"%(brain_T2_mask_m0), 
-                                            out_file  =  "%s_brain.nii.gz"%(brain_file[:-4]) )
-                    maths.run()
-            # move m0 out of the way it will be copied later
-            shutil.move( os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped", 
-                                      "%s_brain.nii.gz"%(head_m0[:-4])), 
-                         os.path.join(self.ASL_dicom_,"nii_all","m0_brain.nii.gz") )
-            #
-            os.system( 'gunzip %s'%(os.path.join(self.ASL_dicom_,"nii_all","m0_brain.nii.gz")) );
+            # m0
+            maths = fsl.ImageMaths( in_file   =  m0_roi,
+                                    op_string = "-mas %s"%(brain_T2_mask_m0), 
+                                    out_file  =  m0_roi )
+            maths.run()
+            # asl.nii
+            maths = fsl.ImageMaths( in_file   = asl_file,
+                                    op_string = "-mas %s"%(brain_T2_mask_m0), 
+                                    out_file  =  "%s_brain.nii.gz"%(asl_file[:-7]) )
+            maths.run()
 
             #
-            # Create ASL files
-            #
-            
-            #
-            # Remove unnecessary files
-            for brain_file in os.listdir(os.path.join(self.ASL_dicom_,'nii_all','realigned_stripped')):
-                # Remove text file before combining all nii into 4d
-                if brain_file.endswith('.txt'):
-                    os.remove( os.path.join( self.ASL_dicom_, 'nii_all','realigned_stripped', 
-                                             brain_file) ); 
-            # merge the files with fslmerge. Option '-t' preserve the temporality
-            os.system('fslmerge -t asl.nii r*_brain.nii.gz');
+            # filter ASL file
             # asl_file
             # --data
             # --ntis we have X repeats all at single inflow-time 'asl.nii': ntis=1
@@ -402,9 +420,122 @@ class Protocol( object ):
             #   * 'ct' control-tag pairs (with control coming as the first volume)
             # --out diff between tag-control
             # --mean average of diff between tag-control
-            cmd='asl_file --data=asl.nii --ntis=1 --iaf=tc --diff --out=diffdata --mean=diffdata_mean'
+            cmd='asl_file --data=asl_brain.nii.gz --ntis=1 --iaf=tc --diff --out=diffdata --mean=diffdata_mean'
             Image_tools.generic_unix_cmd(cmd)
             os.system('gunzip *.nii.gz')
+            # copy m0 frame
+            shutil.copy( m0_roi[:-3], 
+                         os.path.join(self.ASL_dicom_, 'nii_all') );
+
+
+
+
+
+
+#            #
+#            # Realign EPI images  
+#            os.chdir( os.path.join(self.ASL_dicom_, 'nii_all') );
+#            # Make skull-stripped_realigned dir
+#            os.mkdir(os.path.join( self.ASL_dicom_, 'nii_all', 'realigned_stripped') );
+#            # Get list of all EPIs in dir
+#            stripped_list = [];
+#            for file_name in os.listdir(os.getcwd()):
+#                if file_name.endswith('.nii'):
+#                    stripped_list.append(file_name);
+#            # Sort the list to be realigned on m0
+#            stripped_list.sort();
+#            #
+#            # Run spm_realign to realign EPIs to first 'm0' in sequence 
+#            self.run_spm_realign(os.getcwd(), stripped_list)
+#            # Move the stripped and realigned EPIs to seperate dir
+#            for realigned_file in os.listdir( os.path.join(self.ASL_dicom_, 'nii_all') ):
+#                if realigned_file.startswith('r'):
+#                    shutil.move( os.path.join(self.ASL_dicom_, 'nii_all', realigned_file), 
+#                                 os.path.join(self.ASL_dicom_, 'nii_all', 'realigned_stripped') )
+#
+#            #
+#            # Skull stripping using SPM mask
+#            os.chdir( os.path.join(self.ASL_dicom_,'nii_all','realigned_stripped') )
+#            #
+#            head_T2_m0       = os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped",
+#                                            "head_T2_m0.nii.gz")
+#            brain_T2_mask_m0 = os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped",
+#                                            "brain_T2_mask_m0.nii.gz")
+#            #
+#            head_m0        = "r%s"%( stripped_list.pop(0) )
+#            head_T2_m0_mat =  os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped",
+#                                           "head_T2_m0.mat")
+#            #
+#            # Register T2 and mask in EPI framwork
+#            # T2 head
+#            flt = fsl.FLIRT()
+#            flt.inputs.in_file         = os.path.join( self.ACPC_Alignment_, self.T2_file_[0] )
+#            flt.inputs.reference       = head_m0
+#            flt.inputs.out_file        = head_T2_m0
+#            flt.inputs.out_matrix_file = head_T2_m0_mat
+#            flt.inputs.args            = "-dof 6"
+#            res = flt.run()
+#            # Qulity control: load the matrix and quit if matrix is not Id
+#            self.QC_registration_matrix_( head_T2_m0_mat )
+#            # T2 mask
+#            flt = fsl.FLIRT()
+#            flt.inputs.in_file         = self.brain_mask_
+#            flt.inputs.reference       = head_m0
+#            flt.inputs.out_file        = brain_T2_mask_m0
+#            flt.inputs.in_matrix_file  = head_T2_m0_mat
+#            flt.inputs.apply_xfm       = True
+#            flt.inputs.args            = "-dof 6"
+#            res = flt.run()
+#            # Re-binarise the mask in low resolution
+#            maths = fsl.ImageMaths( in_file       = brain_T2_mask_m0,
+#                                    op_string     = "-bin",
+#                                    out_data_type = "char",
+#                                    out_file      = brain_T2_mask_m0 )
+#            maths.run();
+#            #
+#            # Skull stripping
+#            for brain_file in os.listdir(os.path.join(self.ASL_dicom_,'nii_all','realigned_stripped')):
+#                if brain_file.endswith(".nii"):
+#                    maths = fsl.ImageMaths( in_file   = brain_file,
+#                                            op_string = "-mas %s"%(brain_T2_mask_m0), 
+#                                            out_file  =  "%s_brain.nii.gz"%(brain_file[:-4]) )
+#                    maths.run()
+#            # move m0 out of the way it will be copied later
+#            shutil.move( os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped", 
+#                                      "%s_brain.nii.gz"%(head_m0[:-4])), 
+#                         os.path.join(self.ASL_dicom_,"nii_all","m0_brain.nii.gz") )
+#            #
+#            os.system( 'gunzip %s'%(os.path.join(self.ASL_dicom_,"nii_all","m0_brain.nii.gz")) );
+#
+#            #
+#            # Create ASL files
+#            #
+#            
+#            #
+#            # Remove unnecessary files
+#            for brain_file in os.listdir(os.path.join(self.ASL_dicom_,'nii_all','realigned_stripped')):
+#                # Remove text file before combining all nii into 4d
+#                if brain_file.endswith('.txt'):
+#                    os.remove( os.path.join( self.ASL_dicom_, 'nii_all','realigned_stripped', 
+#                                             brain_file) ); 
+#            # merge the files with fslmerge. Option '-t' preserve the temporality
+#            os.system('fslmerge -t asl.nii r*_brain.nii.gz');
+#
+#
+#
+#
+#
+#            # asl_file
+#            # --data
+#            # --ntis we have X repeats all at single inflow-time 'asl.nii': ntis=1
+#            # --iaf inflow-time contains 
+#            #   * 'tc' tag-control pairs (with tag coming as the first volume)
+#            #   * 'ct' control-tag pairs (with control coming as the first volume)
+#            # --out diff between tag-control
+#            # --mean average of diff between tag-control
+#            cmd='asl_file --data=asl.nii --ntis=1 --iaf=tc --diff --out=diffdata --mean=diffdata_mean'
+#            Image_tools.generic_unix_cmd(cmd)
+#            os.system('gunzip *.nii.gz')
         #
         #
         except Exception as inst:
@@ -698,7 +829,7 @@ class Protocol( object ):
                                     op_string = '-add %s'%(c3_in_T2), 
                                     out_file  = "brain_mask.nii.gz" )
             maths.run();
-            #
+            # TODO: somehow hang calculation ...
             maths = fsl.ImageMaths( in_file       = "brain_mask.nii.gz",
                                     op_string     = '-thr 0.3 -fillh26 -bin',
                                     out_data_type = "char",
