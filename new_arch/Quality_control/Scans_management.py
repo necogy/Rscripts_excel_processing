@@ -1,10 +1,13 @@
 import os, sys
 import shutil, tempfile, zipfile, csv
 import logging
-_log = logging.getLogger("__Scans_management__")
 import hashlib
 #
+from functools import partial
+#
 import Image_tools
+
+_log = logging.getLogger("__Scans_management__")
 
 class Scans_management( object ):
     """Scan management processing script.
@@ -53,7 +56,8 @@ class Scans_management( object ):
             "T1-LONG":[False,[],[],[]],
             "T1-LONG-3DC":[False,[],[],[]],
             "T1-SHORT":[False,[],[],[]],
-            "T1-SHORT-3DC":[False,[],[],[]]
+            "T1-SHORT-3DC":[False,[],[],[]],
+            "PASL":[False,[],[],[]]
         }
 
         #
@@ -131,10 +135,11 @@ class Scans_management( object ):
             self.T2_3DC( Scans_dir )
             self.FLAIR( Scans_dir )
             self.FLAIR_3DC( Scans_dir )
-#            self.T1_long( Scans_dir )
+            #self.T1_long( Scans_dir )
             self.T1_long_3DC( Scans_dir )
             self.T1_short( Scans_dir )
             self.T1_short_3DC( Scans_dir )
+            self.pulsed_ASL( Scans_dir )
             #
             print  self.protocols_
         #
@@ -190,12 +195,76 @@ class Scans_management( object ):
     #
     def Diffusion( self, Scans ):
         return self.protocol_name_
-    
-    
-    def ASL( self, Scans ):
-        return self.protocol_name_
-    
-    
+    #
+    #
+    def pulsed_ASL( self, Scans ):
+        """Pulsed Arterial Spin Labeling (perfusion)"""
+        try:
+            #
+            # Check on ASL directory
+            self.protocols_["PASL"][0] = True
+            protocol_dir = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "pASL_" in dir_name and "MoCo" not in dir_name:
+                    protocol_dir.append( os.path.join(Scans, dir_name) )
+            # Check if we found a directory
+            if not protocol_dir:
+                self.protocols_["PASL"][0] = False
+                _log.warning("PASL directory does not exist.")
+            #
+            # DICOMs zipping and change into nifti
+            if self.protocols_["PASL"][0]:
+                for dir_name in protocol_dir:
+                    self.zip_protocol_("PASL", dir_name, len(protocol_dir) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    def pulsed_ASL_MoCo( self, Scans ):
+        """Pulsed Arterial Spin Labeling (perfusion) MoCo"""
+        try:
+            #
+            # Check on ASL directory
+            self.protocols_["PASL_MoCo"][0] = True
+            protocol_dir = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "pASL_" in dir_name and "MoCo" in dir_name:
+                    protocol_dir.append( os.path.join(Scans, dir_name) )
+            # Check if we found a directory
+            if not protocol_dir:
+                self.protocols_["PASL_MoCo"][0] = False
+                _log.warning("PASL directory does not exist.")
+            #
+            # DICOMs zipping and change into nifti
+            if self.protocols_["PASL_MoCo"][0]:
+                for dir_name in protocol_dir:
+                    self.zip_protocol_("PASL_MoCo", dir_name, len(protocol_dir) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
     def DTIV1( self, Scans ):
         return self.protocol_name_
     
@@ -485,9 +554,9 @@ class Scans_management( object ):
             quit(-1)
     #
     #
-    def zip_protocol_( self, Protocol, Directory, Dir_num = ""):
+    def zip_DICOMs_( self, Protocol, Directory, Dir_num = ""):
         """Zip file function"""
-        _log.warning("%s sequence(s) found - zipping DICOM"%(Protocol))
+        _log.info("%s sequence(s) found - zipping DICOM"%(Protocol))
         #
         try:
             #
@@ -508,6 +577,8 @@ class Scans_management( object ):
             #
             # create temporary directory to store zip files
             tempo_dir = tempfile.mkdtemp()
+            # TODO: log as warning
+            print tempo_dir
             # Name the zip file
             if Dir_num:
                 zip_file = "%s_%s_%s.zip"%(Protocol, Dir_num, self.sourceIDX_)
@@ -543,13 +614,14 @@ class Scans_management( object ):
     #
     def dcm2nii_protocol_( self, Protocol, Directory, Dir_num = "" ):
         """Convert dicoms to nifti file function"""
-        _log.warning("%s sequence(s) found - convert DICOM to nifti"%(Protocol))
+        _log.info("%s sequence(s) found - convert DICOM to nifti"%(Protocol))
         #
         try:
             #
             # create temporary directory to store zip files
             nifti_file = ""
             tempo_dir = tempfile.mkdtemp()
+            # TODO: log as warning
             print tempo_dir
             os.chdir( tempo_dir )
             # Gather the dicom in the temporary directory
@@ -583,13 +655,11 @@ class Scans_management( object ):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             quit(-1)
-
-
     #
     #
-    def process_protocol_( self, Protocol, Directory, Unique ):
-        """Convert dicoms to nifti file function"""
-        _log.warning("%s sequence(s) found - process sequence(s)"%(Protocol))
+    def zip_protocol_( self, Protocol, Directory, Unique ):
+        """Convert dicoms to zip file function"""
+        _log.info("%s sequence(s) found - zip sequence(s)"%(Protocol))
         #
         try:
             #
@@ -607,7 +677,7 @@ class Scans_management( object ):
 
             #
             # Zip dicoms
-            zip_file = self.zip_protocol_(Protocol, Directory, dir_num) 
+            zip_file = self.zip_DICOMs_(Protocol, Directory, dir_num) 
             #
             if not os.path.exists( zip_file ):
                 raise Exception( "%s file does not exist."%zip_file )
@@ -615,7 +685,51 @@ class Scans_management( object ):
                 target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
                 shutil.move( zip_file, target_zip_file );
                 self.protocols_[Protocol][1].append( target_zip_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(hashlib.md5(target_zip_file).hexdigest(),
+                self.protocols_[Protocol][3].append( "%s %s"%(self.md5sum_(target_zip_file),
+                                                              target_zip_file) )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    def process_protocol_( self, Protocol, Directory, Unique ):
+        """Convert dicoms to nifti file and dicoms zip function"""
+        _log.info("%s sequence(s) found - process sequence(s)"%(Protocol))
+        #
+        try:
+            #
+            # Multiple cases
+            dir_num = ""
+            base_name = os.path.basename( Directory )
+            #
+            if not Unique:
+                if base_name[:2].isdigit():
+                    dir_num = base_name[:2]
+                elif base_name[:1].isdigit():
+                    dir_num = base_name[:1]
+                else:
+                    raise Exception( "No multiple cases for the protocol %s."%Protocol )
+
+            #
+            # Zip dicoms
+            zip_file = self.zip_DICOMs_(Protocol, Directory, dir_num) 
+            #
+            if not os.path.exists( zip_file ):
+                raise Exception( "%s file does not exist."%zip_file )
+            else:
+                target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
+                shutil.move( zip_file, target_zip_file );
+                self.protocols_[Protocol][1].append( target_zip_file )
+                self.protocols_[Protocol][3].append( "%s %s"%(self.md5sum_(target_zip_file),
                                                               target_zip_file) )
         
             #
@@ -628,13 +742,14 @@ class Scans_management( object ):
                 target_niftii_file = os.path.join( self.DICOM_path_, os.path.basename(nifti_file) )
                 shutil.move( nifti_file, target_niftii_file );
                 self.protocols_[Protocol][2].append( target_niftii_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(hashlib.md5(target_niftii_file).hexdigest(),
+                self.protocols_[Protocol][3].append( "%s %s"%(self.md5sum_(target_niftii_file),
                                                               target_niftii_file) )
         
             #
             #
             return nifti_file
-
+        #
+        #
         except Exception as inst:
             print inst
             _log.error(inst)
@@ -645,8 +760,18 @@ class Scans_management( object ):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             quit(-1)
-
-
+    #
+    #
+    # TODO: This function should be in a tool library
+    def md5sum_(self, File_name ):
+        with open(File_name, mode='rb') as f:
+            d = hashlib.md5()
+            for buf in iter(partial(f.read, 128), b''):
+                d.update(buf)
+            return d.hexdigest()
+    #
+    #
+    #
     def run( self ):
         self.new_scans()
 
