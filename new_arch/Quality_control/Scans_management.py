@@ -41,11 +41,20 @@ class Scans_management( object ):
 
         #
         #
-        self.projects_ = {"NIFD":"", "PPGAAAA":"", "ADRC":"", "HB":"", "FRTNI":"", "HV":"", "EPIL":"", "INF":"", "TPI4RT":"", "TPIAD":"", "RPD":"", "NRS":""}
+        self.projects_ = {"NIFD":"", "PPGAAAA":"", "ADRC":"", "HB":"", "FRTNI":"", "HVAAAA":"", "EPIL":"", "INF":"", "TPI4RT":"", "TPIAD":"", "RPD":"", "NRS":""}
         # 
         # protocols dictionary
         # "proto":"True", "zip_file", "nii_file", "md5 signatures"
-        self.protocols_ = {"T2":[False,[],[],[]],"T2_3DC":[False,[],[],[]]}
+        self.protocols_ = {
+            "T2":[False,[],[],[]],
+            "T2_3DC":[False,[],[],[]],
+            "FLAIR":[False,[],[],[]],
+            "FLAIR_3DC":[False,[],[],[]],
+            "T1-LONG":[False,[],[],[]],
+            "T1-LONG-3DC":[False,[],[],[]],
+            "T1-SHORT":[False,[],[],[]],
+            "T1-SHORT-3DC":[False,[],[],[]]
+        }
 
         #
         # Output files
@@ -93,9 +102,12 @@ class Scans_management( object ):
                                     # create a Source ID
                                     self.sourceIDX_ = self.create_source_id_()
                                     # process the scans
-                                    self.scan_process( os.path.join(level_2, files[0]) )
+                                    if self.sourceIDX_:
+                                        self.scan_process( os.path.join(level_2, files[0]) )
+                                    else:
+                                        _log.warning( "Scan with the PIDN %s and the date %s already exist"%(self.PIDN_, date) )
                                 else:
-                                    raise Exception( "Directory %s contain more than one directory."%level_2 )
+                                    raise Exception( "Directory %s contains more than one directory."%level_2 )
             #
             #
         except Exception as inst:
@@ -117,10 +129,16 @@ class Scans_management( object ):
             #
             self.T2( Scans_dir )
             self.T2_3DC( Scans_dir )
-            
-
+            self.FLAIR( Scans_dir )
+            self.FLAIR_3DC( Scans_dir )
+#            self.T1_long( Scans_dir )
+            self.T1_long_3DC( Scans_dir )
+            self.T1_short( Scans_dir )
+            self.T1_short_3DC( Scans_dir )
             #
-            #
+            print  self.protocols_
+        #
+        #
         except Exception as inst:
             print inst
             _log.error(inst)
@@ -148,14 +166,13 @@ class Scans_management( object ):
                     # generate a new source ID
                     # add the new line in the CSV file
                     print row
-            #
 
             #
             #
             self.source_id_csv_.close()
 
             #
-            #
+            # Return the new Source Id
             return "NIFD151X3"
             #
             #
@@ -196,13 +213,71 @@ class Scans_management( object ):
     
     
     def T1_long( self, Scans ):
-        return self.protocol_name_
-    
-    
+        """T1 long protocol"""
+        try:
+            #
+            # Check on T1 directory
+            self.protocols_["T1-LONG"][0] = True
+            protocol_dir = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "T1_mprage" in dir_name and "DIS3D" not in dir_name and "short" not in dir_name:
+                    protocol_dir.append( os.path.join(Scans, dir_name) )
+            # Check if we found a directory
+            if not protocol_dir:
+                self.protocols_["T1-LONG"][0] = False
+                _log.warning("T1-LONG directory does not exist.")
+            #
+            # DICOMs zipping and change into nifti
+            if self.protocols_["T1-LONG"][0]:
+                for dir_name in protocol_dir:
+                    self.process_protocol_("T1-LONG", dir_name, len(protocol_dir) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
     def T1_long_3DC( self, Scans ):
-        return self.protocol_name_
-
-    
+        """T1 3DC protocol"""
+        try:
+            #
+            # Check on T1 directory
+            self.protocols_["T1-LONG-3DC"][0] = True
+            protocol_dir = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "T1_mprage_S" in dir_name and "DIS3D" in dir_name and "short" not in dir_name:
+                    protocol_dir.append( os.path.join(Scans, dir_name) )
+            # Check if we found a directory
+            if not protocol_dir:
+                self.protocols_["T1-LONG-3DC"][0] = False
+                _log.warning("T1-LONG-3DC directory does not exist.")
+            #
+            # DICOMs zipping and change into nifti
+            if self.protocols_["T1-LONG-3DC"][0]:
+                for dir_name in protocol_dir:
+                    self.process_protocol_("T1-LONG-3DC", dir_name, len(protocol_dir) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
     #
     #
     def T2( self, Scans ):
@@ -225,7 +300,6 @@ class Scans_management( object ):
             if self.protocols_["T2"][0]:
                 for dir_name in protocol_dir:
                     self.process_protocol_("T2", dir_name, len(protocol_dir) is 1 )
-            print  self.protocols_
         #
         #
         except Exception as inst:
@@ -238,8 +312,6 @@ class Scans_management( object ):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             quit(-1)
-   
-    
     #
     #
     def T2_3DC( self, Scans ):
@@ -263,7 +335,8 @@ class Scans_management( object ):
             if self.protocols_["T2_3DC"][0]:
                 for dir_name in protocol_dir:
                     self.process_protocol_("T2_3DC", dir_name, len(protocol_dir) is 1 )
-            print  self.protocols_
+        #
+        #
         except Exception as inst:
             print inst
             _log.error(inst)
@@ -274,30 +347,148 @@ class Scans_management( object ):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             quit(-1)
-    
-    
+    #
+    #
     def FLAIR( self, Scans ):
-        return self.protocol_name_
-    
-    
+        """FLAIR protocol"""
+        try:
+            #
+            # Check on FLAIR directory
+            self.protocols_["FLAIR"][0] = True
+            protocol_dir = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "T2_flair" in dir_name and "DIS3D" not in dir_name:
+                    protocol_dir.append( os.path.join(Scans, dir_name) )
+            # Check if we found a directory
+            if not protocol_dir:
+                self.protocols_["FLAIR"][0] = False
+                _log.warning("FLAIR directory does not exist.")
+            #
+            # DICOMs zipping and change into nifti
+            if self.protocols_["FLAIR"][0]:
+                for dir_name in protocol_dir:
+                    self.process_protocol_("FLAIR", dir_name, len(protocol_dir) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
     def FLAIR_3DC( self, Scans ):
-        return self.protocol_name_
-    
-    
+        """FLAIR 3DC protocol"""
+        try:
+            #
+            # Check on FLAIR directory
+            self.protocols_["FLAIR_3DC"][0] = True
+            protocol_dir = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "T2_flair" in dir_name and "DIS3D" in dir_name:
+                    protocol_dir.append( os.path.join(Scans, dir_name) )
+            # Check if we found a directory
+            if not protocol_dir:
+                self.protocols_["FLAIR_3DC"][0] = False
+                _log.warning("FLAIR 3DC directory does not exist.")
+            #
+            # DICOMs zipping and change into nifti
+            if self.protocols_["FLAIR_3DC"][0]:
+                for dir_name in protocol_dir:
+                    self.process_protocol_("FLAIR_3DC", dir_name, len(protocol_dir) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
     def T1_short( self, Scans ):
-        return self.protocol_name_
-    
-    
+        """T1 short protocol"""
+        try:
+            #
+            # Check on T1 directory
+            self.protocols_["T1-SHORT"][0] = True
+            protocol_dir = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "T1_mprage_short_" in dir_name and "DIS3D" not in dir_name:
+                    protocol_dir.append( os.path.join(Scans, dir_name) )
+            # Check if we found a directory
+            if not protocol_dir:
+                self.protocols_["T1-SHORT"][0] = False
+                _log.warning("T1-SHORT directory does not exist.")
+            #
+            # DICOMs zipping and change into nifti
+            if self.protocols_["T1-SHORT"][0]:
+                for dir_name in protocol_dir:
+                    self.process_protocol_("T1-SHORT", dir_name, len(protocol_dir) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
     def T1_short_3DC( self, Scans ):
-        return self.protocol_name_
-    
-
+        """T1 3DC protocol"""
+        try:
+            #
+            # Check on T1 directory
+            self.protocols_["T1-SHORT-3DC"][0] = True
+            protocol_dir = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "T1_mprage_short_" in dir_name and "DIS3D" in dir_name:
+                    protocol_dir.append( os.path.join(Scans, dir_name) )
+            # Check if we found a directory
+            if not protocol_dir:
+                self.protocols_["T1-SHORT-3DC"][0] = False
+                _log.warning("T1-SHORT-3DC directory does not exist.")
+            #
+            # DICOMs zipping and change into nifti
+            if self.protocols_["T1-SHORT-3DC"][0]:
+                for dir_name in protocol_dir:
+                    self.process_protocol_("T1-SHORT-3DC", dir_name, len(protocol_dir) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
     #
     #
     def zip_protocol_( self, Protocol, Directory, Dir_num = ""):
         """Zip file function"""
         _log.warning("%s sequence(s) found - zipping DICOM"%(Protocol))
-
+        #
         try:
             #
             # 
