@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+#
+# Usage
+# pipeline.py /mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL/1416/2010-09-07 GHB034-3_Wartman,Sammy
+#
+
 #import pdb; pdb.set_trace()
 import logging
 # Create a log file

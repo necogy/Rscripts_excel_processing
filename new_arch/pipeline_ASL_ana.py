@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+#
+# Usage:
+# ./pipeline_ASL_ana.py /home/ycobigo/study/EPI/ASL-pipeline/Tools/asl.csv
+#
+
 #import pdb; pdb.set_trace()
 import logging
 import csv
