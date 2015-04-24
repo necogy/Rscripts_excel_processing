@@ -93,6 +93,18 @@ try:
                 # CBF GM list
                 acquisition_CBF_GM_T2 = []
                 estimators[row[0]]["CBF_GM_T2"] = acquisition_CBF_GM_T2
+                # CBF registered T2 list
+                acquisition_CBF_T2 = []
+                estimators[row[0]]["CBF_T2"] = acquisition_CBF_T2
+                # T1 registered T2 list
+                acquisition_T1_T2 = []
+                estimators[row[0]]["T1_T2"] = acquisition_T1_T2
+                # T1 brain registered T2 list
+                acquisition_T1_brain_T2 = []
+                estimators[row[0]]["T1_brain_T2"] = acquisition_T1_brain_T2
+                # T1 brain registered T2 list
+                acquisition_T1_brain_map_T2 = []
+                estimators[row[0]]["T1_brain_map_T2"] = acquisition_T1_brain_map_T2
             #
             dir = os.path.join( ASL_study, row[0], row[2])
 
@@ -131,6 +143,42 @@ try:
                             estimators[row[0]]["CBF_GM_T2"].append( CBF_GM_T2 ) 
                         else:
                             production_failed.append( patient_dir )
+                        
+                        #
+                        # file - 3: CBF registered T2
+                        CBF_T2 = os.path.join(patient_dir, "ACPC_Alignment", "CBF_T2.nii.gz")
+                        if os.path.exists( CBF_T2 ):
+                            estimators[row[0]]["CBF_T2"].append( CBF_T2 ) 
+                        else:
+                            production_failed.append( patient_dir )
+                        
+                        #
+                        # file - 4: T1 registered T2
+                        T1_T2 = ""
+                        for f in os.listdir( PVE ):
+                            if f.startswith("m") and f.endswith("_T2.nii"):
+                                T1_T2 = os.path.join( PVE, f )
+                        #
+                        if os.path.exists( T1_T2 ):
+                            estimators[row[0]]["T1_T2"].append( T1_T2 ) 
+                        else:
+                            production_failed.append( patient_dir )
+                        
+                        #
+                        # file - 5: T1 brain registered T2
+                        T1_brain_T2 = os.path.join(PVE, "T1_brain.nii.gz")
+                        if os.path.exists( T1_brain_T2 ):
+                            estimators[row[0]]["T1_brain_T2"].append( T1_brain_T2 ) 
+                        else:
+                            production_failed.append( patient_dir )
+                        
+                        #
+                        # file - 6: T1 brain map registered T2
+                        T1_brain_map_T2 = os.path.join(PVE, "brain_map.nii.gz")
+                        if os.path.exists( T1_brain_map_T2 ):
+                            estimators[row[0]]["T1_brain_map_T2"].append( T1_brain_map_T2 ) 
+                        else:
+                            production_failed.append( patient_dir )
                     #
                     else:
                         production_failed.append( patient_dir )
@@ -141,12 +189,30 @@ try:
     #
 
     #
-    # Lists for GM template construction
-    GM_1_list  = []
-    CBF_1_list = []
+    # Lists for template construction and analyse
+    GM_1_list           = []
+    CBF_GM_1_list       = []
+    CBF_1_list          = []
+    T1_1_list           = []
+    T1_brain_1_list     = []
+    T1_brain_map_1_list = []
     
     #
-    # 
+    # Create destination directories 
+    GM_dir           = os.path.join(ana_res, "GM")
+    CBF_GM_dir       = os.path.join(ana_res, "CBF_GM")
+    CBF_dir          = os.path.join(ana_res, "CBF")
+    T1_dir           = os.path.join(ana_res, "T1")
+    T1_brain_dir     = os.path.join(ana_res, "T1_brain")
+    T1_brain_map_dir = os.path.join(ana_res, "T1_brain_map")
+    #
+    os.mkdir(GM_dir)
+    os.mkdir(CBF_GM_dir)
+    os.mkdir(CBF_dir)
+    os.mkdir(T1_dir)
+    os.mkdir(T1_brain_dir)
+    os.mkdir(T1_brain_map_dir)
+    #
     for PIDN in estimators:
         # print PIDN
         # check we have result
@@ -156,17 +222,49 @@ try:
             # destination: GM_"PIDN"_"multiplicity"
             dstname_GM = "GM_%s_%s.nii"%(PIDN,"1")
             shutil.copy( estimators[PIDN]["GM_T2"][0], 
-                         os.path.join(ana_res, dstname_GM) )
+                         os.path.join(GM_dir, dstname_GM) )
             #
             GM_1_list.append( dstname_GM )
+            #
+            # CBF GM
+            # destination: CBF_GM_"PIDN"_"multiplicity"
+            dstname_CBF_GM = "CBF_GM_%s_%s.nii.gz"%(PIDN,"1")
+            shutil.copy( estimators[PIDN]["CBF_GM_T2"][0], 
+                         os.path.join(CBF_GM_dir, dstname_CBF_GM) )
+            #
+            CBF_GM_1_list.append( dstname_CBF_GM )
             #
             # CBF
             # destination: CBF_"PIDN"_"multiplicity"
             dstname_CBF = "CBF_%s_%s.nii.gz"%(PIDN,"1")
-            shutil.copy( estimators[PIDN]["CBF_GM_T2"][0], 
-                         os.path.join(ana_res, dstname_CBF) )
+            shutil.copy( estimators[PIDN]["CBF_T2"][0], 
+                         os.path.join(CBF_dir, dstname_CBF) )
             #
             CBF_1_list.append( dstname_CBF )
+            #
+            # T1 registered T2
+            # destination: T1_"PIDN"_"multiplicity"
+            dstname_T1 = "T1_%s_%s.nii.gz"%(PIDN,"1")
+            shutil.copy( estimators[PIDN]["T1_T2"][0], 
+                         os.path.join(T1_dir, dstname_T1) )
+            #
+            T1_1_list.append( dstname_T1 )
+            #
+            # T1 brain registered T2
+            # destination: T1_brain_"PIDN"_"multiplicity"
+            dstname_T1_brain = "T1_brain_%s_%s.nii.gz"%(PIDN,"1")
+            shutil.copy( estimators[PIDN]["T1_brain_T2"][0], 
+                         os.path.join(T1_brain_dir, dstname_T1_brain) )
+            #
+            T1_brain_1_list.append( dstname_T1_brain )
+            #
+            # T1 brain map registered T2
+            # destination: T1_brain_map_"PIDN"_"multiplicity"
+            dstname_T1_brain_map = "T1_brain_map_%s_%s.nii.gz"%(PIDN,"1")
+            shutil.copy( estimators[PIDN]["T1_brain_map_T2"][0], 
+                         os.path.join(T1_brain_map_dir, dstname_T1_brain_map) )
+            #
+            T1_brain_map_1_list.append( dstname_T1_brain_map )
 
 
     #
@@ -175,10 +273,19 @@ try:
 
     #
     # Create the study case template and apply
-    template = Analysis_tools.Make_template( "FSL", ana_res, GM_1_list )
-    template.run()
-    # Warp the CBF maps
-    template.warp_CBF_map( CBF_1_list )
+    # Gray matter
+    if False:
+        template = Analysis_tools.Make_GM_template( "FSL", ana_res, GM_dir, GM_1_list )
+        template.run()
+        # Warp the CBF maps
+        template.warp_CBF_map( CBF_GM_dir, CBF_GM_1_list )
+    # Brain
+    if True:
+        template = Analysis_tools.Make_brain_template( "FSL", ana_res, T1_brain_dir, T1_brain_1_list )
+        template.run()
+        # Warp the CBF maps
+        #template.warp_CBF_map( CBF_GM_dir, CBF_GM_1_list )
+    
     
 
     #

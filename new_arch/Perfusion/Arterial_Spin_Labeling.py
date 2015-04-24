@@ -869,7 +869,7 @@ class Protocol( object ):
             maths.run();
 
             #
-            # MNI atlas selected
+            # MNI selected
             MNI_T1_2mm       = ""
             MNI_T1_brain_1mm = ""
             MNI_T1_brain_2mm = ""
