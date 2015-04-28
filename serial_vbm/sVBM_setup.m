@@ -83,9 +83,9 @@ scantype = 'timepoint';
 
 %% 10. Generate ROI time series 
 sVBM_plot_timeseries(scans_to_process, 'sum');
-sVBM_plot_timeseries(scans_to_process2, 'mean');
-sVBM_plot_timeseries(scans_to_process2, 'median');
-sVBM_plot_timeseries(scans_to_process2, 'svd');
+sVBM_plot_timeseries(scans_to_process, 'mean');
+sVBM_plot_timeseries(scans_to_process, 'median');
+sVBM_plot_timeseries(scans_to_process, 'svd');
 %sVBM_plot_timeseries(scans_to_process2, 'peak') % peak is noisy
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
