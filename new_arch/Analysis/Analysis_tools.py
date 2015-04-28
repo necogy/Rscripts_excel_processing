@@ -693,19 +693,26 @@ class Make_brain_template( Make_template ):
     non_linear_MNI_ :list - list of non-linear transformation
     template_       :string - location of the template
 
+    list_T1_        :
+    T1_dir_         :
+
     """
-    def __init__( self, Code, Ana_dir, Dir_T1_brain, List_T1_brain, Procs = 8  ):
+    def __init__( self, Code, Ana_dir, Dir_T1_brain, List_T1_brain, Dir_T1, List_T1, 
+                  Procs = 7  ):
         """Return a new Protocol instance (constructor)."""
         super( Make_brain_template, self ).__init__( Code, Ana_dir, Procs )
         try:
             #
             # public variables
             self.list_T1_brain_ = List_T1_brain
+            self.list_T1_       = List_T1
             #
             # thread management
-            self.queue_CBF_ =  Queue.Queue()
+            self.queue_warp_       =  Queue.Queue()
+            self.queue_modulation_ =  Queue.Queue()
             #
             self.T1_brain_dir_  = Dir_T1_brain
+            self.T1_dir_        = Dir_T1
             self.template_dir_  = os.path.join(self.ana_dir_, "template_brain")
             #
             self.CBF_warped_template_    = []
@@ -732,10 +739,13 @@ class Make_brain_template( Make_template ):
         #
             #
             # MNI selected
-            MNI_T1_brain_2mm = ""
+            MNI_T1_2mm       = ""
+            MNI_T1_brain_1mm = ""
             if os.environ.get('FSLDIR'):
-                MNI_T1_brain_2mm = os.path.join( os.environ.get('FSLDIR'), 
-                                                 "data","standard","MNI152_T1_2mm_brain.nii.gz" )
+                MNI_T1_2mm = os.path.join( os.environ.get('FSLDIR'), 
+                                           "data","standard","MNI152_T1_2mm.nii.gz" )
+                MNI_T1_brain_1mm = os.path.join( os.environ.get('FSLDIR'), 
+                                                 "data","standard","MNI152_T1_1mm_brain.nii.gz" )
             else:
                 raise Exception( "$FSLDIR env variable is not setup on your system" )
 
@@ -747,15 +757,23 @@ class Make_brain_template( Make_template ):
                 # registration estimation
                 flt = fsl.FLIRT()
                 flt.inputs.in_file         = os.path.join( self.T1_brain_dir_, item )
-                flt.inputs.reference       = MNI_T1_brain_2mm
+                flt.inputs.reference       = MNI_T1_brain_1mm
                 flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_li_MNI.nii.gz"%item[:-7] )
                 flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_li_MNI.mat"%item[:-7] )
                 flt.inputs.dof             = 12
                 res = flt.run()
+
+                #
+                # Find the matching T1 image
+                PIDN    = [int(s) for s in item.split("_") if s.isdigit()]
+                #
+                T1_item = [ s for s in self.list_T1_ if str(PIDN[0]) in s]
+
+                #
                 # apply registration 
                 flt = fsl.FLIRT()
-                flt.inputs.in_file         = os.path.join( self.T1_brain_dir_, item )
-                flt.inputs.reference       = MNI_T1_brain_2mm
+                flt.inputs.in_file         = os.path.join( self.T1_dir_, T1_item[0] )
+                flt.inputs.reference       = MNI_T1_2mm
                 flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_li_MNI.nii.gz"%item[:-7] )
                 flt.inputs.in_matrix_file  = os.path.join( self.template_dir_, "%s_li_MNI.mat"%item[:-7] )
                 flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_li_MNI_apply.mat"%item[:-7] )
@@ -790,7 +808,8 @@ class Make_brain_template( Make_template ):
         #
             #
             # Use the linear template built in the linear_registration_ funstion
-            template_linear = os.path.join(self.ana_dir_, "temp_brain_lin.nii.gz")
+            template_linear        = os.path.join(self.ana_dir_, "temp_T1_lin.nii.gz")
+            template_T1_brain_lin  = os.path.join(self.ana_dir_, "temp_T1_brain_lin.nii.gz")
             # check if it has been built
             if not os.path.exists(template_linear):
                 raise Exception( "Template %s has not been built yet. User has to process the linear step first"%template_linear )
@@ -803,11 +822,19 @@ class Make_brain_template( Make_template ):
                 # registration estimation
                 flt = fsl.FLIRT()
                 flt.inputs.in_file         = os.path.join(self.T1_brain_dir_, item )
-                flt.inputs.reference       = template_linear
+                flt.inputs.reference       = template_T1_brain_lin
                 flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_non_li_MNI.nii.gz"%item[:-7] )
                 flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_non_li_MNI.mat"%item[:-7] )
                 flt.inputs.dof             = 12
                 res = flt.run()
+
+                #
+                # Find the matching T1 image
+                PIDN    = [int(s) for s in item.split("_") if s.isdigit()]
+                #
+                T1_item = [ s for s in self.list_T1_ if str(PIDN[0]) in s]
+
+                #
                 # apply registration using T1_2_MNI152_2mm.cnf configuration file
                 T1_2_MNI152_2mm = ""
                 if os.environ.get('FSLDIR'):
@@ -815,7 +842,7 @@ class Make_brain_template( Make_template ):
                                                     "etc","flirtsch","T1_2_MNI152_2mm.cnf" )
                 #
                 fnt = fsl.FNIRT()
-                fnt.inputs.in_file         = os.path.join(self.T1_brain_dir_, item )
+                fnt.inputs.in_file         = os.path.join( self.T1_dir_,  T1_item[0] )
                 fnt.inputs.ref_file        = template_linear
                 fnt.inputs.warped_file     = os.path.join( self.template_dir_, "%s_non_li_MNI_fnirt.nii.gz"%item[:-7] )
                 fnt.inputs.affine_file     = os.path.join( self.template_dir_, "%s_non_li_MNI.mat"%item[:-7] )
@@ -824,7 +851,7 @@ class Make_brain_template( Make_template ):
                 res = fnt.run()
                 # apply warp
                 aw = fsl.ApplyWarp()
-                aw.inputs.in_file    = os.path.join(self.T1_brain_dir_, item )
+                aw.inputs.in_file    = os.path.join( self.T1_dir_, T1_item[0] )
                 aw.inputs.ref_file   = template_linear
                 aw.inputs.out_file   = os.path.join( self.template_dir_, "%s_non_li_MNI_warped.nii.gz"%item[:-7] )
                 aw.inputs.field_file = os.path.join( self.template_dir_, "%s_non_li_MNI_coeff.nii.gz"%item[:-7] )
@@ -854,6 +881,9 @@ class Make_brain_template( Make_template ):
         """Modulation funcion is a correction of the volume change multiplying the voxel by the Jacobian determinant derived from the normalization process."""
         try:
             #
+            # Use the non-linear template built in the non-linear_registration_ funstion
+            temp_T1_brain_nlin  = os.path.join(self.ana_dir_, "temp_T1_brain_nlin.nii.gz")
+
             #
             # Loop on the tasks
             while True:
@@ -862,11 +892,19 @@ class Make_brain_template( Make_template ):
                 # registration estimation
                 flt = fsl.FLIRT()
                 flt.inputs.in_file         = os.path.join(self.T1_brain_dir_, item )
-                flt.inputs.reference       = self.template_
+                flt.inputs.reference       = temp_T1_brain_nlin
                 flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_li_template.nii.gz"%item[:-7] )
                 flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_li_template.mat"%item[:-7] )
                 flt.inputs.dof             = 12
                 res = flt.run()
+ 
+                #
+                # Find the matching T1 image
+                PIDN    = [int(s) for s in item.split("_") if s.isdigit()]
+                #
+                T1_item = [ s for s in self.list_T1_ if str(PIDN[0]) in s]
+
+                #
                 # apply registration using T1_2_MNI152_2mm configuration file
                 T1_2_MNI152_2mm = ""
                 if os.environ.get('FSLDIR'):
@@ -874,7 +912,7 @@ class Make_brain_template( Make_template ):
                                                     "etc","flirtsch","T1_2_MNI152_2mm.cnf" )
                 #
                 fnt = fsl.FNIRT()
-                fnt.inputs.in_file         = os.path.join(self.T1_brain_dir_, item )
+                fnt.inputs.in_file         = os.path.join(self.T1_dir_, T1_item[0])
                 fnt.inputs.ref_file        = self.template_
                 fnt.inputs.warped_file     = os.path.join( self.template_dir_, 
                                                            "%s_non_li_template_fnirt.nii.gz"%item[:-7] )
@@ -888,7 +926,7 @@ class Make_brain_template( Make_template ):
                 res = fnt.run()
                 # apply warp
                 aw = fsl.ApplyWarp()
-                aw.inputs.in_file    = os.path.join(self.T1_brain_dir_, item )
+                aw.inputs.in_file    = os.path.join(self.T1_dir_, T1_item[0])
                 aw.inputs.ref_file   = self.template_
                 aw.inputs.out_file   = os.path.join( self.template_dir_, 
                                                      "%s_non_li_template_warped.nii.gz"%item[:-7] )
@@ -933,6 +971,16 @@ class Make_brain_template( Make_template ):
         try:
         #
         #
+            MNI_T1_brain_lin_2mm = ""
+            MNI_T1_brain_2mm     = ""
+            if os.environ.get('FSLDIR'):
+               MNI_T1_brain_lin_2mm = os.path.join( os.environ.get('FSLDIR'),"data","standard",
+                                                    "MNI152lin_T1_2mm_brain_mask.nii.gz" )
+               MNI_T1_brain_2mm     = os.path.join( os.environ.get('FSLDIR'),"data","standard",
+                                                    "MNI152_T1_2mm_brain_mask.nii.gz" )
+            else:
+                raise Exception( "$FSLDIR env variable is not setup on your system" )
+
             #
             # Linear step
             #
@@ -951,10 +999,17 @@ class Make_brain_template( Make_template ):
             
             #
             # First template (linear template)
-            template_linear_4D = os.path.join(self.template_dir_, "temp_brain_lin_4D.nii.gz")
-            template_linear    = os.path.join(self.ana_dir_, "temp_brain_lin.nii.gz")
+            template_linear_4D     = os.path.join(self.template_dir_, "temp_T1_lin_4D.nii.gz")
+            template_linear        = os.path.join(self.ana_dir_, "temp_T1_lin.nii.gz")
+            template_T1_brain_lin  = os.path.join(self.ana_dir_, "temp_T1_brain_lin.nii.gz")
             #
             self.average_template_( template_linear_4D, self.linear_MNI_, template_linear )
+            # create a brain template
+            maths = fsl.ImageMaths()
+            maths.inputs.in_file       =  template_linear
+            maths.inputs.op_string     = "-mas %s"%MNI_T1_brain_lin_2mm
+            maths.inputs.out_file      =  template_T1_brain_lin
+            maths.run()
 
             #
             # Non-linear step
@@ -974,11 +1029,18 @@ class Make_brain_template( Make_template ):
            
             #
             # Second template (non-linear template): final template
-            template_non_linear_4D = os.path.join(self.template_dir_, "temp_nlin_4D.nii.gz")
-            self.template_         = os.path.join(self.ana_dir_, "temp_nlin.nii.gz")
+            template_non_linear_4D = os.path.join(self.template_dir_, "temp_T1_nlin_4D.nii.gz")
+            self.template_         = os.path.join(self.ana_dir_, "temp_T1_nlin.nii.gz")
+            temp_T1_brain_nlin     = os.path.join(self.ana_dir_, "temp_T1_brain_nlin.nii.gz")
             #
             self.average_template_( template_non_linear_4D, self.non_linear_MNI_, 
                                     self.template_ )
+            # create a brain template
+            maths = fsl.ImageMaths()
+            maths.inputs.in_file       =  self.template_
+            maths.inputs.op_string     = "-mas %s"%MNI_T1_brain_2mm
+            maths.inputs.out_file      =  temp_T1_brain_nlin
+            maths.run()
 
             #
             # Modulation step
@@ -1036,6 +1098,155 @@ class Make_brain_template( Make_template ):
                 maths.inputs.op_string     = "-fmean -kernel gauss %s"%sigma
                 maths.inputs.out_file      =   brain_mod_smooth_4D
                 maths.run()
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    #
+    def apply_warp_( self, Dir_list ):
+        """."""
+        try:
+            #
+            #
+            #
+            # Loop on the tasks
+            while True:
+                # get the item
+                item = os.path.join( Dir_list, self.queue_warp_.get() )
+
+                #
+                # Find the matching T1 image
+                PIDN    = [int(s) for s in item.split("_") if s.isdigit()]
+                #
+                warping_coeff = [ s for s in os.listdir(self.template_dir_) if str(PIDN[0]) in s 
+                                  and "template_coeff" in s]
+
+
+                # Warp the brain
+                aw = fsl.ApplyWarp()
+                aw.inputs.in_file    =  item
+                aw.inputs.ref_file   =  self.template_
+                aw.inputs.out_file   = "%s_MNI.nii.gz"%item[:-7]
+                aw.inputs.field_file =  os.path.join( self.template_dir_, warping_coeff[0] )
+                res = aw.run()
+                # job is done
+                self.queue_warp_.task_done()
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    #
+    def warp( self, Dir_list, List ):
+        """."""
+        try:
+            #
+            # Reinitialize the queue
+            self.queue_warp_ =  Queue.Queue()
+            # create the pool of threads
+            for i in range( self.procs_ ):
+                t = threading.Thread( target = self.apply_warp_, args = [Dir_list] )
+                t.daemon = True
+                t.start()
+            # Stack the items
+            for item in List:
+                self.queue_warp_.put(item)
+            # block until all tasks are done
+            self.queue_warp_.join()
+            
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    #
+    def apply_modulation_( self, Dir_list ):
+        """."""
+        try:
+            #
+            #
+            #
+            # Loop on the tasks
+            while True:
+                # get the item
+                item = os.path.join( Dir_list, self.queue_modulation_.get() )
+
+                #
+                # Find the matching T1 image
+                PIDN    = [int(s) for s in item.split("_") if s.isdigit()]
+                #
+                modulation_jac = [ s for s in os.listdir(self.template_dir_) if 
+                                   str(PIDN[0]) in s and "template_jac" in s]
+                modulation_jac_file = os.path.join( self.template_dir_, modulation_jac[0])
+                # modulation 
+                maths = fsl.ImageMaths()
+                maths.inputs.in_file       =  "%s_MNI.nii.gz"%item[:-7]
+                maths.inputs.op_string     = '-mul %s'%modulation_jac_file
+                maths.inputs.out_file      =  "%s_MNI_mod.nii.gz"%item[:-7]
+                maths.inputs.out_data_type = "float"
+                maths.run();
+                # job is done
+                self.queue_modulation_.task_done()
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    #
+    def modulation( self, Dir_list, List ):
+        """."""
+        try:
+            #
+            # Reinitialize the queue
+            self.queue_modulation_ =  Queue.Queue()
+            # create the pool of threads
+            for i in range( self.procs_ ):
+                t = threading.Thread( target = self.apply_modulation_, args = [Dir_list] )
+                t.daemon = True
+                t.start()
+            # Stack the items
+            for item in List:
+                self.queue_modulation_.put(item)
+            # block until all tasks are done
+            self.queue_modulation_.join()
+            
         #
         #
         except Exception as inst:

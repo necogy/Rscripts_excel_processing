@@ -858,74 +858,75 @@ class Protocol( object ):
             os.system("gunzip %s"%(c3_in_T2))
 
             #
-            # Mapping of T1 within MNI152
-            #
-            
-            #
             # extraction of T1 brain
             maths = fsl.ImageMaths( in_file   = T1_in_T2[:-3],
                                     op_string = '-mas %s'%(self.brain_mask_), 
                                     out_file  = "T1_brain.nii.gz" )
             maths.run();
 
-            #
-            # MNI selected
-            MNI_T1_2mm       = ""
-            MNI_T1_brain_1mm = ""
-            MNI_T1_brain_2mm = ""
-            if os.environ.get('FSLDIR'):
-                MNI_T1_2mm = os.path.join( os.environ.get('FSLDIR'), 
-                                           "data","standard","MNI152_T1_2mm.nii.gz" )
-                MNI_T1_brain_1mm = os.path.join( os.environ.get('FSLDIR'), 
-                                                 "data","standard","MNI152_T1_1mm_brain.nii.gz" )
-                MNI_T1_brain_2mm = os.path.join( os.environ.get('FSLDIR'), 
-                                                 "data","standard","MNI152_T1_2mm_brain.nii.gz" )
-            else:
-                raise Exception( "$FSLDIR env variable is not setup on your system" )
+            if False:
+                #
+                # Mapping of T1 within MNI152
+                #
+            
+                #
+                # MNI selected
+                MNI_T1_2mm       = ""
+                MNI_T1_brain_1mm = ""
+                MNI_T1_brain_2mm = ""
+                if os.environ.get('FSLDIR'):
+                    MNI_T1_2mm = os.path.join( os.environ.get('FSLDIR'), 
+                                               "data","standard","MNI152_T1_2mm.nii.gz" )
+                    MNI_T1_brain_1mm = os.path.join( os.environ.get('FSLDIR'), 
+                                                     "data","standard","MNI152_T1_1mm_brain.nii.gz" )
+                    MNI_T1_brain_2mm = os.path.join( os.environ.get('FSLDIR'), 
+                                                     "data","standard","MNI152_T1_2mm_brain.nii.gz" )
+                else:
+                    raise Exception( "$FSLDIR env variable is not setup on your system" )
  
-            #
-            # Linear registration from T2 to MNI 152
-            T1_MNI_mat = os.path.join(self.PVE_Segmentation_, "T1_MNI.mat")
-            #
-            flt = fsl.FLIRT()
-            flt.inputs.in_file         = "T1_brain.nii.gz"
-            flt.inputs.reference       =  MNI_T1_brain_1mm
-            flt.inputs.out_file        = "T1_brain_MNI_flirt.nii.gz"
-            flt.inputs.out_matrix_file =  T1_MNI_mat
-            flt.inputs.dof             =  12
-            res = flt.run()
+                #
+                # Linear registration from T2 to MNI 152
+                T1_MNI_mat = os.path.join(self.PVE_Segmentation_, "T1_MNI.mat")
+                #
+                flt = fsl.FLIRT()
+                flt.inputs.in_file         = "T1_brain.nii.gz"
+                flt.inputs.reference       =  MNI_T1_brain_1mm
+                flt.inputs.out_file        = "T1_brain_MNI_flirt.nii.gz"
+                flt.inputs.out_matrix_file =  T1_MNI_mat
+                flt.inputs.dof             =  12
+                res = flt.run()
  
-            #
-            # Non-linear registration from T2 to MNI 152
-            T1_MNI_mat = os.path.join(self.PVE_Segmentation_, "T1_MNI.mat")
-            #
-            fnt = fsl.FNIRT()
-            fnt.inputs.in_file         =  T1_in_T2[:-3]
-            fnt.inputs.ref_file        =  MNI_T1_2mm
-            fnt.inputs.warped_file     = "T1_MNI_fnirt.nii.gz"
-            fnt.inputs.affine_file     =  T1_MNI_mat
-            fnt.inputs.config_file     = "T1_2_MNI152_2mm"
-            fnt.inputs.field_file      = "T1_to_MNI_nonlin_field.nii.gz" 
-            fnt.inputs.fieldcoeff_file = "T1_to_MNI_nonlin_coeff.nii.gz" 
-            fnt.inputs.jacobian_file   = "T1_to_MNI_nonlin_jac.nii.gz"  
-            res = fnt.run()
-
-            # 
-            # Warp the brain
-            aw = fsl.ApplyWarp()
-            aw.inputs.in_file    = "T1_brain.nii.gz"
-            aw.inputs.ref_file   =  MNI_T1_2mm
-            aw.inputs.out_file   = "T1_brain_MNI.nii.gz"
-            aw.inputs.field_file = "T1_to_MNI_nonlin_coeff.nii.gz"
-            res = aw.run()
-            # 
-            # Warp the GM
-            aw = fsl.ApplyWarp()
-            aw.inputs.in_file    = c1_in_T2[:-3]
-            aw.inputs.ref_file   =  MNI_T1_2mm
-            aw.inputs.out_file   = "T1_GM_MNI.nii.gz"
-            aw.inputs.field_file = "T1_to_MNI_nonlin_coeff.nii.gz"
-            res = aw.run()
+                #
+                # Non-linear registration from T2 to MNI 152
+                T1_MNI_mat = os.path.join(self.PVE_Segmentation_, "T1_MNI.mat")
+                #
+                fnt = fsl.FNIRT()
+                fnt.inputs.in_file         =  T1_in_T2[:-3]
+                fnt.inputs.ref_file        =  MNI_T1_2mm
+                fnt.inputs.warped_file     = "T1_MNI_fnirt.nii.gz"
+                fnt.inputs.affine_file     =  T1_MNI_mat
+                fnt.inputs.config_file     = "T1_2_MNI152_2mm"
+                fnt.inputs.field_file      = "T1_to_MNI_nonlin_field.nii.gz" 
+                fnt.inputs.fieldcoeff_file = "T1_to_MNI_nonlin_coeff.nii.gz" 
+                fnt.inputs.jacobian_file   = "T1_to_MNI_nonlin_jac.nii.gz"  
+                res = fnt.run()
+                
+                # 
+                # Warp the brain
+                aw = fsl.ApplyWarp()
+                aw.inputs.in_file    = "T1_brain.nii.gz"
+                aw.inputs.ref_file   =  MNI_T1_2mm
+                aw.inputs.out_file   = "T1_brain_MNI.nii.gz"
+                aw.inputs.field_file = "T1_to_MNI_nonlin_coeff.nii.gz"
+                res = aw.run()
+                # 
+                # Warp the GM
+                aw = fsl.ApplyWarp()
+                aw.inputs.in_file    = c1_in_T2[:-3]
+                aw.inputs.ref_file   =  MNI_T1_2mm
+                aw.inputs.out_file   = "T1_GM_MNI.nii.gz"
+                aw.inputs.field_file = "T1_to_MNI_nonlin_coeff.nii.gz"
+                res = aw.run()
         #
         #
         except Exception as inst:
@@ -1267,75 +1268,76 @@ class Protocol( object ):
                                     out_file  = "PWI_GM_T2.nii.gz")
             maths.run();
 
-            #
-            # Standard space registration (MNI152)
-            #
+            if False:
+                #
+                # Standard space registration (MNI152)
+                #
 
-            #
-            # Warpping coefficients
-            MNI_ceoff = os.path.join( self.PVE_Segmentation_, "T1_to_MNI_nonlin_coeff.nii.gz" )
-            MNI       = os.path.join( os.environ.get('FSLDIR'), 
-                                      "data","standard","MNI152_T1_2mm.nii.gz" )
+                #
+                # Warpping coefficients
+                MNI_ceoff = os.path.join( self.PVE_Segmentation_, "T1_to_MNI_nonlin_coeff.nii.gz" )
+                MNI       = os.path.join( os.environ.get('FSLDIR'), 
+                                          "data","standard","MNI152_T1_2mm.nii.gz" )
             
-            #
-            # T2 brain
-            aw = fsl.ApplyWarp()
-            aw.inputs.in_file    = os.path.join(self.ACPC_Alignment_, "T2_brain.nii")
-            aw.inputs.ref_file   = MNI
-            aw.inputs.out_file   = os.path.join(self.ACPC_Alignment_, "T2_brain_MNI.nii.gz")
-            aw.inputs.field_file = MNI_ceoff
-            res = aw.run()
+                #
+                # T2 brain
+                aw = fsl.ApplyWarp()
+                aw.inputs.in_file    = os.path.join(self.ACPC_Alignment_, "T2_brain.nii")
+                aw.inputs.ref_file   = MNI
+                aw.inputs.out_file   = os.path.join(self.ACPC_Alignment_, "T2_brain_MNI.nii.gz")
+                aw.inputs.field_file = MNI_ceoff
+                res = aw.run()
 
-            #
-            # CBF
-            aw = fsl.ApplyWarp()
-            aw.inputs.in_file    = os.path.join(self.ACPC_Alignment_, "CBF_T2.nii.gz")
-            aw.inputs.ref_file   = MNI
-            aw.inputs.out_file   = os.path.join(self.ACPC_Alignment_, "CBF_MNI.nii.gz")
-            aw.inputs.field_file = MNI_ceoff
-            res = aw.run()
+                #
+                # CBF
+                aw = fsl.ApplyWarp()
+                aw.inputs.in_file    = os.path.join(self.ACPC_Alignment_, "CBF_T2.nii.gz")
+                aw.inputs.ref_file   = MNI
+                aw.inputs.out_file   = os.path.join(self.ACPC_Alignment_, "CBF_MNI.nii.gz")
+                aw.inputs.field_file = MNI_ceoff
+                res = aw.run()
+                
+                #
+                # CBF in gray matter
+                aw = fsl.ApplyWarp()
+                aw.inputs.in_file    = os.path.join(self.ACPC_Alignment_, "CBF_GM_filtered_T2.nii.gz")
+                aw.inputs.ref_file   = MNI
+                aw.inputs.out_file   = os.path.join(self.ACPC_Alignment_, "CBF_GM_MNI.nii.gz")
+                aw.inputs.field_file = MNI_ceoff
+                res = aw.run()
 
-            #
-            # CBF in gray matter
-            aw = fsl.ApplyWarp()
-            aw.inputs.in_file    = os.path.join(self.ACPC_Alignment_, "CBF_GM_filtered_T2.nii.gz")
-            aw.inputs.ref_file   = MNI
-            aw.inputs.out_file   = os.path.join(self.ACPC_Alignment_, "CBF_GM_MNI.nii.gz")
-            aw.inputs.field_file = MNI_ceoff
-            res = aw.run()
-
-            #
-            # Maps production
-            #
+                #
+                # Maps production
+                #
             
-            #
-            # Images directory
-            os.mkdir( os.path.join(self.ACPC_Alignment_, "images") )
+                #
+                # Images directory
+                os.mkdir( os.path.join(self.ACPC_Alignment_, "images") )
 
-            #
-            # T2 brain and CBF map
-            # overlay 0 0 PWI/T2_registration.nii -A CBF_GM.nii.gz 1. 65. test
-            cmd = "overlay 0 0 %s -A %s 1. 65. images/%s"%("PWI/T2_registration.nii", "CBF_GM.nii.gz", "CBF_GM_LD.nii.gz")
-            Image_tools.generic_unix_cmd(cmd)
+                #
+                # T2 brain and CBF map
+                # overlay 0 0 PWI/T2_registration.nii -A CBF_GM.nii.gz 1. 65. test
+                cmd = "overlay 0 0 %s -A %s 1. 65. images/%s"%("PWI/T2_registration.nii", "CBF_GM.nii.gz", "CBF_GM_LD.nii.gz")
+                Image_tools.generic_unix_cmd(cmd)
             
-            #
-            # T1 head and CBF map
-            # overlay 0 0 ../PVE_Segmentation/mMP-LAS-long-3DC_NIFD092X4_T2.nii -A CBF_T2.nii.gz 1. 65. test
-            cmd = "overlay 0 0 %s -A %s 1. 65. images/%s"%(T1_file,"CBF_T2.nii.gz","T1_CBF_HD.nii.gz")
-            Image_tools.generic_unix_cmd(cmd)
+                #
+                # T1 head and CBF map
+                # overlay 0 0 ../PVE_Segmentation/mMP-LAS-long-3DC_NIFD092X4_T2.nii -A CBF_T2.nii.gz 1. 65. test
+                cmd = "overlay 0 0 %s -A %s 1. 65. images/%s"%(T1_file,"CBF_T2.nii.gz","T1_CBF_HD.nii.gz")
+                Image_tools.generic_unix_cmd(cmd)
 
-            # 
-            # T1 head and CBF in GM map
-            # overlay 0 0 ../PVE_Segmentation/mMP-LAS-long-3DC_NIFD092X4_T2.nii -A CBF_GM_filtered_T2.nii.gz 1. 65. test
-            cmd = "overlay 0 0 %s -A %s 1. 65. images/%s"%(T1_file,"CBF_GM_filtered_T2.nii.gz","T1_CBF_GM_HD.nii.gz")
-            Image_tools.generic_unix_cmd(cmd)
+                # 
+                # T1 head and CBF in GM map
+                # overlay 0 0 ../PVE_Segmentation/mMP-LAS-long-3DC_NIFD092X4_T2.nii -A CBF_GM_filtered_T2.nii.gz 1. 65. test
+                cmd = "overlay 0 0 %s -A %s 1. 65. images/%s"%(T1_file,"CBF_GM_filtered_T2.nii.gz","T1_CBF_GM_HD.nii.gz")
+                Image_tools.generic_unix_cmd(cmd)
 
-            # 
-            # T1 brain and CBF in GM map
-            T1_brain = os.path.join(self.PVE_Segmentation_, "T1_brain.nii.gz")
-            # overlay 0 0 ../PVE_Segmentation/mMP-LAS-long-3DC_NIFD092X4_T2.nii -A CBF_GM_filtered_T2.nii.gz 1. 65. test
-            cmd = "overlay 0 0 %s -A %s 1. 65. images/%s"%(T1_brain,"CBF_GM_filtered_T2.nii.gz","T1_brain_CBF_GM_HD.nii.gz")
-            Image_tools.generic_unix_cmd(cmd)
+                # 
+                # T1 brain and CBF in GM map
+                T1_brain = os.path.join(self.PVE_Segmentation_, "T1_brain.nii.gz")
+                # overlay 0 0 ../PVE_Segmentation/mMP-LAS-long-3DC_NIFD092X4_T2.nii -A CBF_GM_filtered_T2.nii.gz 1. 65. test
+                cmd = "overlay 0 0 %s -A %s 1. 65. images/%s"%(T1_brain,"CBF_GM_filtered_T2.nii.gz","T1_brain_CBF_GM_HD.nii.gz")
+                Image_tools.generic_unix_cmd(cmd)
         #
         #
         except Exception as inst:

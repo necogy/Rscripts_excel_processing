@@ -206,65 +206,94 @@ try:
     T1_brain_dir     = os.path.join(ana_res, "T1_brain")
     T1_brain_map_dir = os.path.join(ana_res, "T1_brain_map")
     #
-    os.mkdir(GM_dir)
-    os.mkdir(CBF_GM_dir)
-    os.mkdir(CBF_dir)
-    os.mkdir(T1_dir)
-    os.mkdir(T1_brain_dir)
-    os.mkdir(T1_brain_map_dir)
-    #
-    for PIDN in estimators:
-        # print PIDN
-        # check we have result
-        if len( estimators[PIDN]["CBF_GM_T2"] ) > 0:
-            #
-            # GM
-            # destination: GM_"PIDN"_"multiplicity"
-            dstname_GM = "GM_%s_%s.nii"%(PIDN,"1")
-            shutil.copy( estimators[PIDN]["GM_T2"][0], 
-                         os.path.join(GM_dir, dstname_GM) )
-            #
-            GM_1_list.append( dstname_GM )
-            #
-            # CBF GM
-            # destination: CBF_GM_"PIDN"_"multiplicity"
-            dstname_CBF_GM = "CBF_GM_%s_%s.nii.gz"%(PIDN,"1")
-            shutil.copy( estimators[PIDN]["CBF_GM_T2"][0], 
-                         os.path.join(CBF_GM_dir, dstname_CBF_GM) )
-            #
-            CBF_GM_1_list.append( dstname_CBF_GM )
-            #
-            # CBF
-            # destination: CBF_"PIDN"_"multiplicity"
-            dstname_CBF = "CBF_%s_%s.nii.gz"%(PIDN,"1")
-            shutil.copy( estimators[PIDN]["CBF_T2"][0], 
-                         os.path.join(CBF_dir, dstname_CBF) )
-            #
-            CBF_1_list.append( dstname_CBF )
-            #
-            # T1 registered T2
-            # destination: T1_"PIDN"_"multiplicity"
-            dstname_T1 = "T1_%s_%s.nii.gz"%(PIDN,"1")
-            shutil.copy( estimators[PIDN]["T1_T2"][0], 
-                         os.path.join(T1_dir, dstname_T1) )
-            #
-            T1_1_list.append( dstname_T1 )
-            #
-            # T1 brain registered T2
-            # destination: T1_brain_"PIDN"_"multiplicity"
-            dstname_T1_brain = "T1_brain_%s_%s.nii.gz"%(PIDN,"1")
-            shutil.copy( estimators[PIDN]["T1_brain_T2"][0], 
-                         os.path.join(T1_brain_dir, dstname_T1_brain) )
-            #
-            T1_brain_1_list.append( dstname_T1_brain )
-            #
-            # T1 brain map registered T2
-            # destination: T1_brain_map_"PIDN"_"multiplicity"
-            dstname_T1_brain_map = "T1_brain_map_%s_%s.nii.gz"%(PIDN,"1")
-            shutil.copy( estimators[PIDN]["T1_brain_map_T2"][0], 
-                         os.path.join(T1_brain_map_dir, dstname_T1_brain_map) )
-            #
-            T1_brain_map_1_list.append( dstname_T1_brain_map )
+    if not os.path.exists( GM_dir ):
+        os.mkdir(GM_dir)
+        os.mkdir(CBF_GM_dir)
+        os.mkdir(CBF_dir)
+        os.mkdir(T1_dir)
+        os.mkdir(T1_brain_dir)
+        os.mkdir(T1_brain_map_dir)
+        #
+        for PIDN in estimators:
+            # print PIDN
+            # check we have result
+            if len( estimators[PIDN]["CBF_GM_T2"] ) > 0:
+                #
+                # GM
+                # destination: GM_"PIDN"_"multiplicity"
+                dstname_GM = "GM_%s_%s.nii"%(PIDN,"1")
+                shutil.copy( estimators[PIDN]["GM_T2"][0], 
+                             os.path.join(GM_dir, dstname_GM) )
+                #
+                GM_1_list.append( dstname_GM )
+                #
+                # CBF GM
+                # destination: CBF_GM_"PIDN"_"multiplicity"
+                dstname_CBF_GM = "CBF_GM_%s_%s.nii.gz"%(PIDN,"1")
+                shutil.copy( estimators[PIDN]["CBF_GM_T2"][0], 
+                             os.path.join(CBF_GM_dir, dstname_CBF_GM) )
+                #
+                CBF_GM_1_list.append( dstname_CBF_GM )
+                #
+                # CBF
+                # destination: CBF_"PIDN"_"multiplicity"
+                dstname_CBF = "CBF_%s_%s.nii.gz"%(PIDN,"1")
+                shutil.copy( estimators[PIDN]["CBF_T2"][0], 
+                             os.path.join(CBF_dir, dstname_CBF) )
+                #
+                CBF_1_list.append( dstname_CBF )
+                #
+                # T1 registered T2
+                # destination: T1_"PIDN"_"multiplicity"
+                dstname_T1 = "T1_%s_%s.nii.gz"%(PIDN,"1")
+                shutil.copy( estimators[PIDN]["T1_T2"][0], 
+                             os.path.join(T1_dir, dstname_T1) )
+                #
+                T1_1_list.append( dstname_T1 )
+                #
+                # T1 brain registered T2
+                # destination: T1_brain_"PIDN"_"multiplicity"
+                dstname_T1_brain = "T1_brain_%s_%s.nii.gz"%(PIDN,"1")
+                shutil.copy( estimators[PIDN]["T1_brain_T2"][0], 
+                             os.path.join(T1_brain_dir, dstname_T1_brain) )
+                #
+                T1_brain_1_list.append( dstname_T1_brain )
+                #
+                # T1 brain map registered T2
+                # destination: T1_brain_map_"PIDN"_"multiplicity"
+                dstname_T1_brain_map = "T1_brain_map_%s_%s.nii.gz"%(PIDN,"1")
+                shutil.copy( estimators[PIDN]["T1_brain_map_T2"][0], 
+                             os.path.join(T1_brain_map_dir, dstname_T1_brain_map) )
+                #
+                T1_brain_map_1_list.append( dstname_T1_brain_map )
+    else:
+        for PIDN in estimators:
+            # print PIDN
+            # check we have result
+            if len( estimators[PIDN]["CBF_GM_T2"] ) > 0:
+                # GM
+                # destination: GM_"PIDN"_"multiplicity"
+                GM_1_list.append( "GM_%s_%s.nii"%(PIDN,"1") )
+                # CBF GM
+                # destination: CBF_GM_"PIDN"_"multiplicity"
+                CBF_GM_1_list.append( "CBF_GM_%s_%s.nii.gz"%(PIDN,"1") )
+                #
+                # CBF
+                # destination: CBF_"PIDN"_"multiplicity"
+                CBF_1_list.append( "CBF_%s_%s.nii.gz"%(PIDN,"1") )
+                #
+                # T1 registered T2
+                # destination: T1_"PIDN"_"multiplicity"
+                T1_1_list.append( "T1_%s_%s.nii.gz"%(PIDN,"1") )
+                #
+                # T1 brain registered T2
+                # destination: T1_brain_"PIDN"_"multiplicity"
+                T1_brain_1_list.append( "T1_brain_%s_%s.nii.gz"%(PIDN,"1") )
+                #
+                # T1 brain map registered T2
+                # destination: T1_brain_map_"PIDN"_"multiplicity"
+                dstname_T1_brain_map = "T1_brain_map_%s_%s.nii.gz"%(PIDN,"1")
+                T1_brain_map_1_list.append( "T1_brain_map_%s_%s.nii.gz"%(PIDN,"1") )
 
 
     #
@@ -274,17 +303,26 @@ try:
     #
     # Create the study case template and apply
     # Gray matter
-    if False:
+    if True:
         template = Analysis_tools.Make_GM_template( "FSL", ana_res, GM_dir, GM_1_list )
         template.run()
         # Warp the CBF maps
         template.warp_CBF_map( CBF_GM_dir, CBF_GM_1_list )
     # Brain
     if True:
-        template = Analysis_tools.Make_brain_template( "FSL", ana_res, T1_brain_dir, T1_brain_1_list )
+        template = Analysis_tools.Make_brain_template( "FSL", ana_res, 
+                                                       T1_brain_dir, T1_brain_1_list,
+                                                       T1_dir, T1_1_list )
         template.run()
-        # Warp the CBF maps
-        #template.warp_CBF_map( CBF_GM_dir, CBF_GM_1_list )
+
+        #
+        # Warp the CBF maps and brain
+#        template.template_ = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL/ana_res-2015-04-27/temp_T1_nlin.nii.gz"
+        template.warp( CBF_dir, CBF_1_list )
+        template.modulation( CBF_dir, CBF_1_list )
+        #
+        template.warp( T1_brain_dir, T1_brain_1_list )
+
     
     
 
