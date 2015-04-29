@@ -88,13 +88,16 @@ sVBM_plot_timeseries(scans_to_process, 'median');
 sVBM_plot_timeseries(scans_to_process, 'svd');
 %sVBM_plot_timeseries(scans_to_process2, 'peak') % peak is noisy
 
+%%Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
+sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, templatepath);
+
+
+
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
 
-%% ??Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
-sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, dartelpath);
 
 %% ??Warp ROIs from Atlas Space to Native Timepoint Space via Longitudinal Image Warp
 sVBM_warp_ROIs_to_avg_and_to_timepoint_(scans_to_process)
