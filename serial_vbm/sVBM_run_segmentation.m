@@ -1,4 +1,4 @@
-function scans_to_process = sVBM_run_segmentation(scans_to_process, imagetype, reprocess)
+function scans_to_process = sVBM_run_segmentation(scans_to_process, imagetype, reprocess, dartelimport)
 %sVBM_run_segmentation - SPM12b Segmentation for serial Longitudinal processing
 %
 % Syntax:  participantstructure = LONG_run_segmentation(scans_to_process )
@@ -44,12 +44,12 @@ for subject = 1:size(scans_to_process,2) % for every subject
                 disp(['Timepoint: ' num2str(timepoint)])
                 
                 %check for existing segmented volume, check for re-running.
-                cvolumes = strrep(SAinsertStr2Paths(volume,'c*'),'img','nii');
+                cvolumes = strrep(SAinsertStr2Paths(volume,'c1M'),'img','nii');
                 d=dir(cvolumes)     ;                        
                                       
                 %volumes found but reprocess set to 1 or no volumes found
-                if reprocess == 1 || size(d,1) ~= 3
-                segmenttimepoint(volume) % call subfunction to process that subject
+                if reprocess == 1 || size(d,1) ~= 1
+                segmenttimepoint(volume, dartelimport) % call subfunction to process that subject
        
  
                 else
@@ -97,9 +97,9 @@ for subject = 1:size(scans_to_process,2) % for every subject
     
 end
 
-    function segmenttimepoint(volume)
-        dartelimport = 1;
-        writeforavgonly = 1; % for now just run this for all timepoints as well.
+    function segmenttimepoint(volume, dartelimport)
+       % dartelimport = 1;
+        writeforavgonly = 0; % for now just run this for all timepoints as well.
         spmpath = SA_getSPMpath(12);
         clear matlabbatch;
         
