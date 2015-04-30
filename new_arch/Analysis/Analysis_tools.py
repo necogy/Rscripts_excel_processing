@@ -247,17 +247,17 @@ class Make_GM_template( Make_template ):
                 flt = fsl.FLIRT()
                 flt.inputs.in_file         = os.path.join( self.maps_dir_, item )
                 flt.inputs.reference       = avg152T1_gray
-                flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_li_MNI.nii.gz"%item[:-4] )
-                flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_li_MNI.mat"%item[:-4] )
+                flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_li_MNI.nii.gz"%item[:-7] )
+                flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_li_MNI.mat"%item[:-7] )
                 flt.inputs.dof             = 12
                 res = flt.run()
                 # apply registration 
                 flt = fsl.FLIRT()
                 flt.inputs.in_file         = os.path.join( self.maps_dir_, item )
                 flt.inputs.reference       = avg152T1_gray
-                flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_li_MNI.nii.gz"%item[:-4] )
-                flt.inputs.in_matrix_file  = os.path.join( self.template_dir_, "%s_li_MNI.mat"%item[:-4] )
-                flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_li_MNI_apply.mat"%item[:-4] )
+                flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_li_MNI.nii.gz"%item[:-7] )
+                flt.inputs.in_matrix_file  = os.path.join( self.template_dir_, "%s_li_MNI.mat"%item[:-7] )
+                flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_li_MNI_apply.mat"%item[:-7] )
                 flt.inputs.apply_xfm       = True
                 flt.inputs.dof             = 12
                 res = flt.run()
@@ -303,8 +303,8 @@ class Make_GM_template( Make_template ):
                 flt = fsl.FLIRT()
                 flt.inputs.in_file         = os.path.join(self.maps_dir_, item )
                 flt.inputs.reference       = template_linear
-                flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_non_li_MNI.nii.gz"%item[:-4] )
-                flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_non_li_MNI.mat"%item[:-4] )
+                flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_non_li_MNI.nii.gz"%item[:-7] )
+                flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_non_li_MNI.mat"%item[:-7] )
                 flt.inputs.dof             = 12
                 res = flt.run()
                 # apply registration using GM_2_MNI152GM_2mm configuration file
@@ -316,17 +316,17 @@ class Make_GM_template( Make_template ):
                 fnt = fsl.FNIRT()
                 fnt.inputs.in_file         = os.path.join(self.maps_dir_, item )
                 fnt.inputs.ref_file        = template_linear
-                fnt.inputs.warped_file     = os.path.join( self.template_dir_, "%s_non_li_MNI_fnirt.nii.gz"%item[:-4] )
-                fnt.inputs.affine_file     = os.path.join( self.template_dir_, "%s_non_li_MNI.mat"%item[:-4] )
+                fnt.inputs.warped_file     = os.path.join( self.template_dir_, "%s_non_li_MNI_fnirt.nii.gz"%item[:-7] )
+                fnt.inputs.affine_file     = os.path.join( self.template_dir_, "%s_non_li_MNI.mat"%item[:-7] )
                 fnt.inputs.config_file     = GM_2_MNI152GM_2mm
-                fnt.inputs.fieldcoeff_file = os.path.join( self.template_dir_, "%s_non_li_MNI_coeff.nii.gz"%item[:-4] )
+                fnt.inputs.fieldcoeff_file = os.path.join( self.template_dir_, "%s_non_li_MNI_coeff.nii.gz"%item[:-7] )
                 res = fnt.run()
                 # apply warp
                 aw = fsl.ApplyWarp()
                 aw.inputs.in_file    = os.path.join(self.maps_dir_, item )
                 aw.inputs.ref_file   = template_linear
-                aw.inputs.out_file   = os.path.join( self.template_dir_, "%s_non_li_MNI_warped.nii.gz"%item[:-4] )
-                aw.inputs.field_file = os.path.join( self.template_dir_, "%s_non_li_MNI_coeff.nii.gz"%item[:-4] )
+                aw.inputs.out_file   = os.path.join( self.template_dir_, "%s_non_li_MNI_warped.nii.gz"%item[:-7] )
+                aw.inputs.field_file = os.path.join( self.template_dir_, "%s_non_li_MNI_coeff.nii.gz"%item[:-7] )
                 res = aw.run()
                 # lock and add the file
                 singlelock.acquire()
@@ -362,8 +362,8 @@ class Make_GM_template( Make_template ):
                 flt = fsl.FLIRT()
                 flt.inputs.in_file         = os.path.join(self.maps_dir_, item )
                 flt.inputs.reference       = self.template_
-                flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_li_template.nii.gz"%item[:-4] )
-                flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_li_template.mat"%item[:-4] )
+                flt.inputs.out_file        = os.path.join( self.template_dir_, "%s_li_template.nii.gz"%item[:-7] )
+                flt.inputs.out_matrix_file = os.path.join( self.template_dir_, "%s_li_template.mat"%item[:-7] )
                 flt.inputs.dof             = 12
                 res = flt.run()
                 # apply registration using GM_2_MNI152GM_2mm configuration file
@@ -376,39 +376,39 @@ class Make_GM_template( Make_template ):
                 fnt.inputs.in_file         = os.path.join(self.maps_dir_, item )
                 fnt.inputs.ref_file        = self.template_
                 fnt.inputs.warped_file     = os.path.join( self.template_dir_, 
-                                                           "%s_non_li_template_fnirt.nii.gz"%item[:-4] )
+                                                           "%s_non_li_template_fnirt.nii.gz"%item[:-7] )
                 fnt.inputs.affine_file     = os.path.join( self.template_dir_, 
-                                                           "%s_li_template.mat"%item[:-4] )
+                                                           "%s_li_template.mat"%item[:-7] )
                 fnt.inputs.config_file     = GM_2_MNI152GM_2mm
                 fnt.inputs.fieldcoeff_file = os.path.join( self.template_dir_, 
-                                                           "%s_non_li_template_coeff.nii.gz"%item[:-4] )
+                                                           "%s_non_li_template_coeff.nii.gz"%item[:-7] )
                 fnt.inputs.jacobian_file   = os.path.join( self.template_dir_, 
-                                                           "%s_non_li_template_jac.nii.gz"%item[:-4] )
+                                                           "%s_non_li_template_jac.nii.gz"%item[:-7] )
                 res = fnt.run()
                 # apply warp
                 aw = fsl.ApplyWarp()
                 aw.inputs.in_file    = os.path.join(self.maps_dir_, item )
                 aw.inputs.ref_file   = self.template_
                 aw.inputs.out_file   = os.path.join( self.template_dir_, 
-                                                     "%s_non_li_template_warped.nii.gz"%item[:-4] )
+                                                     "%s_non_li_template_warped.nii.gz"%item[:-7] )
                 aw.inputs.field_file = os.path.join( self.template_dir_, 
-                                                     "%s_non_li_template_coeff.nii.gz"%item[:-4] )
+                                                     "%s_non_li_template_coeff.nii.gz"%item[:-7] )
                 res = aw.run()
                 # modulation
                 maths = fsl.ImageMaths()
                 maths.inputs.in_file       =  os.path.join(self.template_dir_,
-                                                           "%s_non_li_template_warped.nii.gz"%item[:-4])
+                                                           "%s_non_li_template_warped.nii.gz"%item[:-7])
                 maths.inputs.op_string     = '-mul %s'%(os.path.join(self.template_dir_,
-                                                                     "%s_non_li_template_jac.nii.gz"%item[:-4]))
+                                                                     "%s_non_li_template_jac.nii.gz"%item[:-7]))
                 maths.inputs.out_file      =  os.path.join( self.template_dir_, 
-                                                            "%s_modulated.nii.gz"%item[:-4] )
+                                                            "%s_modulated.nii.gz"%item[:-7] )
                 maths.inputs.out_data_type = "float"
                 maths.run();
                 # lock and add the file
                 singlelock.acquire()
                 self.warped_template_.append( aw.inputs.out_file )
                 self.modulated_template_.append(  os.path.join(self.template_dir_, 
-                                                               "%s_modulated.nii.gz"%item[:-4]) )
+                                                               "%s_modulated.nii.gz"%item[:-7]) )
                 singlelock.release()
                 # job is done
                 self.queue_[2].task_done()

@@ -56,7 +56,8 @@ ASL_study = os.path.join(os.sep,
 #
 if not os.path.exists( os.path.join(ASL_study, "ana_res-%s"%(date[0])) ):
     os.mkdir( os.path.join(ASL_study, "ana_res-%s"%(date[0])) )
-ana_res = os.path.join( ASL_study, "ana_res-%s"%(date[0]) )
+#ana_res = os.path.join( ASL_study, "ana_res-%s"%(date[0]) )
+ana_res = os.path.join( ASL_study, "ana_res-2015-04-27" )
 # Study specific diseases
 study = ["BV","NORM (BV)","SD","R_SD","L_SD","NORM (SD)","PNFA","NORM (PNFA)"]
 
@@ -224,8 +225,10 @@ try:
                 dstname_GM = "GM_%s_%s.nii"%(PIDN,"1")
                 shutil.copy( estimators[PIDN]["GM_T2"][0], 
                              os.path.join(GM_dir, dstname_GM) )
+                # zip the file
+                os.system('gzip %s'%dstname_GM )
                 #
-                GM_1_list.append( dstname_GM )
+                GM_1_list.append( "%s.gz"%dstname_GM )
                 #
                 # CBF GM
                 # destination: CBF_GM_"PIDN"_"multiplicity"
@@ -273,7 +276,7 @@ try:
             if len( estimators[PIDN]["CBF_GM_T2"] ) > 0:
                 # GM
                 # destination: GM_"PIDN"_"multiplicity"
-                GM_1_list.append( "GM_%s_%s.nii"%(PIDN,"1") )
+                GM_1_list.append( "GM_%s_%s.nii.gz"%(PIDN,"1") )
                 # CBF GM
                 # destination: CBF_GM_"PIDN"_"multiplicity"
                 CBF_GM_1_list.append( "CBF_GM_%s_%s.nii.gz"%(PIDN,"1") )
@@ -303,7 +306,7 @@ try:
     #
     # Create the study case template and apply
     # Gray matter
-    if True:
+    if False:
         template = Analysis_tools.Make_GM_template( "FSL", ana_res, GM_dir, GM_1_list )
         template.run()
         # Warp the CBF maps
@@ -313,15 +316,19 @@ try:
         template = Analysis_tools.Make_brain_template( "FSL", ana_res, 
                                                        T1_brain_dir, T1_brain_1_list,
                                                        T1_dir, T1_1_list )
-        template.run()
+        #template.run()
 
         #
         # Warp the CBF maps and brain
-#        template.template_ = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL/ana_res-2015-04-27/temp_T1_nlin.nii.gz"
+        template.template_ = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL/ana_res-2015-04-27/temp_T1_nlin.nii.gz"
         template.warp( CBF_dir, CBF_1_list )
         template.modulation( CBF_dir, CBF_1_list )
         #
         template.warp( T1_brain_dir, T1_brain_1_list )
+        #
+        template.warp( GM_dir, GM_1_list )
+        template.modulation( GM_dir, GM_1_list )
+        #
 
     
     
