@@ -1,0 +1,1883 @@
+Created by PLY version 3.4 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    REGISTER
+    OFF
+    ON
+    STRING_LITERAL
+    COLON
+
+Grammar
+
+Rule 0     S' -> spec_statement
+Rule 1     spec_statement -> package
+Rule 2     package -> PACKAGE spec_package_identifier FIGURE_OPEN_BRACKET package_body FIGURE_CLOSE_BRACKET SEMICOLON
+Rule 3     spec_package_identifier -> IDENTIFIER
+Rule 4     spec_package_identifier -> spec_package_identifier DOT IDENTIFIER
+Rule 5     package_identifier -> IDENTIFIER
+Rule 6     package_identifier -> package_identifier DOT IDENTIFIER
+Rule 7     import_from -> IMPORT import_type FROM package_identifier SEMICOLON
+Rule 8     import_from -> IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON
+Rule 9     from_import -> FROM package_identifier IMPORT import_type_list SEMICOLON
+Rule 10    from_import -> FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON
+Rule 11    import_type_list -> import_type
+Rule 12    import_type_list -> import_type_list COMMA import_type
+Rule 13    import_type -> IDENTIFIER
+Rule 14    package_body -> import_from
+Rule 15    package_body -> from_import
+Rule 16    package_body -> typedef
+Rule 17    package_body -> service
+Rule 18    package_body -> import_from package_body
+Rule 19    package_body -> from_import package_body
+Rule 20    package_body -> typedef package_body
+Rule 21    package_body -> service package_body
+Rule 22    extends_clause -> empty
+Rule 23    extends_clause -> EXTENDS IDENTIFIER
+Rule 24    extras_clause -> empty
+Rule 25    extras_clause -> REQUIRED
+Rule 26    extras_clause -> OPTIONAL
+Rule 27    extras_clause -> IGNORED
+Rule 28    extras_clause -> REQUIRED_ONE ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET
+Rule 29    extras_clause -> REQUIRED_ANY ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET
+Rule 30    typedef -> TYPEDEF type IDENTIFIER extends_clause SEMICOLON
+Rule 31    type -> STRING
+Rule 32    type -> BOOLEAN
+Rule 33    type -> INT
+Rule 34    type -> FLOAT
+Rule 35    type -> UNDEFINED
+Rule 36    type -> TIMESTAMP
+Rule 37    type -> LIST LESS_THAN type GREATER_THAN
+Rule 38    type -> TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+Rule 39    type -> STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+Rule 40    type -> IDENTIFIER
+Rule 41    type -> MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+Rule 42    structure_body -> struct_item
+Rule 43    structure_body -> struct_item structure_body
+Rule 44    struct_item -> type IDENTIFIER extras_clause SEMICOLON
+Rule 45    auth_clause -> AUTHENTICATION ASSIGN auth_options
+Rule 46    auth_options -> REQUIRED
+Rule 47    auth_options -> OPTIONAL
+Rule 48    auth_options -> NONE
+Rule 49    auditing_clause -> AUDITING ASSIGN audit_options
+Rule 50    audit_options -> FULL_AUDIT
+Rule 51    audit_options -> SKIP_PARAMS
+Rule 52    audit_options -> NONE
+Rule 53    validation_clause -> VALIDATION ASSIGN validation_options
+Rule 54    validation_options -> FULL_VALIDATION
+Rule 55    validation_options -> SKIP_RETURN
+Rule 56    validation_options -> NONE
+Rule 57    service_options -> extra_list
+Rule 58    service_options -> empty
+Rule 59    extra_list -> extra_clause
+Rule 60    extra_list -> extra_list COMMA extra_clause
+Rule 61    extra_clause -> auditing_clause
+Rule 62    extra_clause -> auth_clause
+Rule 63    extra_clause -> validation_clause
+Rule 64    service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON
+Rule 65    service_name -> IDENTIFIER
+Rule 66    service_body -> function
+Rule 67    service_body -> function service_body
+Rule 68    function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+Rule 69    opt_name_params_list -> empty
+Rule 70    opt_name_params_list -> opt_name_param
+Rule 71    opt_name_params_list -> opt_name_params_list COMMA opt_name_param
+Rule 72    opt_name_param -> type
+Rule 73    opt_name_param -> type IDENTIFIER
+Rule 74    empty -> <empty>
+
+Terminals, with rules where they appear
+
+AS                   : 8 10
+ASSIGN               : 45 49 53
+AUDITING             : 49
+AUTHENTICATION       : 45
+BOOLEAN              : 32
+COLON                : 
+COMMA                : 12 41 60 71
+DOT                  : 4 6
+EXTENDS              : 23
+FIGURE_CLOSE_BRACKET : 2 39 64
+FIGURE_OPEN_BRACKET  : 2 39 64
+FLOAT                : 34
+FROM                 : 7 8 9 10
+FULL_AUDIT           : 50
+FULL_VALIDATION      : 54
+FUNCTION             : 68
+GREATER_THAN         : 37 38 41
+IDENTIFIER           : 3 4 5 6 8 10 13 23 30 40 44 65 68 73
+IGNORED              : 27
+IMPORT               : 7 8 9 10
+INT                  : 33
+LESS_THAN            : 37 38 41
+LIST                 : 37
+MAP                  : 41
+NONE                 : 48 52 56
+NUMBER               : 28 29
+OFF                  : 
+ON                   : 
+OPTIONAL             : 26 47
+PACKAGE              : 2
+REGISTER             : 
+REQUIRED             : 25 46
+REQUIRED_ANY         : 29
+REQUIRED_ONE         : 28
+RETURNS              : 68
+ROUND_CLOSE_BRACKET  : 28 29 68 68
+ROUND_OPEN_BRACKET   : 28 29 68 68
+SEMICOLON            : 2 7 8 9 10 30 44 64 68
+SERVICE              : 64
+SKIP_PARAMS          : 51
+SKIP_RETURN          : 55
+STRING               : 31
+STRING_LITERAL       : 
+STRUCTURE            : 39
+TIMESTAMP            : 36
+TUPLE                : 38
+TYPEDEF              : 30
+UNDEFINED            : 35
+VALIDATION           : 53
+error                : 
+
+Nonterminals, with rules where they appear
+
+audit_options        : 49
+auditing_clause      : 61
+auth_clause          : 62
+auth_options         : 45
+empty                : 22 24 58 69
+extends_clause       : 30
+extra_clause         : 59 60
+extra_list           : 57 60
+extras_clause        : 44
+from_import          : 15 19
+function             : 66 67
+import_from          : 14 18
+import_type          : 7 8 10 11 12
+import_type_list     : 9 12
+opt_name_param       : 41 41 70 71
+opt_name_params_list : 38 68 68 71
+package              : 1
+package_body         : 2 18 19 20 21
+package_identifier   : 6 7 8 9 10
+service              : 17 21
+service_body         : 64 67
+service_name         : 64
+service_options      : 64 68
+spec_package_identifier : 2 4
+spec_statement       : 0
+struct_item          : 42 43
+structure_body       : 39 43
+type                 : 30 37 44 72 73
+typedef              : 16 20
+validation_clause    : 63
+validation_options   : 53
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . spec_statement
+    (1) spec_statement -> . package
+    (2) package -> . PACKAGE spec_package_identifier FIGURE_OPEN_BRACKET package_body FIGURE_CLOSE_BRACKET SEMICOLON
+
+    PACKAGE         shift and go to state 1
+
+    spec_statement                 shift and go to state 3
+    package                        shift and go to state 2
+
+state 1
+
+    (2) package -> PACKAGE . spec_package_identifier FIGURE_OPEN_BRACKET package_body FIGURE_CLOSE_BRACKET SEMICOLON
+    (3) spec_package_identifier -> . IDENTIFIER
+    (4) spec_package_identifier -> . spec_package_identifier DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 5
+
+    spec_package_identifier        shift and go to state 4
+
+state 2
+
+    (1) spec_statement -> package .
+
+    $end            reduce using rule 1 (spec_statement -> package .)
+
+
+state 3
+
+    (0) S' -> spec_statement .
+
+
+
+state 4
+
+    (2) package -> PACKAGE spec_package_identifier . FIGURE_OPEN_BRACKET package_body FIGURE_CLOSE_BRACKET SEMICOLON
+    (4) spec_package_identifier -> spec_package_identifier . DOT IDENTIFIER
+
+    FIGURE_OPEN_BRACKET shift and go to state 6
+    DOT             shift and go to state 7
+
+
+state 5
+
+    (3) spec_package_identifier -> IDENTIFIER .
+
+    FIGURE_OPEN_BRACKET reduce using rule 3 (spec_package_identifier -> IDENTIFIER .)
+    DOT             reduce using rule 3 (spec_package_identifier -> IDENTIFIER .)
+
+
+state 6
+
+    (2) package -> PACKAGE spec_package_identifier FIGURE_OPEN_BRACKET . package_body FIGURE_CLOSE_BRACKET SEMICOLON
+    (14) package_body -> . import_from
+    (15) package_body -> . from_import
+    (16) package_body -> . typedef
+    (17) package_body -> . service
+    (18) package_body -> . import_from package_body
+    (19) package_body -> . from_import package_body
+    (20) package_body -> . typedef package_body
+    (21) package_body -> . service package_body
+    (7) import_from -> . IMPORT import_type FROM package_identifier SEMICOLON
+    (8) import_from -> . IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON
+    (9) from_import -> . FROM package_identifier IMPORT import_type_list SEMICOLON
+    (10) from_import -> . FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON
+    (30) typedef -> . TYPEDEF type IDENTIFIER extends_clause SEMICOLON
+    (64) service -> . SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON
+
+    IMPORT          shift and go to state 15
+    FROM            shift and go to state 16
+    TYPEDEF         shift and go to state 14
+    SERVICE         shift and go to state 8
+
+    typedef                        shift and go to state 10
+    package_body                   shift and go to state 11
+    service                        shift and go to state 12
+    import_from                    shift and go to state 9
+    from_import                    shift and go to state 13
+
+state 7
+
+    (4) spec_package_identifier -> spec_package_identifier DOT . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 17
+
+
+state 8
+
+    (64) service -> SERVICE . service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON
+    (65) service_name -> . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 19
+
+    service_name                   shift and go to state 18
+
+state 9
+
+    (14) package_body -> import_from .
+    (18) package_body -> import_from . package_body
+    (14) package_body -> . import_from
+    (15) package_body -> . from_import
+    (16) package_body -> . typedef
+    (17) package_body -> . service
+    (18) package_body -> . import_from package_body
+    (19) package_body -> . from_import package_body
+    (20) package_body -> . typedef package_body
+    (21) package_body -> . service package_body
+    (7) import_from -> . IMPORT import_type FROM package_identifier SEMICOLON
+    (8) import_from -> . IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON
+    (9) from_import -> . FROM package_identifier IMPORT import_type_list SEMICOLON
+    (10) from_import -> . FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON
+    (30) typedef -> . TYPEDEF type IDENTIFIER extends_clause SEMICOLON
+    (64) service -> . SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON
+
+    FIGURE_CLOSE_BRACKET reduce using rule 14 (package_body -> import_from .)
+    IMPORT          shift and go to state 15
+    FROM            shift and go to state 16
+    TYPEDEF         shift and go to state 14
+    SERVICE         shift and go to state 8
+
+    typedef                        shift and go to state 10
+    package_body                   shift and go to state 20
+    service                        shift and go to state 12
+    import_from                    shift and go to state 9
+    from_import                    shift and go to state 13
+
+state 10
+
+    (16) package_body -> typedef .
+    (20) package_body -> typedef . package_body
+    (14) package_body -> . import_from
+    (15) package_body -> . from_import
+    (16) package_body -> . typedef
+    (17) package_body -> . service
+    (18) package_body -> . import_from package_body
+    (19) package_body -> . from_import package_body
+    (20) package_body -> . typedef package_body
+    (21) package_body -> . service package_body
+    (7) import_from -> . IMPORT import_type FROM package_identifier SEMICOLON
+    (8) import_from -> . IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON
+    (9) from_import -> . FROM package_identifier IMPORT import_type_list SEMICOLON
+    (10) from_import -> . FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON
+    (30) typedef -> . TYPEDEF type IDENTIFIER extends_clause SEMICOLON
+    (64) service -> . SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON
+
+    FIGURE_CLOSE_BRACKET reduce using rule 16 (package_body -> typedef .)
+    IMPORT          shift and go to state 15
+    FROM            shift and go to state 16
+    TYPEDEF         shift and go to state 14
+    SERVICE         shift and go to state 8
+
+    typedef                        shift and go to state 10
+    package_body                   shift and go to state 21
+    service                        shift and go to state 12
+    import_from                    shift and go to state 9
+    from_import                    shift and go to state 13
+
+state 11
+
+    (2) package -> PACKAGE spec_package_identifier FIGURE_OPEN_BRACKET package_body . FIGURE_CLOSE_BRACKET SEMICOLON
+
+    FIGURE_CLOSE_BRACKET shift and go to state 22
+
+
+state 12
+
+    (17) package_body -> service .
+    (21) package_body -> service . package_body
+    (14) package_body -> . import_from
+    (15) package_body -> . from_import
+    (16) package_body -> . typedef
+    (17) package_body -> . service
+    (18) package_body -> . import_from package_body
+    (19) package_body -> . from_import package_body
+    (20) package_body -> . typedef package_body
+    (21) package_body -> . service package_body
+    (7) import_from -> . IMPORT import_type FROM package_identifier SEMICOLON
+    (8) import_from -> . IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON
+    (9) from_import -> . FROM package_identifier IMPORT import_type_list SEMICOLON
+    (10) from_import -> . FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON
+    (30) typedef -> . TYPEDEF type IDENTIFIER extends_clause SEMICOLON
+    (64) service -> . SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON
+
+    FIGURE_CLOSE_BRACKET reduce using rule 17 (package_body -> service .)
+    IMPORT          shift and go to state 15
+    FROM            shift and go to state 16
+    TYPEDEF         shift and go to state 14
+    SERVICE         shift and go to state 8
+
+    typedef                        shift and go to state 10
+    package_body                   shift and go to state 23
+    service                        shift and go to state 12
+    import_from                    shift and go to state 9
+    from_import                    shift and go to state 13
+
+state 13
+
+    (15) package_body -> from_import .
+    (19) package_body -> from_import . package_body
+    (14) package_body -> . import_from
+    (15) package_body -> . from_import
+    (16) package_body -> . typedef
+    (17) package_body -> . service
+    (18) package_body -> . import_from package_body
+    (19) package_body -> . from_import package_body
+    (20) package_body -> . typedef package_body
+    (21) package_body -> . service package_body
+    (7) import_from -> . IMPORT import_type FROM package_identifier SEMICOLON
+    (8) import_from -> . IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON
+    (9) from_import -> . FROM package_identifier IMPORT import_type_list SEMICOLON
+    (10) from_import -> . FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON
+    (30) typedef -> . TYPEDEF type IDENTIFIER extends_clause SEMICOLON
+    (64) service -> . SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON
+
+    FIGURE_CLOSE_BRACKET reduce using rule 15 (package_body -> from_import .)
+    IMPORT          shift and go to state 15
+    FROM            shift and go to state 16
+    TYPEDEF         shift and go to state 14
+    SERVICE         shift and go to state 8
+
+    typedef                        shift and go to state 10
+    package_body                   shift and go to state 24
+    service                        shift and go to state 12
+    import_from                    shift and go to state 9
+    from_import                    shift and go to state 13
+
+state 14
+
+    (30) typedef -> TYPEDEF . type IDENTIFIER extends_clause SEMICOLON
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    type                           shift and go to state 27
+
+state 15
+
+    (7) import_from -> IMPORT . import_type FROM package_identifier SEMICOLON
+    (8) import_from -> IMPORT . import_type FROM package_identifier AS IDENTIFIER SEMICOLON
+    (13) import_type -> . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 38
+
+    import_type                    shift and go to state 37
+
+state 16
+
+    (9) from_import -> FROM . package_identifier IMPORT import_type_list SEMICOLON
+    (10) from_import -> FROM . package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON
+    (5) package_identifier -> . IDENTIFIER
+    (6) package_identifier -> . package_identifier DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 40
+
+    package_identifier             shift and go to state 39
+
+state 17
+
+    (4) spec_package_identifier -> spec_package_identifier DOT IDENTIFIER .
+
+    FIGURE_OPEN_BRACKET reduce using rule 4 (spec_package_identifier -> spec_package_identifier DOT IDENTIFIER .)
+    DOT             reduce using rule 4 (spec_package_identifier -> spec_package_identifier DOT IDENTIFIER .)
+
+
+state 18
+
+    (64) service -> SERVICE service_name . service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON
+    (57) service_options -> . extra_list
+    (58) service_options -> . empty
+    (59) extra_list -> . extra_clause
+    (60) extra_list -> . extra_list COMMA extra_clause
+    (74) empty -> .
+    (61) extra_clause -> . auditing_clause
+    (62) extra_clause -> . auth_clause
+    (63) extra_clause -> . validation_clause
+    (49) auditing_clause -> . AUDITING ASSIGN audit_options
+    (45) auth_clause -> . AUTHENTICATION ASSIGN auth_options
+    (53) validation_clause -> . VALIDATION ASSIGN validation_options
+
+    FIGURE_OPEN_BRACKET reduce using rule 74 (empty -> .)
+    AUDITING        shift and go to state 49
+    AUTHENTICATION  shift and go to state 45
+    VALIDATION      shift and go to state 42
+
+    validation_clause              shift and go to state 41
+    extra_list                     shift and go to state 43
+    service_options                shift and go to state 44
+    extra_clause                   shift and go to state 46
+    auth_clause                    shift and go to state 47
+    auditing_clause                shift and go to state 48
+    empty                          shift and go to state 50
+
+state 19
+
+    (65) service_name -> IDENTIFIER .
+
+    AUDITING        reduce using rule 65 (service_name -> IDENTIFIER .)
+    AUTHENTICATION  reduce using rule 65 (service_name -> IDENTIFIER .)
+    VALIDATION      reduce using rule 65 (service_name -> IDENTIFIER .)
+    FIGURE_OPEN_BRACKET reduce using rule 65 (service_name -> IDENTIFIER .)
+
+
+state 20
+
+    (18) package_body -> import_from package_body .
+
+    FIGURE_CLOSE_BRACKET reduce using rule 18 (package_body -> import_from package_body .)
+
+
+state 21
+
+    (20) package_body -> typedef package_body .
+
+    FIGURE_CLOSE_BRACKET reduce using rule 20 (package_body -> typedef package_body .)
+
+
+state 22
+
+    (2) package -> PACKAGE spec_package_identifier FIGURE_OPEN_BRACKET package_body FIGURE_CLOSE_BRACKET . SEMICOLON
+
+    SEMICOLON       shift and go to state 51
+
+
+state 23
+
+    (21) package_body -> service package_body .
+
+    FIGURE_CLOSE_BRACKET reduce using rule 21 (package_body -> service package_body .)
+
+
+state 24
+
+    (19) package_body -> from_import package_body .
+
+    FIGURE_CLOSE_BRACKET reduce using rule 19 (package_body -> from_import package_body .)
+
+
+state 25
+
+    (35) type -> UNDEFINED .
+
+    IDENTIFIER      reduce using rule 35 (type -> UNDEFINED .)
+    COMMA           reduce using rule 35 (type -> UNDEFINED .)
+    GREATER_THAN    reduce using rule 35 (type -> UNDEFINED .)
+    ROUND_CLOSE_BRACKET reduce using rule 35 (type -> UNDEFINED .)
+
+
+state 26
+
+    (40) type -> IDENTIFIER .
+
+    IDENTIFIER      reduce using rule 40 (type -> IDENTIFIER .)
+    COMMA           reduce using rule 40 (type -> IDENTIFIER .)
+    GREATER_THAN    reduce using rule 40 (type -> IDENTIFIER .)
+    ROUND_CLOSE_BRACKET reduce using rule 40 (type -> IDENTIFIER .)
+
+
+state 27
+
+    (30) typedef -> TYPEDEF type . IDENTIFIER extends_clause SEMICOLON
+
+    IDENTIFIER      shift and go to state 52
+
+
+state 28
+
+    (31) type -> STRING .
+
+    IDENTIFIER      reduce using rule 31 (type -> STRING .)
+    COMMA           reduce using rule 31 (type -> STRING .)
+    GREATER_THAN    reduce using rule 31 (type -> STRING .)
+    ROUND_CLOSE_BRACKET reduce using rule 31 (type -> STRING .)
+
+
+state 29
+
+    (41) type -> MAP . LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    LESS_THAN       shift and go to state 53
+
+
+state 30
+
+    (38) type -> TUPLE . LESS_THAN opt_name_params_list GREATER_THAN
+
+    LESS_THAN       shift and go to state 54
+
+
+state 31
+
+    (33) type -> INT .
+
+    IDENTIFIER      reduce using rule 33 (type -> INT .)
+    COMMA           reduce using rule 33 (type -> INT .)
+    GREATER_THAN    reduce using rule 33 (type -> INT .)
+    ROUND_CLOSE_BRACKET reduce using rule 33 (type -> INT .)
+
+
+state 32
+
+    (36) type -> TIMESTAMP .
+
+    IDENTIFIER      reduce using rule 36 (type -> TIMESTAMP .)
+    COMMA           reduce using rule 36 (type -> TIMESTAMP .)
+    GREATER_THAN    reduce using rule 36 (type -> TIMESTAMP .)
+    ROUND_CLOSE_BRACKET reduce using rule 36 (type -> TIMESTAMP .)
+
+
+state 33
+
+    (34) type -> FLOAT .
+
+    IDENTIFIER      reduce using rule 34 (type -> FLOAT .)
+    COMMA           reduce using rule 34 (type -> FLOAT .)
+    GREATER_THAN    reduce using rule 34 (type -> FLOAT .)
+    ROUND_CLOSE_BRACKET reduce using rule 34 (type -> FLOAT .)
+
+
+state 34
+
+    (37) type -> LIST . LESS_THAN type GREATER_THAN
+
+    LESS_THAN       shift and go to state 55
+
+
+state 35
+
+    (32) type -> BOOLEAN .
+
+    IDENTIFIER      reduce using rule 32 (type -> BOOLEAN .)
+    COMMA           reduce using rule 32 (type -> BOOLEAN .)
+    GREATER_THAN    reduce using rule 32 (type -> BOOLEAN .)
+    ROUND_CLOSE_BRACKET reduce using rule 32 (type -> BOOLEAN .)
+
+
+state 36
+
+    (39) type -> STRUCTURE . FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+
+    FIGURE_OPEN_BRACKET shift and go to state 56
+
+
+state 37
+
+    (7) import_from -> IMPORT import_type . FROM package_identifier SEMICOLON
+    (8) import_from -> IMPORT import_type . FROM package_identifier AS IDENTIFIER SEMICOLON
+
+    FROM            shift and go to state 57
+
+
+state 38
+
+    (13) import_type -> IDENTIFIER .
+
+    FROM            reduce using rule 13 (import_type -> IDENTIFIER .)
+    AS              reduce using rule 13 (import_type -> IDENTIFIER .)
+    SEMICOLON       reduce using rule 13 (import_type -> IDENTIFIER .)
+    COMMA           reduce using rule 13 (import_type -> IDENTIFIER .)
+
+
+state 39
+
+    (9) from_import -> FROM package_identifier . IMPORT import_type_list SEMICOLON
+    (10) from_import -> FROM package_identifier . IMPORT import_type AS IDENTIFIER SEMICOLON
+    (6) package_identifier -> package_identifier . DOT IDENTIFIER
+
+    IMPORT          shift and go to state 58
+    DOT             shift and go to state 59
+
+
+state 40
+
+    (5) package_identifier -> IDENTIFIER .
+
+    IMPORT          reduce using rule 5 (package_identifier -> IDENTIFIER .)
+    DOT             reduce using rule 5 (package_identifier -> IDENTIFIER .)
+    SEMICOLON       reduce using rule 5 (package_identifier -> IDENTIFIER .)
+    AS              reduce using rule 5 (package_identifier -> IDENTIFIER .)
+
+
+state 41
+
+    (63) extra_clause -> validation_clause .
+
+    COMMA           reduce using rule 63 (extra_clause -> validation_clause .)
+    FIGURE_OPEN_BRACKET reduce using rule 63 (extra_clause -> validation_clause .)
+    SEMICOLON       reduce using rule 63 (extra_clause -> validation_clause .)
+
+
+state 42
+
+    (53) validation_clause -> VALIDATION . ASSIGN validation_options
+
+    ASSIGN          shift and go to state 60
+
+
+state 43
+
+    (57) service_options -> extra_list .
+    (60) extra_list -> extra_list . COMMA extra_clause
+
+    FIGURE_OPEN_BRACKET reduce using rule 57 (service_options -> extra_list .)
+    SEMICOLON       reduce using rule 57 (service_options -> extra_list .)
+    COMMA           shift and go to state 61
+
+
+state 44
+
+    (64) service -> SERVICE service_name service_options . FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON
+
+    FIGURE_OPEN_BRACKET shift and go to state 62
+
+
+state 45
+
+    (45) auth_clause -> AUTHENTICATION . ASSIGN auth_options
+
+    ASSIGN          shift and go to state 63
+
+
+state 46
+
+    (59) extra_list -> extra_clause .
+
+    COMMA           reduce using rule 59 (extra_list -> extra_clause .)
+    SEMICOLON       reduce using rule 59 (extra_list -> extra_clause .)
+    FIGURE_OPEN_BRACKET reduce using rule 59 (extra_list -> extra_clause .)
+
+
+state 47
+
+    (62) extra_clause -> auth_clause .
+
+    COMMA           reduce using rule 62 (extra_clause -> auth_clause .)
+    FIGURE_OPEN_BRACKET reduce using rule 62 (extra_clause -> auth_clause .)
+    SEMICOLON       reduce using rule 62 (extra_clause -> auth_clause .)
+
+
+state 48
+
+    (61) extra_clause -> auditing_clause .
+
+    COMMA           reduce using rule 61 (extra_clause -> auditing_clause .)
+    FIGURE_OPEN_BRACKET reduce using rule 61 (extra_clause -> auditing_clause .)
+    SEMICOLON       reduce using rule 61 (extra_clause -> auditing_clause .)
+
+
+state 49
+
+    (49) auditing_clause -> AUDITING . ASSIGN audit_options
+
+    ASSIGN          shift and go to state 64
+
+
+state 50
+
+    (58) service_options -> empty .
+
+    FIGURE_OPEN_BRACKET reduce using rule 58 (service_options -> empty .)
+    SEMICOLON       reduce using rule 58 (service_options -> empty .)
+
+
+state 51
+
+    (2) package -> PACKAGE spec_package_identifier FIGURE_OPEN_BRACKET package_body FIGURE_CLOSE_BRACKET SEMICOLON .
+
+    $end            reduce using rule 2 (package -> PACKAGE spec_package_identifier FIGURE_OPEN_BRACKET package_body FIGURE_CLOSE_BRACKET SEMICOLON .)
+
+
+state 52
+
+    (30) typedef -> TYPEDEF type IDENTIFIER . extends_clause SEMICOLON
+    (22) extends_clause -> . empty
+    (23) extends_clause -> . EXTENDS IDENTIFIER
+    (74) empty -> .
+
+    EXTENDS         shift and go to state 65
+    SEMICOLON       reduce using rule 74 (empty -> .)
+
+    extends_clause                 shift and go to state 66
+    empty                          shift and go to state 67
+
+state 53
+
+    (41) type -> MAP LESS_THAN . opt_name_param COMMA opt_name_param GREATER_THAN
+    (72) opt_name_param -> . type
+    (73) opt_name_param -> . type IDENTIFIER
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    type                           shift and go to state 69
+    opt_name_param                 shift and go to state 68
+
+state 54
+
+    (38) type -> TUPLE LESS_THAN . opt_name_params_list GREATER_THAN
+    (69) opt_name_params_list -> . empty
+    (70) opt_name_params_list -> . opt_name_param
+    (71) opt_name_params_list -> . opt_name_params_list COMMA opt_name_param
+    (74) empty -> .
+    (72) opt_name_param -> . type
+    (73) opt_name_param -> . type IDENTIFIER
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    GREATER_THAN    reduce using rule 74 (empty -> .)
+    COMMA           reduce using rule 74 (empty -> .)
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    opt_name_param                 shift and go to state 71
+    type                           shift and go to state 69
+    empty                          shift and go to state 72
+    opt_name_params_list           shift and go to state 70
+
+state 55
+
+    (37) type -> LIST LESS_THAN . type GREATER_THAN
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    type                           shift and go to state 73
+
+state 56
+
+    (39) type -> STRUCTURE FIGURE_OPEN_BRACKET . structure_body FIGURE_CLOSE_BRACKET
+    (42) structure_body -> . struct_item
+    (43) structure_body -> . struct_item structure_body
+    (44) struct_item -> . type IDENTIFIER extras_clause SEMICOLON
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    struct_item                    shift and go to state 75
+    structure_body                 shift and go to state 74
+    type                           shift and go to state 76
+
+state 57
+
+    (7) import_from -> IMPORT import_type FROM . package_identifier SEMICOLON
+    (8) import_from -> IMPORT import_type FROM . package_identifier AS IDENTIFIER SEMICOLON
+    (5) package_identifier -> . IDENTIFIER
+    (6) package_identifier -> . package_identifier DOT IDENTIFIER
+
+    IDENTIFIER      shift and go to state 40
+
+    package_identifier             shift and go to state 77
+
+state 58
+
+    (9) from_import -> FROM package_identifier IMPORT . import_type_list SEMICOLON
+    (10) from_import -> FROM package_identifier IMPORT . import_type AS IDENTIFIER SEMICOLON
+    (11) import_type_list -> . import_type
+    (12) import_type_list -> . import_type_list COMMA import_type
+    (13) import_type -> . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 38
+
+    import_type_list               shift and go to state 78
+    import_type                    shift and go to state 79
+
+state 59
+
+    (6) package_identifier -> package_identifier DOT . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 80
+
+
+state 60
+
+    (53) validation_clause -> VALIDATION ASSIGN . validation_options
+    (54) validation_options -> . FULL_VALIDATION
+    (55) validation_options -> . SKIP_RETURN
+    (56) validation_options -> . NONE
+
+    FULL_VALIDATION shift and go to state 83
+    SKIP_RETURN     shift and go to state 81
+    NONE            shift and go to state 82
+
+    validation_options             shift and go to state 84
+
+state 61
+
+    (60) extra_list -> extra_list COMMA . extra_clause
+    (61) extra_clause -> . auditing_clause
+    (62) extra_clause -> . auth_clause
+    (63) extra_clause -> . validation_clause
+    (49) auditing_clause -> . AUDITING ASSIGN audit_options
+    (45) auth_clause -> . AUTHENTICATION ASSIGN auth_options
+    (53) validation_clause -> . VALIDATION ASSIGN validation_options
+
+    AUDITING        shift and go to state 49
+    AUTHENTICATION  shift and go to state 45
+    VALIDATION      shift and go to state 42
+
+    validation_clause              shift and go to state 41
+    extra_clause                   shift and go to state 85
+    auth_clause                    shift and go to state 47
+    auditing_clause                shift and go to state 48
+
+state 62
+
+    (64) service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET . service_body FIGURE_CLOSE_BRACKET SEMICOLON
+    (66) service_body -> . function
+    (67) service_body -> . function service_body
+    (68) function -> . FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+
+    FUNCTION        shift and go to state 87
+
+    function                       shift and go to state 86
+    service_body                   shift and go to state 88
+
+state 63
+
+    (45) auth_clause -> AUTHENTICATION ASSIGN . auth_options
+    (46) auth_options -> . REQUIRED
+    (47) auth_options -> . OPTIONAL
+    (48) auth_options -> . NONE
+
+    REQUIRED        shift and go to state 90
+    OPTIONAL        shift and go to state 92
+    NONE            shift and go to state 89
+
+    auth_options                   shift and go to state 91
+
+state 64
+
+    (49) auditing_clause -> AUDITING ASSIGN . audit_options
+    (50) audit_options -> . FULL_AUDIT
+    (51) audit_options -> . SKIP_PARAMS
+    (52) audit_options -> . NONE
+
+    FULL_AUDIT      shift and go to state 95
+    SKIP_PARAMS     shift and go to state 96
+    NONE            shift and go to state 93
+
+    audit_options                  shift and go to state 94
+
+state 65
+
+    (23) extends_clause -> EXTENDS . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 97
+
+
+state 66
+
+    (30) typedef -> TYPEDEF type IDENTIFIER extends_clause . SEMICOLON
+
+    SEMICOLON       shift and go to state 98
+
+
+state 67
+
+    (22) extends_clause -> empty .
+
+    SEMICOLON       reduce using rule 22 (extends_clause -> empty .)
+
+
+state 68
+
+    (41) type -> MAP LESS_THAN opt_name_param . COMMA opt_name_param GREATER_THAN
+
+    COMMA           shift and go to state 99
+
+
+state 69
+
+    (72) opt_name_param -> type .
+    (73) opt_name_param -> type . IDENTIFIER
+
+    COMMA           reduce using rule 72 (opt_name_param -> type .)
+    GREATER_THAN    reduce using rule 72 (opt_name_param -> type .)
+    ROUND_CLOSE_BRACKET reduce using rule 72 (opt_name_param -> type .)
+    IDENTIFIER      shift and go to state 100
+
+
+state 70
+
+    (38) type -> TUPLE LESS_THAN opt_name_params_list . GREATER_THAN
+    (71) opt_name_params_list -> opt_name_params_list . COMMA opt_name_param
+
+    GREATER_THAN    shift and go to state 102
+    COMMA           shift and go to state 101
+
+
+state 71
+
+    (70) opt_name_params_list -> opt_name_param .
+
+    ROUND_CLOSE_BRACKET reduce using rule 70 (opt_name_params_list -> opt_name_param .)
+    COMMA           reduce using rule 70 (opt_name_params_list -> opt_name_param .)
+    GREATER_THAN    reduce using rule 70 (opt_name_params_list -> opt_name_param .)
+
+
+state 72
+
+    (69) opt_name_params_list -> empty .
+
+    ROUND_CLOSE_BRACKET reduce using rule 69 (opt_name_params_list -> empty .)
+    COMMA           reduce using rule 69 (opt_name_params_list -> empty .)
+    GREATER_THAN    reduce using rule 69 (opt_name_params_list -> empty .)
+
+
+state 73
+
+    (37) type -> LIST LESS_THAN type . GREATER_THAN
+
+    GREATER_THAN    shift and go to state 103
+
+
+state 74
+
+    (39) type -> STRUCTURE FIGURE_OPEN_BRACKET structure_body . FIGURE_CLOSE_BRACKET
+
+    FIGURE_CLOSE_BRACKET shift and go to state 104
+
+
+state 75
+
+    (42) structure_body -> struct_item .
+    (43) structure_body -> struct_item . structure_body
+    (42) structure_body -> . struct_item
+    (43) structure_body -> . struct_item structure_body
+    (44) struct_item -> . type IDENTIFIER extras_clause SEMICOLON
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    FIGURE_CLOSE_BRACKET reduce using rule 42 (structure_body -> struct_item .)
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    struct_item                    shift and go to state 75
+    structure_body                 shift and go to state 105
+    type                           shift and go to state 76
+
+state 76
+
+    (44) struct_item -> type . IDENTIFIER extras_clause SEMICOLON
+
+    IDENTIFIER      shift and go to state 106
+
+
+state 77
+
+    (7) import_from -> IMPORT import_type FROM package_identifier . SEMICOLON
+    (8) import_from -> IMPORT import_type FROM package_identifier . AS IDENTIFIER SEMICOLON
+    (6) package_identifier -> package_identifier . DOT IDENTIFIER
+
+    SEMICOLON       shift and go to state 107
+    AS              shift and go to state 108
+    DOT             shift and go to state 59
+
+
+state 78
+
+    (9) from_import -> FROM package_identifier IMPORT import_type_list . SEMICOLON
+    (12) import_type_list -> import_type_list . COMMA import_type
+
+    SEMICOLON       shift and go to state 109
+    COMMA           shift and go to state 110
+
+
+state 79
+
+    (10) from_import -> FROM package_identifier IMPORT import_type . AS IDENTIFIER SEMICOLON
+    (11) import_type_list -> import_type .
+
+    AS              shift and go to state 111
+    SEMICOLON       reduce using rule 11 (import_type_list -> import_type .)
+    COMMA           reduce using rule 11 (import_type_list -> import_type .)
+
+
+state 80
+
+    (6) package_identifier -> package_identifier DOT IDENTIFIER .
+
+    IMPORT          reduce using rule 6 (package_identifier -> package_identifier DOT IDENTIFIER .)
+    DOT             reduce using rule 6 (package_identifier -> package_identifier DOT IDENTIFIER .)
+    SEMICOLON       reduce using rule 6 (package_identifier -> package_identifier DOT IDENTIFIER .)
+    AS              reduce using rule 6 (package_identifier -> package_identifier DOT IDENTIFIER .)
+
+
+state 81
+
+    (55) validation_options -> SKIP_RETURN .
+
+    COMMA           reduce using rule 55 (validation_options -> SKIP_RETURN .)
+    FIGURE_OPEN_BRACKET reduce using rule 55 (validation_options -> SKIP_RETURN .)
+    SEMICOLON       reduce using rule 55 (validation_options -> SKIP_RETURN .)
+
+
+state 82
+
+    (56) validation_options -> NONE .
+
+    COMMA           reduce using rule 56 (validation_options -> NONE .)
+    FIGURE_OPEN_BRACKET reduce using rule 56 (validation_options -> NONE .)
+    SEMICOLON       reduce using rule 56 (validation_options -> NONE .)
+
+
+state 83
+
+    (54) validation_options -> FULL_VALIDATION .
+
+    COMMA           reduce using rule 54 (validation_options -> FULL_VALIDATION .)
+    FIGURE_OPEN_BRACKET reduce using rule 54 (validation_options -> FULL_VALIDATION .)
+    SEMICOLON       reduce using rule 54 (validation_options -> FULL_VALIDATION .)
+
+
+state 84
+
+    (53) validation_clause -> VALIDATION ASSIGN validation_options .
+
+    COMMA           reduce using rule 53 (validation_clause -> VALIDATION ASSIGN validation_options .)
+    FIGURE_OPEN_BRACKET reduce using rule 53 (validation_clause -> VALIDATION ASSIGN validation_options .)
+    SEMICOLON       reduce using rule 53 (validation_clause -> VALIDATION ASSIGN validation_options .)
+
+
+state 85
+
+    (60) extra_list -> extra_list COMMA extra_clause .
+
+    COMMA           reduce using rule 60 (extra_list -> extra_list COMMA extra_clause .)
+    SEMICOLON       reduce using rule 60 (extra_list -> extra_list COMMA extra_clause .)
+    FIGURE_OPEN_BRACKET reduce using rule 60 (extra_list -> extra_list COMMA extra_clause .)
+
+
+state 86
+
+    (66) service_body -> function .
+    (67) service_body -> function . service_body
+    (66) service_body -> . function
+    (67) service_body -> . function service_body
+    (68) function -> . FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+
+    FIGURE_CLOSE_BRACKET reduce using rule 66 (service_body -> function .)
+    FUNCTION        shift and go to state 87
+
+    function                       shift and go to state 86
+    service_body                   shift and go to state 112
+
+state 87
+
+    (68) function -> FUNCTION . IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+
+    IDENTIFIER      shift and go to state 113
+
+
+state 88
+
+    (64) service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body . FIGURE_CLOSE_BRACKET SEMICOLON
+
+    FIGURE_CLOSE_BRACKET shift and go to state 114
+
+
+state 89
+
+    (48) auth_options -> NONE .
+
+    COMMA           reduce using rule 48 (auth_options -> NONE .)
+    FIGURE_OPEN_BRACKET reduce using rule 48 (auth_options -> NONE .)
+    SEMICOLON       reduce using rule 48 (auth_options -> NONE .)
+
+
+state 90
+
+    (46) auth_options -> REQUIRED .
+
+    COMMA           reduce using rule 46 (auth_options -> REQUIRED .)
+    FIGURE_OPEN_BRACKET reduce using rule 46 (auth_options -> REQUIRED .)
+    SEMICOLON       reduce using rule 46 (auth_options -> REQUIRED .)
+
+
+state 91
+
+    (45) auth_clause -> AUTHENTICATION ASSIGN auth_options .
+
+    COMMA           reduce using rule 45 (auth_clause -> AUTHENTICATION ASSIGN auth_options .)
+    FIGURE_OPEN_BRACKET reduce using rule 45 (auth_clause -> AUTHENTICATION ASSIGN auth_options .)
+    SEMICOLON       reduce using rule 45 (auth_clause -> AUTHENTICATION ASSIGN auth_options .)
+
+
+state 92
+
+    (47) auth_options -> OPTIONAL .
+
+    COMMA           reduce using rule 47 (auth_options -> OPTIONAL .)
+    FIGURE_OPEN_BRACKET reduce using rule 47 (auth_options -> OPTIONAL .)
+    SEMICOLON       reduce using rule 47 (auth_options -> OPTIONAL .)
+
+
+state 93
+
+    (52) audit_options -> NONE .
+
+    COMMA           reduce using rule 52 (audit_options -> NONE .)
+    FIGURE_OPEN_BRACKET reduce using rule 52 (audit_options -> NONE .)
+    SEMICOLON       reduce using rule 52 (audit_options -> NONE .)
+
+
+state 94
+
+    (49) auditing_clause -> AUDITING ASSIGN audit_options .
+
+    COMMA           reduce using rule 49 (auditing_clause -> AUDITING ASSIGN audit_options .)
+    FIGURE_OPEN_BRACKET reduce using rule 49 (auditing_clause -> AUDITING ASSIGN audit_options .)
+    SEMICOLON       reduce using rule 49 (auditing_clause -> AUDITING ASSIGN audit_options .)
+
+
+state 95
+
+    (50) audit_options -> FULL_AUDIT .
+
+    COMMA           reduce using rule 50 (audit_options -> FULL_AUDIT .)
+    FIGURE_OPEN_BRACKET reduce using rule 50 (audit_options -> FULL_AUDIT .)
+    SEMICOLON       reduce using rule 50 (audit_options -> FULL_AUDIT .)
+
+
+state 96
+
+    (51) audit_options -> SKIP_PARAMS .
+
+    COMMA           reduce using rule 51 (audit_options -> SKIP_PARAMS .)
+    FIGURE_OPEN_BRACKET reduce using rule 51 (audit_options -> SKIP_PARAMS .)
+    SEMICOLON       reduce using rule 51 (audit_options -> SKIP_PARAMS .)
+
+
+state 97
+
+    (23) extends_clause -> EXTENDS IDENTIFIER .
+
+    SEMICOLON       reduce using rule 23 (extends_clause -> EXTENDS IDENTIFIER .)
+
+
+state 98
+
+    (30) typedef -> TYPEDEF type IDENTIFIER extends_clause SEMICOLON .
+
+    IMPORT          reduce using rule 30 (typedef -> TYPEDEF type IDENTIFIER extends_clause SEMICOLON .)
+    FROM            reduce using rule 30 (typedef -> TYPEDEF type IDENTIFIER extends_clause SEMICOLON .)
+    TYPEDEF         reduce using rule 30 (typedef -> TYPEDEF type IDENTIFIER extends_clause SEMICOLON .)
+    SERVICE         reduce using rule 30 (typedef -> TYPEDEF type IDENTIFIER extends_clause SEMICOLON .)
+    FIGURE_CLOSE_BRACKET reduce using rule 30 (typedef -> TYPEDEF type IDENTIFIER extends_clause SEMICOLON .)
+
+
+state 99
+
+    (41) type -> MAP LESS_THAN opt_name_param COMMA . opt_name_param GREATER_THAN
+    (72) opt_name_param -> . type
+    (73) opt_name_param -> . type IDENTIFIER
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    type                           shift and go to state 69
+    opt_name_param                 shift and go to state 115
+
+state 100
+
+    (73) opt_name_param -> type IDENTIFIER .
+
+    COMMA           reduce using rule 73 (opt_name_param -> type IDENTIFIER .)
+    GREATER_THAN    reduce using rule 73 (opt_name_param -> type IDENTIFIER .)
+    ROUND_CLOSE_BRACKET reduce using rule 73 (opt_name_param -> type IDENTIFIER .)
+
+
+state 101
+
+    (71) opt_name_params_list -> opt_name_params_list COMMA . opt_name_param
+    (72) opt_name_param -> . type
+    (73) opt_name_param -> . type IDENTIFIER
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    opt_name_param                 shift and go to state 116
+    type                           shift and go to state 69
+
+state 102
+
+    (38) type -> TUPLE LESS_THAN opt_name_params_list GREATER_THAN .
+
+    IDENTIFIER      reduce using rule 38 (type -> TUPLE LESS_THAN opt_name_params_list GREATER_THAN .)
+    COMMA           reduce using rule 38 (type -> TUPLE LESS_THAN opt_name_params_list GREATER_THAN .)
+    GREATER_THAN    reduce using rule 38 (type -> TUPLE LESS_THAN opt_name_params_list GREATER_THAN .)
+    ROUND_CLOSE_BRACKET reduce using rule 38 (type -> TUPLE LESS_THAN opt_name_params_list GREATER_THAN .)
+
+
+state 103
+
+    (37) type -> LIST LESS_THAN type GREATER_THAN .
+
+    IDENTIFIER      reduce using rule 37 (type -> LIST LESS_THAN type GREATER_THAN .)
+    COMMA           reduce using rule 37 (type -> LIST LESS_THAN type GREATER_THAN .)
+    GREATER_THAN    reduce using rule 37 (type -> LIST LESS_THAN type GREATER_THAN .)
+    ROUND_CLOSE_BRACKET reduce using rule 37 (type -> LIST LESS_THAN type GREATER_THAN .)
+
+
+state 104
+
+    (39) type -> STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET .
+
+    IDENTIFIER      reduce using rule 39 (type -> STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET .)
+    COMMA           reduce using rule 39 (type -> STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET .)
+    GREATER_THAN    reduce using rule 39 (type -> STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET .)
+    ROUND_CLOSE_BRACKET reduce using rule 39 (type -> STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET .)
+
+
+state 105
+
+    (43) structure_body -> struct_item structure_body .
+
+    FIGURE_CLOSE_BRACKET reduce using rule 43 (structure_body -> struct_item structure_body .)
+
+
+state 106
+
+    (44) struct_item -> type IDENTIFIER . extras_clause SEMICOLON
+    (24) extras_clause -> . empty
+    (25) extras_clause -> . REQUIRED
+    (26) extras_clause -> . OPTIONAL
+    (27) extras_clause -> . IGNORED
+    (28) extras_clause -> . REQUIRED_ONE ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET
+    (29) extras_clause -> . REQUIRED_ANY ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET
+    (74) empty -> .
+
+    REQUIRED        shift and go to state 121
+    OPTIONAL        shift and go to state 120
+    IGNORED         shift and go to state 118
+    REQUIRED_ONE    shift and go to state 122
+    REQUIRED_ANY    shift and go to state 117
+    SEMICOLON       reduce using rule 74 (empty -> .)
+
+    extras_clause                  shift and go to state 119
+    empty                          shift and go to state 123
+
+state 107
+
+    (7) import_from -> IMPORT import_type FROM package_identifier SEMICOLON .
+
+    IMPORT          reduce using rule 7 (import_from -> IMPORT import_type FROM package_identifier SEMICOLON .)
+    FROM            reduce using rule 7 (import_from -> IMPORT import_type FROM package_identifier SEMICOLON .)
+    TYPEDEF         reduce using rule 7 (import_from -> IMPORT import_type FROM package_identifier SEMICOLON .)
+    SERVICE         reduce using rule 7 (import_from -> IMPORT import_type FROM package_identifier SEMICOLON .)
+    FIGURE_CLOSE_BRACKET reduce using rule 7 (import_from -> IMPORT import_type FROM package_identifier SEMICOLON .)
+
+
+state 108
+
+    (8) import_from -> IMPORT import_type FROM package_identifier AS . IDENTIFIER SEMICOLON
+
+    IDENTIFIER      shift and go to state 124
+
+
+state 109
+
+    (9) from_import -> FROM package_identifier IMPORT import_type_list SEMICOLON .
+
+    IMPORT          reduce using rule 9 (from_import -> FROM package_identifier IMPORT import_type_list SEMICOLON .)
+    FROM            reduce using rule 9 (from_import -> FROM package_identifier IMPORT import_type_list SEMICOLON .)
+    TYPEDEF         reduce using rule 9 (from_import -> FROM package_identifier IMPORT import_type_list SEMICOLON .)
+    SERVICE         reduce using rule 9 (from_import -> FROM package_identifier IMPORT import_type_list SEMICOLON .)
+    FIGURE_CLOSE_BRACKET reduce using rule 9 (from_import -> FROM package_identifier IMPORT import_type_list SEMICOLON .)
+
+
+state 110
+
+    (12) import_type_list -> import_type_list COMMA . import_type
+    (13) import_type -> . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 38
+
+    import_type                    shift and go to state 125
+
+state 111
+
+    (10) from_import -> FROM package_identifier IMPORT import_type AS . IDENTIFIER SEMICOLON
+
+    IDENTIFIER      shift and go to state 126
+
+
+state 112
+
+    (67) service_body -> function service_body .
+
+    FIGURE_CLOSE_BRACKET reduce using rule 67 (service_body -> function service_body .)
+
+
+state 113
+
+    (68) function -> FUNCTION IDENTIFIER . ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+
+    ROUND_OPEN_BRACKET shift and go to state 127
+
+
+state 114
+
+    (64) service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET . SEMICOLON
+
+    SEMICOLON       shift and go to state 128
+
+
+state 115
+
+    (41) type -> MAP LESS_THAN opt_name_param COMMA opt_name_param . GREATER_THAN
+
+    GREATER_THAN    shift and go to state 129
+
+
+state 116
+
+    (71) opt_name_params_list -> opt_name_params_list COMMA opt_name_param .
+
+    ROUND_CLOSE_BRACKET reduce using rule 71 (opt_name_params_list -> opt_name_params_list COMMA opt_name_param .)
+    COMMA           reduce using rule 71 (opt_name_params_list -> opt_name_params_list COMMA opt_name_param .)
+    GREATER_THAN    reduce using rule 71 (opt_name_params_list -> opt_name_params_list COMMA opt_name_param .)
+
+
+state 117
+
+    (29) extras_clause -> REQUIRED_ANY . ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET
+
+    ROUND_OPEN_BRACKET shift and go to state 130
+
+
+state 118
+
+    (27) extras_clause -> IGNORED .
+
+    SEMICOLON       reduce using rule 27 (extras_clause -> IGNORED .)
+
+
+state 119
+
+    (44) struct_item -> type IDENTIFIER extras_clause . SEMICOLON
+
+    SEMICOLON       shift and go to state 131
+
+
+state 120
+
+    (26) extras_clause -> OPTIONAL .
+
+    SEMICOLON       reduce using rule 26 (extras_clause -> OPTIONAL .)
+
+
+state 121
+
+    (25) extras_clause -> REQUIRED .
+
+    SEMICOLON       reduce using rule 25 (extras_clause -> REQUIRED .)
+
+
+state 122
+
+    (28) extras_clause -> REQUIRED_ONE . ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET
+
+    ROUND_OPEN_BRACKET shift and go to state 132
+
+
+state 123
+
+    (24) extras_clause -> empty .
+
+    SEMICOLON       reduce using rule 24 (extras_clause -> empty .)
+
+
+state 124
+
+    (8) import_from -> IMPORT import_type FROM package_identifier AS IDENTIFIER . SEMICOLON
+
+    SEMICOLON       shift and go to state 133
+
+
+state 125
+
+    (12) import_type_list -> import_type_list COMMA import_type .
+
+    SEMICOLON       reduce using rule 12 (import_type_list -> import_type_list COMMA import_type .)
+    COMMA           reduce using rule 12 (import_type_list -> import_type_list COMMA import_type .)
+
+
+state 126
+
+    (10) from_import -> FROM package_identifier IMPORT import_type AS IDENTIFIER . SEMICOLON
+
+    SEMICOLON       shift and go to state 134
+
+
+state 127
+
+    (68) function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET . opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+    (69) opt_name_params_list -> . empty
+    (70) opt_name_params_list -> . opt_name_param
+    (71) opt_name_params_list -> . opt_name_params_list COMMA opt_name_param
+    (74) empty -> .
+    (72) opt_name_param -> . type
+    (73) opt_name_param -> . type IDENTIFIER
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    ROUND_CLOSE_BRACKET reduce using rule 74 (empty -> .)
+    COMMA           reduce using rule 74 (empty -> .)
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    opt_name_params_list           shift and go to state 135
+    opt_name_param                 shift and go to state 71
+    type                           shift and go to state 69
+    empty                          shift and go to state 72
+
+state 128
+
+    (64) service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON .
+
+    IMPORT          reduce using rule 64 (service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON .)
+    FROM            reduce using rule 64 (service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON .)
+    TYPEDEF         reduce using rule 64 (service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON .)
+    SERVICE         reduce using rule 64 (service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON .)
+    FIGURE_CLOSE_BRACKET reduce using rule 64 (service -> SERVICE service_name service_options FIGURE_OPEN_BRACKET service_body FIGURE_CLOSE_BRACKET SEMICOLON .)
+
+
+state 129
+
+    (41) type -> MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN .
+
+    IDENTIFIER      reduce using rule 41 (type -> MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN .)
+    COMMA           reduce using rule 41 (type -> MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN .)
+    GREATER_THAN    reduce using rule 41 (type -> MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN .)
+    ROUND_CLOSE_BRACKET reduce using rule 41 (type -> MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN .)
+
+
+state 130
+
+    (29) extras_clause -> REQUIRED_ANY ROUND_OPEN_BRACKET . NUMBER ROUND_CLOSE_BRACKET
+
+    NUMBER          shift and go to state 136
+
+
+state 131
+
+    (44) struct_item -> type IDENTIFIER extras_clause SEMICOLON .
+
+    STRING          reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    BOOLEAN         reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    INT             reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    FLOAT           reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    UNDEFINED       reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    TIMESTAMP       reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    LIST            reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    TUPLE           reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    STRUCTURE       reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    IDENTIFIER      reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    MAP             reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+    FIGURE_CLOSE_BRACKET reduce using rule 44 (struct_item -> type IDENTIFIER extras_clause SEMICOLON .)
+
+
+state 132
+
+    (28) extras_clause -> REQUIRED_ONE ROUND_OPEN_BRACKET . NUMBER ROUND_CLOSE_BRACKET
+
+    NUMBER          shift and go to state 137
+
+
+state 133
+
+    (8) import_from -> IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON .
+
+    IMPORT          reduce using rule 8 (import_from -> IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON .)
+    FROM            reduce using rule 8 (import_from -> IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON .)
+    TYPEDEF         reduce using rule 8 (import_from -> IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON .)
+    SERVICE         reduce using rule 8 (import_from -> IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON .)
+    FIGURE_CLOSE_BRACKET reduce using rule 8 (import_from -> IMPORT import_type FROM package_identifier AS IDENTIFIER SEMICOLON .)
+
+
+state 134
+
+    (10) from_import -> FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON .
+
+    IMPORT          reduce using rule 10 (from_import -> FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON .)
+    FROM            reduce using rule 10 (from_import -> FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON .)
+    TYPEDEF         reduce using rule 10 (from_import -> FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON .)
+    SERVICE         reduce using rule 10 (from_import -> FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON .)
+    FIGURE_CLOSE_BRACKET reduce using rule 10 (from_import -> FROM package_identifier IMPORT import_type AS IDENTIFIER SEMICOLON .)
+
+
+state 135
+
+    (68) function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list . ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+    (71) opt_name_params_list -> opt_name_params_list . COMMA opt_name_param
+
+    ROUND_CLOSE_BRACKET shift and go to state 138
+    COMMA           shift and go to state 101
+
+
+state 136
+
+    (29) extras_clause -> REQUIRED_ANY ROUND_OPEN_BRACKET NUMBER . ROUND_CLOSE_BRACKET
+
+    ROUND_CLOSE_BRACKET shift and go to state 139
+
+
+state 137
+
+    (28) extras_clause -> REQUIRED_ONE ROUND_OPEN_BRACKET NUMBER . ROUND_CLOSE_BRACKET
+
+    ROUND_CLOSE_BRACKET shift and go to state 140
+
+
+state 138
+
+    (68) function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET . RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+
+    RETURNS         shift and go to state 141
+
+
+state 139
+
+    (29) extras_clause -> REQUIRED_ANY ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET .
+
+    SEMICOLON       reduce using rule 29 (extras_clause -> REQUIRED_ANY ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET .)
+
+
+state 140
+
+    (28) extras_clause -> REQUIRED_ONE ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET .
+
+    SEMICOLON       reduce using rule 28 (extras_clause -> REQUIRED_ONE ROUND_OPEN_BRACKET NUMBER ROUND_CLOSE_BRACKET .)
+
+
+state 141
+
+    (68) function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS . ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+
+    ROUND_OPEN_BRACKET shift and go to state 142
+
+
+state 142
+
+    (68) function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET . opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON
+    (69) opt_name_params_list -> . empty
+    (70) opt_name_params_list -> . opt_name_param
+    (71) opt_name_params_list -> . opt_name_params_list COMMA opt_name_param
+    (74) empty -> .
+    (72) opt_name_param -> . type
+    (73) opt_name_param -> . type IDENTIFIER
+    (31) type -> . STRING
+    (32) type -> . BOOLEAN
+    (33) type -> . INT
+    (34) type -> . FLOAT
+    (35) type -> . UNDEFINED
+    (36) type -> . TIMESTAMP
+    (37) type -> . LIST LESS_THAN type GREATER_THAN
+    (38) type -> . TUPLE LESS_THAN opt_name_params_list GREATER_THAN
+    (39) type -> . STRUCTURE FIGURE_OPEN_BRACKET structure_body FIGURE_CLOSE_BRACKET
+    (40) type -> . IDENTIFIER
+    (41) type -> . MAP LESS_THAN opt_name_param COMMA opt_name_param GREATER_THAN
+
+    ROUND_CLOSE_BRACKET reduce using rule 74 (empty -> .)
+    COMMA           reduce using rule 74 (empty -> .)
+    STRING          shift and go to state 28
+    BOOLEAN         shift and go to state 35
+    INT             shift and go to state 31
+    FLOAT           shift and go to state 33
+    UNDEFINED       shift and go to state 25
+    TIMESTAMP       shift and go to state 32
+    LIST            shift and go to state 34
+    TUPLE           shift and go to state 30
+    STRUCTURE       shift and go to state 36
+    IDENTIFIER      shift and go to state 26
+    MAP             shift and go to state 29
+
+    opt_name_params_list           shift and go to state 143
+    opt_name_param                 shift and go to state 71
+    type                           shift and go to state 69
+    empty                          shift and go to state 72
+
+state 143
+
+    (68) function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list . ROUND_CLOSE_BRACKET service_options SEMICOLON
+    (71) opt_name_params_list -> opt_name_params_list . COMMA opt_name_param
+
+    ROUND_CLOSE_BRACKET shift and go to state 144
+    COMMA           shift and go to state 101
+
+
+state 144
+
+    (68) function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET . service_options SEMICOLON
+    (57) service_options -> . extra_list
+    (58) service_options -> . empty
+    (59) extra_list -> . extra_clause
+    (60) extra_list -> . extra_list COMMA extra_clause
+    (74) empty -> .
+    (61) extra_clause -> . auditing_clause
+    (62) extra_clause -> . auth_clause
+    (63) extra_clause -> . validation_clause
+    (49) auditing_clause -> . AUDITING ASSIGN audit_options
+    (45) auth_clause -> . AUTHENTICATION ASSIGN auth_options
+    (53) validation_clause -> . VALIDATION ASSIGN validation_options
+
+    SEMICOLON       reduce using rule 74 (empty -> .)
+    AUDITING        shift and go to state 49
+    AUTHENTICATION  shift and go to state 45
+    VALIDATION      shift and go to state 42
+
+    validation_clause              shift and go to state 41
+    extra_list                     shift and go to state 43
+    service_options                shift and go to state 145
+    extra_clause                   shift and go to state 46
+    auth_clause                    shift and go to state 47
+    auditing_clause                shift and go to state 48
+    empty                          shift and go to state 50
+
+state 145
+
+    (68) function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options . SEMICOLON
+
+    SEMICOLON       shift and go to state 146
+
+
+state 146
+
+    (68) function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON .
+
+    FUNCTION        reduce using rule 68 (function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON .)
+    FIGURE_CLOSE_BRACKET reduce using rule 68 (function -> FUNCTION IDENTIFIER ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET RETURNS ROUND_OPEN_BRACKET opt_name_params_list ROUND_CLOSE_BRACKET service_options SEMICOLON .)
+

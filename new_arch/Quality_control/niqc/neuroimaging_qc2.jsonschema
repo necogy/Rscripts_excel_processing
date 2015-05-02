@@ -1,0 +1,319 @@
+[
+    {
+        "comment": "",
+        "package_components": [
+            {
+                "jsonschema": {
+                    "additionalProperties": false,
+                    "comment": "when making read-only requests to the API, use these parameters",
+                    "original-type": "knect-structure",
+                    "package_name": "mac.neuroimaging.QualityControl",
+                    "properties": {
+                        "pidn": {
+                            "extra_status": "required",
+                            "original-type": "knect-int",
+                            "type": "integer"
+                        },
+                        "service_username": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "service_username",
+                        "pidn"
+                    ],
+                    "type": "object",
+                    "type_name": "QCRequestParam"
+                },
+                "name": "QCRequestParam"
+            },
+            {
+                "jsonschema": {
+                    "additionalProperties": false,
+                    "comment": "When updating info using the API, use these parameters",
+                    "original-type": "knect-structure",
+                    "package_name": "mac.neuroimaging.QualityControl",
+                    "properties": {
+                        "image_path": {
+                            "extra_status": "optional",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "image_quality_note": {
+                            "extra_status": "optional",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "instr_id": {
+                            "extra_status": "required",
+                            "original-type": "knect-int",
+                            "type": "integer"
+                        },
+                        "service_username": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "source_id1": {
+                            "extra_status": "optional",
+                            "original-type": "knect-int",
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "instr_id",
+                        "service_username"
+                    ],
+                    "type": "object",
+                    "type_name": "QCUpdateParam"
+                },
+                "name": "QCUpdateParam"
+            },
+            {
+                "comment": "",
+                "package_name": "mac.neuroimaging.QualityControl",
+                "service_components": [
+                    {
+                        "comment": "get the Lava record for a given PIDN. returns a JSON object (dict) of key-vals",
+                        "function_name": "get_enrollment",
+                        "function_options": null,
+                        "name": "get_enrollment",
+                        "parameters": [
+                            {
+                                "additionalProperties": false,
+                                "comment": "when making read-only requests to the API, use these parameters",
+                                "original-alias": "QCRequestParam",
+                                "original-type": "knect-structure",
+                                "package_name": "mac.neuroimaging.QualityControl",
+                                "properties": {
+                                    "pidn": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-int",
+                                        "type": "integer"
+                                    },
+                                    "service_username": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "service_username",
+                                    "pidn"
+                                ],
+                                "type": "object",
+                                "type_name": "QCRequestParam"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "original-type": "knect-undefined",
+                                "param_name": "enrollment_info",
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "get the Lava record for a given PIDN. returns a JSON object (dict) of key-vals",
+                        "function_name": "get_patient",
+                        "function_options": null,
+                        "name": "get_patient",
+                        "parameters": [
+                            {
+                                "additionalProperties": false,
+                                "comment": "when making read-only requests to the API, use these parameters",
+                                "original-alias": "QCRequestParam",
+                                "original-type": "knect-structure",
+                                "package_name": "mac.neuroimaging.QualityControl",
+                                "properties": {
+                                    "pidn": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-int",
+                                        "type": "integer"
+                                    },
+                                    "service_username": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "service_username",
+                                    "pidn"
+                                ],
+                                "type": "object",
+                                "type_name": "QCRequestParam"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "original-type": "knect-undefined",
+                                "param_name": "patient_info",
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "get the Lava record for a given PIDN. returns a JSON object (dict) of key-vals",
+                        "function_name": "get_neuroimaging_assessment",
+                        "function_options": null,
+                        "name": "get_neuroimaging_assessment",
+                        "parameters": [
+                            {
+                                "additionalProperties": false,
+                                "comment": "when making read-only requests to the API, use these parameters",
+                                "original-alias": "QCRequestParam",
+                                "original-type": "knect-structure",
+                                "package_name": "mac.neuroimaging.QualityControl",
+                                "properties": {
+                                    "pidn": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-int",
+                                        "type": "integer"
+                                    },
+                                    "service_username": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "service_username",
+                                    "pidn"
+                                ],
+                                "type": "object",
+                                "type_name": "QCRequestParam"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "original-type": "knect-undefined",
+                                "param_name": "neuroimg_assesment_info",
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "update the Lava record with the passed parameters",
+                        "function_name": "update_image_record",
+                        "function_options": null,
+                        "name": "update_image_record",
+                        "parameters": [
+                            {
+                                "additionalProperties": false,
+                                "comment": "When updating info using the API, use these parameters",
+                                "original-alias": "QCUpdateParam",
+                                "original-type": "knect-structure",
+                                "package_name": "mac.neuroimaging.QualityControl",
+                                "properties": {
+                                    "image_path": {
+                                        "extra_status": "optional",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "image_quality_note": {
+                                        "extra_status": "optional",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "instr_id": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-int",
+                                        "type": "integer"
+                                    },
+                                    "service_username": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "source_id1": {
+                                        "extra_status": "optional",
+                                        "original-type": "knect-int",
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "instr_id",
+                                    "service_username"
+                                ],
+                                "type": "object",
+                                "type_name": "QCUpdateParam"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "original-type": "knect-undefined",
+                                "param_name": "update_status",
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "after updating Source ID1 field, call this to relink all the scans",
+                        "function_name": "relink_scans",
+                        "function_options": null,
+                        "name": "relink_scans",
+                        "parameters": [
+                            {
+                                "additionalProperties": false,
+                                "comment": "When updating info using the API, use these parameters",
+                                "original-alias": "QCUpdateParam",
+                                "original-type": "knect-structure",
+                                "package_name": "mac.neuroimaging.QualityControl",
+                                "properties": {
+                                    "image_path": {
+                                        "extra_status": "optional",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "image_quality_note": {
+                                        "extra_status": "optional",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "instr_id": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-int",
+                                        "type": "integer"
+                                    },
+                                    "service_username": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "source_id1": {
+                                        "extra_status": "optional",
+                                        "original-type": "knect-int",
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "instr_id",
+                                    "service_username"
+                                ],
+                                "type": "object",
+                                "type_name": "QCUpdateParam"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "original-type": "knect-undefined",
+                                "param_name": "update_status",
+                                "type": "object"
+                            }
+                        ]
+                    }
+                ],
+                "service_name": "qc",
+                "service_options": {
+                    "auditing": "skip_params",
+                    "authentication": "required",
+                    "validation": "skip_return"
+                }
+            }
+        ],
+        "package_name": "mac.neuroimaging.QualityControl"
+    }
+]
