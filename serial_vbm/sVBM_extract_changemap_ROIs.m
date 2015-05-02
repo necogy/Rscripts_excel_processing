@@ -1,4 +1,4 @@
-function scans_to_process = sVBM_extract_changemap_ROIs(scans_to_process, pathtoROIs)
+function scans_to_process = sVBM_extract_changemap_ROIs(scans_to_process, pathtoROIs, extractionfileprefix)
 %sVBM_extract_changemap_ROIs - extract ROIs and add to scans_to_process
 %structure
 %
@@ -35,7 +35,7 @@ for  nSubject = 1:size(scans_to_process,2)
         
         basename = fullfile(scans_to_process(nSubject).Timepoint{nTimepoint}.Fullpath, ...
             scans_to_process(nSubject).Timepoint{nTimepoint}.File.name);
-        imagetoextractfrom= strrep(SAinsertStr2Paths(basename, 'swc1avgj_'),'img','nii');
+        imagetoextractfrom= strrep(SAinsertStr2Paths(basename, extractionfileprefix),'img','nii');
         
         for r = 1:size(ROInames,2)
             roi = fullfile(pathtoROIs, ROInames{r});
