@@ -90,7 +90,7 @@ sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, templatepath);
 
 
 %% 9. Extract ROI volumes from warped ICBM images
-extractionfileprefix = 'swc1avgj_'; % <-- specify what the prefix for the images to extract from is
+extractionfileprefix = 'smwc1MP'; % <-- specify what the prefix for the images to extract from is
 scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs,extractionfileprefix);
 
 % export them
