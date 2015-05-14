@@ -39,7 +39,6 @@ class Scans_management( object ):
 
         #
         # Dicoms
-#        self.DICOM_path_ = os.path.join( os.sep, "home","ycobigo","subjects", "%s,%s"%(self.Last_Name_,self.First_Name_) )
         self.DICOM_path_ = os.path.join( os.sep, "home","quality","subjects", "test1" )
 
         #
