@@ -1,0 +1,84 @@
+# dispatch class for handling client side calls to Knect services
+
+KNECT_AUTH_SERVER = 'https://knect.ucsf.edu/auth'
+IS_DEBUGGING = True
+SSL_VERIFY = not IS_DEBUGGING or False
+
+import requests
+import json
+
+# helper function for getting a knect_auth_token. use like so:
+# knect_auth_token = self.KnectLogin(kwargs['username'], kwargs['password'])
+def DoKnectLogin(username, password, auth_url):
+        ### this request is in full AJAX style: form data as json and json headers
+        form_data = {'username':username,
+                     'password':password
+        }
+        headers = {'content-type': 'application/json'}
+        r = requests.post(KNECT_AUTH_SERVER + '/login', data=json.dumps(form_data), headers=headers, verify=SSL_VERIFY)
+
+        # error case
+        if r.status_code != 200:
+            print r.text
+            return None
+
+        ans = r.json()
+        if IS_DEBUGGING:
+            print r.status_code
+            print r.text
+            print ans
+        return ans['knect_auth_token']
+
+class KnectDispatch:
+
+    # must have defined: knect_auth_token, service_hostname
+    # optional: response_decode
+    def __init__(self, **kwargs):
+        self.__dict__ = kwargs
+        print kwargs
+
+        self.headers = {'content-type': 'application/json'}
+        self.headers['Knect-Auth-Token'] = kwargs['knect_auth_token']
+        self.base_url = kwargs['service_hostname']
+        
+        print self.headers
+
+        # if true, Dispatches will decode response to python data structures instead of JSON strings
+        self.as_py_data = kwargs.get('response_decode', False)
+
+        # poor man's database for registered jsonschemas
+        self.registered_params = {}
+        self.registered_funcs = {}
+
+
+    def Dispatch(self, func_name, params):
+        assert self.registered_funcs.get(func_name, False), '%s not registered!' % func_name
+        ### this request is in full AJAX style: form data as json and json headers
+        full_url = self.base_url + '/' + func_name
+        r = requests.post(full_url, data=json.dumps(params), headers=self.headers, verify=SSL_VERIFY)
+
+        # error case
+        if r.status_code != 200:
+            print full_url
+            print r.text
+            return None
+
+        ans = r.text
+        if IS_DEBUGGING:
+            print r.status_code
+            print r.text
+            #print ans
+        return self.DecodeJSON(ans, self.as_py_data)
+
+    def DecodeJSON(self, ans, as_py_data = True):
+        if as_py_data:
+            return json.loads(ans)
+        return ans
+
+    def RegisterFuncSchema(self, func_name, jsonschema):
+        self.registered_funcs[func_name] = jsonschema
+    def GetFuncSchema(self, func_name): return self.registered_func[func_name]
+
+    def RegisterParamSchema(self, param_name, jsonschema):
+        self.registered_params[param_name] = jsonschema
+    def GetParamSchema(self, param_name): return self.registered_params[param_name]

@@ -1,0 +1,1244 @@
+[
+    {
+        "comment": "",
+        "package_components": [
+            {
+                "jsonschema": {
+                    "comment": "",
+                    "original-type": "knect-string",
+                    "package_name": "knect.core.Workspace",
+                    "type": "string",
+                    "type_name": "typespec"
+                },
+                "name": "typespec"
+            },
+            {
+                "jsonschema": {
+                    "comment": "A module name defined in a KIDL typespec.",
+                    "original-type": "knect-string",
+                    "package_name": "knect.core.Workspace",
+                    "type": "string",
+                    "type_name": "modulename"
+                },
+                "name": "modulename"
+            },
+            {
+                "jsonschema": {
+                    "comment": "A type definition name in a KIDL typespec.",
+                    "original-type": "knect-string",
+                    "package_name": "knect.core.Workspace",
+                    "type": "string",
+                    "type_name": "typename"
+                },
+                "name": "typename"
+            },
+            {
+                "jsonschema": {
+                    "comment": "",
+                    "original-type": "knect-string",
+                    "package_name": "knect.core.Workspace",
+                    "type": "string",
+                    "type_name": "func_string"
+                },
+                "name": "func_string"
+            },
+            {
+                "jsonschema": {
+                    "comment": "The version of a typespec file.",
+                    "original-type": "knect-int",
+                    "package_name": "knect.core.Workspace",
+                    "type": "integer",
+                    "type_name": "spec_version"
+                },
+                "name": "spec_version"
+            },
+            {
+                "jsonschema": {
+                    "comment": "The JSON Schema (v4) representation of a type definition.",
+                    "original-type": "knect-string",
+                    "package_name": "knect.core.Workspace",
+                    "type": "string",
+                    "type_name": "jsonschema"
+                },
+                "name": "jsonschema"
+            },
+            {
+                "jsonschema": {
+                    "comment": "",
+                    "original-type": "knect-string",
+                    "package_name": "knect.core.Workspace",
+                    "type": "string",
+                    "type_name": "type_string"
+                },
+                "name": "type_string"
+            },
+            {
+                "jsonschema": {
+                    "comment": "",
+                    "original-type": "knect-string",
+                    "package_name": "knect.core.Workspace",
+                    "type": "string",
+                    "type_name": "obj_name"
+                },
+                "name": "obj_name"
+            },
+            {
+                "jsonschema": {
+                    "comment": "",
+                    "original-type": "knect-string",
+                    "package_name": "knect.core.Workspace",
+                    "type": "string",
+                    "type_name": "ws_name"
+                },
+                "name": "ws_name"
+            },
+            {
+                "jsonschema": {
+                    "additionalProperties": false,
+                    "allOf": [
+                        {
+                            "oneOf": [
+                                {
+                                    "description": "required_one group number (0)"
+                                },
+                                {
+                                    "required": [
+                                        "spec"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "mod"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "description": "validation schema for the required_one and required_any language constructs"
+                        }
+                    ],
+                    "comment": "",
+                    "original-type": "knect-structure",
+                    "package_name": "knect.core.Workspace",
+                    "properties": {
+                        "dependencies": {
+                            "additionalProperties": {
+                                "comment": "The version of a typespec file.",
+                                "original-alias": "spec_version",
+                                "original-type": "knect-int",
+                                "package_name": "knect.core.Workspace",
+                                "type": "integer",
+                                "type_name": "spec_version"
+                            },
+                            "additionalPropertiesKey": {
+                                "comment": "A module name defined in a KIDL typespec.",
+                                "original-alias": "modulename",
+                                "original-type": "knect-string",
+                                "package_name": "knect.core.Workspace",
+                                "type": "string",
+                                "type_name": "modulename"
+                            },
+                            "extra_status": "optional",
+                            "original-type": "knect-map",
+                            "type": "object"
+                        },
+                        "dryrun": {
+                            "extra_status": "optional",
+                            "original-type": "knect-boolean",
+                            "type": "boolean"
+                        },
+                        "mod": {
+                            "comment": "A module name defined in a KIDL typespec.",
+                            "extra_status": {
+                                "required_one": 0
+                            },
+                            "original-alias": "modulename",
+                            "original-type": "knect-string",
+                            "package_name": "knect.core.Workspace",
+                            "type": "string",
+                            "type_name": "modulename"
+                        },
+                        "new_types": {
+                            "extra_status": "optional",
+                            "items": {
+                                "comment": "A type definition name in a KIDL typespec.",
+                                "original-alias": "typename",
+                                "original-type": "knect-string",
+                                "package_name": "knect.core.Workspace",
+                                "type": "string",
+                                "type_name": "typename"
+                            },
+                            "original-type": "knect-list",
+                            "type": "array"
+                        },
+                        "prev_ver": {
+                            "comment": "The version of a typespec file.",
+                            "extra_status": "optional",
+                            "original-alias": "spec_version",
+                            "original-type": "knect-int",
+                            "package_name": "knect.core.Workspace",
+                            "type": "integer",
+                            "type_name": "spec_version"
+                        },
+                        "remove_types": {
+                            "extra_status": "optional",
+                            "items": {
+                                "comment": "A type definition name in a KIDL typespec.",
+                                "original-alias": "typename",
+                                "original-type": "knect-string",
+                                "package_name": "knect.core.Workspace",
+                                "type": "string",
+                                "type_name": "typename"
+                            },
+                            "original-type": "knect-list",
+                            "type": "array"
+                        },
+                        "spec": {
+                            "comment": "",
+                            "extra_status": {
+                                "required_one": 0
+                            },
+                            "original-alias": "typespec",
+                            "original-type": "knect-string",
+                            "package_name": "knect.core.Workspace",
+                            "type": "string",
+                            "type_name": "typespec"
+                        }
+                    },
+                    "type": "object",
+                    "type_name": "RegisterTypespecParams"
+                },
+                "name": "RegisterTypespecParams"
+            },
+            {
+                "jsonschema": {
+                    "additionalProperties": false,
+                    "comment": "dict of token info",
+                    "original-type": "knect-structure",
+                    "package_name": "knect.core.Workspace",
+                    "properties": {
+                        "accessed": {
+                            "extra_status": "required",
+                            "format": "date-time",
+                            "original-type": "knect-timestamp",
+                            "type": "string"
+                        },
+                        "auth_token": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "status": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "status",
+                        "accessed",
+                        "auth_token"
+                    ],
+                    "type": "object",
+                    "type_name": "TokenInfoParams"
+                },
+                "name": "TokenInfoParams"
+            },
+            {
+                "jsonschema": {
+                    "additionalProperties": false,
+                    "comment": "",
+                    "original-type": "knect-structure",
+                    "package_name": "knect.core.Workspace",
+                    "properties": {
+                        "owner": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "permissions": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "owner",
+                        "permissions"
+                    ],
+                    "type": "object",
+                    "type_name": "ACLRule"
+                },
+                "name": "ACLRule"
+            },
+            {
+                "jsonschema": {
+                    "additionalProperties": false,
+                    "comment": "dict of object info",
+                    "original-type": "knect-structure",
+                    "package_name": "knect.core.Workspace",
+                    "properties": {
+                        "acl_rules": {
+                            "extra_status": "required",
+                            "items": {
+                                "additionalProperties": false,
+                                "comment": "",
+                                "original-alias": "ACLRule",
+                                "original-type": "knect-structure",
+                                "package_name": "knect.core.Workspace",
+                                "properties": {
+                                    "owner": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "permissions": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "owner",
+                                    "permissions"
+                                ],
+                                "type": "object",
+                                "type_name": "ACLRule"
+                            },
+                            "original-type": "knect-list",
+                            "type": "array"
+                        },
+                        "ancestor_id": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "catalog_id": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "created": {
+                            "extra_status": "required",
+                            "format": "date-time",
+                            "original-type": "knect-timestamp",
+                            "type": "string"
+                        },
+                        "deleted": {
+                            "extra_status": "required",
+                            "format": "date-time",
+                            "original-type": "knect-timestamp",
+                            "type": "string"
+                        },
+                        "description": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "name": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "object_id": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "owner_principle_id": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "parent_id": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "root_id": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "type_id": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "type_label": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "description",
+                        "created",
+                        "deleted",
+                        "root_id",
+                        "object_id",
+                        "name",
+                        "parent_id",
+                        "catalog_id",
+                        "owner_principle_id",
+                        "type_id",
+                        "acl_rules",
+                        "ancestor_id",
+                        "type_label"
+                    ],
+                    "type": "object",
+                    "type_name": "ObjectInfoParams"
+                },
+                "name": "ObjectInfoParams"
+            },
+            {
+                "jsonschema": {
+                    "additionalProperties": false,
+                    "comment": "dict of JSON object data",
+                    "original-type": "knect-structure",
+                    "package_name": "knect.core.Workspace",
+                    "properties": {
+                        "data": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "metadata": {
+                            "additionalProperties": false,
+                            "comment": "dict of object info",
+                            "extra_status": "required",
+                            "original-alias": "ObjectInfoParams",
+                            "original-type": "knect-structure",
+                            "package_name": "knect.core.Workspace",
+                            "properties": {
+                                "acl_rules": {
+                                    "extra_status": "required",
+                                    "items": {
+                                        "additionalProperties": false,
+                                        "comment": "",
+                                        "original-alias": "ACLRule",
+                                        "original-type": "knect-structure",
+                                        "package_name": "knect.core.Workspace",
+                                        "properties": {
+                                            "owner": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "permissions": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "owner",
+                                            "permissions"
+                                        ],
+                                        "type": "object",
+                                        "type_name": "ACLRule"
+                                    },
+                                    "original-type": "knect-list",
+                                    "type": "array"
+                                },
+                                "ancestor_id": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "catalog_id": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "created": {
+                                    "extra_status": "required",
+                                    "format": "date-time",
+                                    "original-type": "knect-timestamp",
+                                    "type": "string"
+                                },
+                                "deleted": {
+                                    "extra_status": "required",
+                                    "format": "date-time",
+                                    "original-type": "knect-timestamp",
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "object_id": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "owner_principle_id": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "parent_id": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "root_id": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "type_id": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "type_label": {
+                                    "extra_status": "required",
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "description",
+                                "created",
+                                "deleted",
+                                "root_id",
+                                "object_id",
+                                "name",
+                                "parent_id",
+                                "catalog_id",
+                                "owner_principle_id",
+                                "type_id",
+                                "acl_rules",
+                                "ancestor_id",
+                                "type_label"
+                            ],
+                            "type": "object",
+                            "type_name": "ObjectInfoParams"
+                        }
+                    },
+                    "required": [
+                        "data",
+                        "metadata"
+                    ],
+                    "type": "object",
+                    "type_name": "ObjectData"
+                },
+                "name": "ObjectData"
+            },
+            {
+                "jsonschema": {
+                    "additionalProperties": false,
+                    "comment": "",
+                    "original-type": "knect-structure",
+                    "package_name": "knect.core.Workspace",
+                    "properties": {
+                        "auth": {
+                            "extra_status": "optional",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "data": {
+                            "extra_status": "required",
+                            "original-type": "knect-string",
+                            "type": "string"
+                        },
+                        "id": {
+                            "comment": "",
+                            "extra_status": "required",
+                            "original-alias": "obj_name",
+                            "original-type": "knect-string",
+                            "package_name": "knect.core.Workspace",
+                            "type": "string",
+                            "type_name": "obj_name"
+                        },
+                        "metadata": {
+                            "additionalProperties": {
+                                "original-type": "knect-string",
+                                "type": "string"
+                            },
+                            "additionalPropertiesKey": {
+                                "original-type": "knect-string",
+                                "type": "string"
+                            },
+                            "extra_status": "optional",
+                            "original-type": "knect-map",
+                            "type": "object"
+                        },
+                        "type": {
+                            "comment": "",
+                            "extra_status": "required",
+                            "original-alias": "type_string",
+                            "original-type": "knect-string",
+                            "package_name": "knect.core.Workspace",
+                            "type": "string",
+                            "type_name": "type_string"
+                        },
+                        "workspace": {
+                            "comment": "",
+                            "extra_status": "required",
+                            "original-alias": "ws_name",
+                            "original-type": "knect-string",
+                            "package_name": "knect.core.Workspace",
+                            "type": "string",
+                            "type_name": "ws_name"
+                        }
+                    },
+                    "required": [
+                        "data",
+                        "workspace",
+                        "type",
+                        "id"
+                    ],
+                    "type": "object",
+                    "type_name": "save_object_params"
+                },
+                "name": "save_object_params"
+            },
+            {
+                "comment": "main workspace service for KNECT system",
+                "package_name": "knect.core.Workspace",
+                "service_components": [
+                    {
+                        "comment": "pass-through helper funcs for one-stop shopping. will call auth service\n to handle these needs",
+                        "function_name": "login",
+                        "function_options": null,
+                        "name": "login",
+                        "parameters": [
+                            {
+                                "original-type": "knect-string",
+                                "param_name": "username",
+                                "type": "string"
+                            },
+                            {
+                                "original-type": "knect-string",
+                                "param_name": "password",
+                                "type": "string"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "original-type": "knect-string",
+                                "param_name": "knect_auth_token",
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "",
+                        "function_name": "logout",
+                        "function_options": null,
+                        "name": "logout",
+                        "parameters": [
+                            {
+                                "original-type": "knect-string",
+                                "param_name": "knect_auth_token",
+                                "type": "string"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "additionalProperties": false,
+                                "comment": "dict of token info",
+                                "original-alias": "TokenInfoParams",
+                                "original-type": "knect-structure",
+                                "package_name": "knect.core.Workspace",
+                                "param_name": "auth_info",
+                                "properties": {
+                                    "accessed": {
+                                        "extra_status": "required",
+                                        "format": "date-time",
+                                        "original-type": "knect-timestamp",
+                                        "type": "string"
+                                    },
+                                    "auth_token": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "status",
+                                    "accessed",
+                                    "auth_token"
+                                ],
+                                "type": "object",
+                                "type_name": "TokenInfoParams"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "supremely insecure authentication func. creates a new workspace user for username\n       REMOVEME in time",
+                        "function_name": "insecure_auth",
+                        "function_options": null,
+                        "name": "insecure_auth",
+                        "parameters": [
+                            {
+                                "original-type": "knect-string",
+                                "param_name": "username",
+                                "type": "string"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "original-type": "knect-string",
+                                "param_name": "knect_auth_token",
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "save an object to the Workspace. will save to current directory.\n\t ignores the \"workspace\" param in the spec\n\t returns the object_id (not the object name!) of the created object\n\t the variable names come from kbase, the following translations are for clarity:\n\t type = type_name\n\t id = object_name\n\t data = object's json encoded data \n\t workspace = workspace_name (currently ignored, but required)",
+                        "function_name": "save_object",
+                        "function_options": null,
+                        "name": "save_object",
+                        "parameters": [
+                            {
+                                "additionalProperties": false,
+                                "comment": "",
+                                "original-alias": "save_object_params",
+                                "original-type": "knect-structure",
+                                "package_name": "knect.core.Workspace",
+                                "param_name": "params",
+                                "properties": {
+                                    "auth": {
+                                        "extra_status": "optional",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "data": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "comment": "",
+                                        "extra_status": "required",
+                                        "original-alias": "obj_name",
+                                        "original-type": "knect-string",
+                                        "package_name": "knect.core.Workspace",
+                                        "type": "string",
+                                        "type_name": "obj_name"
+                                    },
+                                    "metadata": {
+                                        "additionalProperties": {
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "additionalPropertiesKey": {
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "extra_status": "optional",
+                                        "original-type": "knect-map",
+                                        "type": "object"
+                                    },
+                                    "type": {
+                                        "comment": "",
+                                        "extra_status": "required",
+                                        "original-alias": "type_string",
+                                        "original-type": "knect-string",
+                                        "package_name": "knect.core.Workspace",
+                                        "type": "string",
+                                        "type_name": "type_string"
+                                    },
+                                    "workspace": {
+                                        "comment": "",
+                                        "extra_status": "required",
+                                        "original-alias": "ws_name",
+                                        "original-type": "knect-string",
+                                        "package_name": "knect.core.Workspace",
+                                        "type": "string",
+                                        "type_name": "ws_name"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "workspace",
+                                    "type",
+                                    "id"
+                                ],
+                                "type": "object",
+                                "type_name": "save_object_params"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "original-type": "knect-string",
+                                "param_name": "object_id",
+                                "type": "string"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "# show all the objects in the current directory. does a plain dump of all the\n\t fields in the object table. completely ignores the spec for both input and output\n\t workspaces = list of workspace names ['name1', 'name2'] (required, but ignored)",
+                        "function_name": "list_objects",
+                        "function_options": null,
+                        "name": "list_objects",
+                        "parameters": [
+                            {
+                                "items": {
+                                    "original-type": "knect-string",
+                                    "type": "string"
+                                },
+                                "original-type": "knect-list",
+                                "param_name": "workspaces",
+                                "type": "array"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "items": {
+                                    "additionalProperties": false,
+                                    "comment": "dict of object info",
+                                    "original-alias": "ObjectInfoParams",
+                                    "original-type": "knect-structure",
+                                    "package_name": "knect.core.Workspace",
+                                    "properties": {
+                                        "acl_rules": {
+                                            "extra_status": "required",
+                                            "items": {
+                                                "additionalProperties": false,
+                                                "comment": "",
+                                                "original-alias": "ACLRule",
+                                                "original-type": "knect-structure",
+                                                "package_name": "knect.core.Workspace",
+                                                "properties": {
+                                                    "owner": {
+                                                        "extra_status": "required",
+                                                        "original-type": "knect-string",
+                                                        "type": "string"
+                                                    },
+                                                    "permissions": {
+                                                        "extra_status": "required",
+                                                        "original-type": "knect-string",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "owner",
+                                                    "permissions"
+                                                ],
+                                                "type": "object",
+                                                "type_name": "ACLRule"
+                                            },
+                                            "original-type": "knect-list",
+                                            "type": "array"
+                                        },
+                                        "ancestor_id": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "catalog_id": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "created": {
+                                            "extra_status": "required",
+                                            "format": "date-time",
+                                            "original-type": "knect-timestamp",
+                                            "type": "string"
+                                        },
+                                        "deleted": {
+                                            "extra_status": "required",
+                                            "format": "date-time",
+                                            "original-type": "knect-timestamp",
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "object_id": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "owner_principle_id": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "parent_id": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "root_id": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "type_id": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        },
+                                        "type_label": {
+                                            "extra_status": "required",
+                                            "original-type": "knect-string",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "description",
+                                        "created",
+                                        "deleted",
+                                        "root_id",
+                                        "object_id",
+                                        "name",
+                                        "parent_id",
+                                        "catalog_id",
+                                        "owner_principle_id",
+                                        "type_id",
+                                        "acl_rules",
+                                        "ancestor_id",
+                                        "type_label"
+                                    ],
+                                    "type": "object",
+                                    "type_name": "ObjectInfoParams"
+                                },
+                                "original-type": "knect-list",
+                                "param_name": "obj_infos",
+                                "type": "array"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "get an object whose object_id = id. in the spec, id is the object_name\n\t completely ignores the spec for both input and output.\n\t id = object_id\n\t workspace = workspace_name (required but ignored)",
+                        "function_name": "get_object",
+                        "function_options": null,
+                        "name": "get_object",
+                        "parameters": [
+                            {
+                                "original-type": "knect-string",
+                                "param_name": "id",
+                                "type": "string"
+                            },
+                            {
+                                "original-type": "knect-string",
+                                "param_name": "workspace",
+                                "type": "string"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "additionalProperties": false,
+                                "comment": "dict of JSON object data",
+                                "original-alias": "ObjectData",
+                                "original-type": "knect-structure",
+                                "package_name": "knect.core.Workspace",
+                                "param_name": "data",
+                                "properties": {
+                                    "data": {
+                                        "extra_status": "required",
+                                        "original-type": "knect-string",
+                                        "type": "string"
+                                    },
+                                    "metadata": {
+                                        "additionalProperties": false,
+                                        "comment": "dict of object info",
+                                        "extra_status": "required",
+                                        "original-alias": "ObjectInfoParams",
+                                        "original-type": "knect-structure",
+                                        "package_name": "knect.core.Workspace",
+                                        "properties": {
+                                            "acl_rules": {
+                                                "extra_status": "required",
+                                                "items": {
+                                                    "additionalProperties": false,
+                                                    "comment": "",
+                                                    "original-alias": "ACLRule",
+                                                    "original-type": "knect-structure",
+                                                    "package_name": "knect.core.Workspace",
+                                                    "properties": {
+                                                        "owner": {
+                                                            "extra_status": "required",
+                                                            "original-type": "knect-string",
+                                                            "type": "string"
+                                                        },
+                                                        "permissions": {
+                                                            "extra_status": "required",
+                                                            "original-type": "knect-string",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "owner",
+                                                        "permissions"
+                                                    ],
+                                                    "type": "object",
+                                                    "type_name": "ACLRule"
+                                                },
+                                                "original-type": "knect-list",
+                                                "type": "array"
+                                            },
+                                            "ancestor_id": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "catalog_id": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "created": {
+                                                "extra_status": "required",
+                                                "format": "date-time",
+                                                "original-type": "knect-timestamp",
+                                                "type": "string"
+                                            },
+                                            "deleted": {
+                                                "extra_status": "required",
+                                                "format": "date-time",
+                                                "original-type": "knect-timestamp",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "object_id": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "owner_principle_id": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "parent_id": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "root_id": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "type_id": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            },
+                                            "type_label": {
+                                                "extra_status": "required",
+                                                "original-type": "knect-string",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "description",
+                                            "created",
+                                            "deleted",
+                                            "root_id",
+                                            "object_id",
+                                            "name",
+                                            "parent_id",
+                                            "catalog_id",
+                                            "owner_principle_id",
+                                            "type_id",
+                                            "acl_rules",
+                                            "ancestor_id",
+                                            "type_label"
+                                        ],
+                                        "type": "object",
+                                        "type_name": "ObjectInfoParams"
+                                    }
+                                },
+                                "required": [
+                                    "data",
+                                    "metadata"
+                                ],
+                                "type": "object",
+                                "type_name": "ObjectData"
+                            }
+                        ]
+                    },
+                    {
+                        "comment": "Register a new typespec or recompile a previously registered typespec\n\t\twith new options.\n\t\tSee the documentation of RegisterTypespecParams for more details.\n\t\tAlso see the release_types function.",
+                        "function_name": "register_typespec",
+                        "function_options": null,
+                        "name": "register_typespec",
+                        "parameters": [
+                            {
+                                "additionalProperties": false,
+                                "allOf": [
+                                    {
+                                        "oneOf": [
+                                            {
+                                                "description": "required_one group number (0)"
+                                            },
+                                            {
+                                                "required": [
+                                                    "spec"
+                                                ]
+                                            },
+                                            {
+                                                "required": [
+                                                    "mod"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "description": "validation schema for the required_one and required_any language constructs"
+                                    }
+                                ],
+                                "comment": "",
+                                "original-alias": "RegisterTypespecParams",
+                                "original-type": "knect-structure",
+                                "package_name": "knect.core.Workspace",
+                                "param_name": "params",
+                                "properties": {
+                                    "dependencies": {
+                                        "additionalProperties": {
+                                            "comment": "The version of a typespec file.",
+                                            "original-alias": "spec_version",
+                                            "original-type": "knect-int",
+                                            "package_name": "knect.core.Workspace",
+                                            "type": "integer",
+                                            "type_name": "spec_version"
+                                        },
+                                        "additionalPropertiesKey": {
+                                            "comment": "A module name defined in a KIDL typespec.",
+                                            "original-alias": "modulename",
+                                            "original-type": "knect-string",
+                                            "package_name": "knect.core.Workspace",
+                                            "type": "string",
+                                            "type_name": "modulename"
+                                        },
+                                        "extra_status": "optional",
+                                        "original-type": "knect-map",
+                                        "type": "object"
+                                    },
+                                    "dryrun": {
+                                        "extra_status": "optional",
+                                        "original-type": "knect-boolean",
+                                        "type": "boolean"
+                                    },
+                                    "mod": {
+                                        "comment": "A module name defined in a KIDL typespec.",
+                                        "extra_status": {
+                                            "required_one": 0
+                                        },
+                                        "original-alias": "modulename",
+                                        "original-type": "knect-string",
+                                        "package_name": "knect.core.Workspace",
+                                        "type": "string",
+                                        "type_name": "modulename"
+                                    },
+                                    "new_types": {
+                                        "extra_status": "optional",
+                                        "items": {
+                                            "comment": "A type definition name in a KIDL typespec.",
+                                            "original-alias": "typename",
+                                            "original-type": "knect-string",
+                                            "package_name": "knect.core.Workspace",
+                                            "type": "string",
+                                            "type_name": "typename"
+                                        },
+                                        "original-type": "knect-list",
+                                        "type": "array"
+                                    },
+                                    "prev_ver": {
+                                        "comment": "The version of a typespec file.",
+                                        "extra_status": "optional",
+                                        "original-alias": "spec_version",
+                                        "original-type": "knect-int",
+                                        "package_name": "knect.core.Workspace",
+                                        "type": "integer",
+                                        "type_name": "spec_version"
+                                    },
+                                    "remove_types": {
+                                        "extra_status": "optional",
+                                        "items": {
+                                            "comment": "A type definition name in a KIDL typespec.",
+                                            "original-alias": "typename",
+                                            "original-type": "knect-string",
+                                            "package_name": "knect.core.Workspace",
+                                            "type": "string",
+                                            "type_name": "typename"
+                                        },
+                                        "original-type": "knect-list",
+                                        "type": "array"
+                                    },
+                                    "spec": {
+                                        "comment": "",
+                                        "extra_status": {
+                                            "required_one": 0
+                                        },
+                                        "original-alias": "typespec",
+                                        "original-type": "knect-string",
+                                        "package_name": "knect.core.Workspace",
+                                        "type": "string",
+                                        "type_name": "typespec"
+                                    }
+                                },
+                                "type": "object",
+                                "type_name": "RegisterTypespecParams"
+                            }
+                        ],
+                        "return_parameters": [
+                            {
+                                "additionalProperties": {
+                                    "comment": "The JSON Schema (v4) representation of a type definition.",
+                                    "original-alias": "jsonschema",
+                                    "original-type": "knect-string",
+                                    "package_name": "knect.core.Workspace",
+                                    "type": "string",
+                                    "type_name": "jsonschema"
+                                },
+                                "additionalPropertiesKey": {
+                                    "comment": "",
+                                    "original-alias": "type_string",
+                                    "original-type": "knect-string",
+                                    "package_name": "knect.core.Workspace",
+                                    "type": "string",
+                                    "type_name": "type_string"
+                                },
+                                "original-type": "knect-map",
+                                "type": "object"
+                            }
+                        ]
+                    }
+                ],
+                "service_name": "WorkspaceService",
+                "service_options": {
+                    "auditing": "none",
+                    "authentication": "none",
+                    "validation": "none"
+                }
+            }
+        ],
+        "package_name": "knect.core.Workspace"
+    }
+]
