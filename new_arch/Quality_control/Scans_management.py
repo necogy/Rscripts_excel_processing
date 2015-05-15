@@ -43,7 +43,7 @@ class Scans_management( object ):
 
         #
         #
-        self.projects_ = {"NIFD":"", "PPGAAAA":"", "ADRC":"", "HB":"", "FRTNI":"", "HVAAAA":"", "EPIL":"", "INF":"", "TPI4RT":"", "TPIAD":"", "RPD":"", "NRS":""}
+        self.projects_ = {"NIFD":"", "PPGAAAA":"", "ADRCAAAA":"", "HBAAAA":"", "FRTNIAAAA":"", "HVAAAA":"", "EPILAAAA":"", "INFAAAA":"", "TPI4RTAAAA":"", "TPIADAAAA":"", "RPDAAAA":"", "NRSAAAA":""}
         # 
         # protocols dictionary
         # "proto":"True", "zip_file", "nii_file", "md5 signatures"
@@ -56,7 +56,9 @@ class Scans_management( object ):
             "T1-LONG-3DC":[False,[],[],[]],
             "T1-SHORT":[False,[],[],[]],
             "T1-SHORT-3DC":[False,[],[],[]],
-            "PASL":[False,[],[],[]]
+            "PASL":[False,[],[],[]],
+            "DTI-v2":[False,[],[],[]],
+            "DTI-v4":[False,[],[],[]]
         }
 
         #
@@ -129,16 +131,19 @@ class Scans_management( object ):
         """Scan process the new scans listed from self.new_scans."""
         try:
             #
-            #
-            self.T2( Scans_dir )
-            self.T2_3DC( Scans_dir )
-            self.FLAIR( Scans_dir )
-            self.FLAIR_3DC( Scans_dir )
-            #self.T1_long( Scans_dir )
-            self.T1_long_3DC( Scans_dir )
-            self.T1_short( Scans_dir )
-            self.T1_short_3DC( Scans_dir )
-            self.pulsed_ASL( Scans_dir )
+            # ToDo make a select on the lava string 
+            # "scansSummary"
+            # ASL | ASL-MoCo | DTI-v2 | DTI-v4 | DWI-RPD-ADC | DWI-RPD-B0 | DWI-RPD-B2000 | ...
+#            self.T2( Scans_dir )
+#            self.T2_3DC( Scans_dir )
+#            self.FLAIR( Scans_dir )
+#            self.FLAIR_3DC( Scans_dir )
+#            self.T1_long( Scans_dir )
+#            self.T1_long_3DC( Scans_dir )
+#            self.T1_short( Scans_dir )
+#            self.T1_short_3DC( Scans_dir )
+#            self.pulsed_ASL( Scans_dir )
+            self.DTI( Scans_dir )
             #
             print  self.protocols_
         #
@@ -264,18 +269,84 @@ class Scans_management( object ):
             quit(-1)
     #
     #
-    def DTIV1( self, Scans ):
-        return self.protocol_name_
-    
-    
-    def DTIV2( self, Scans ):
-        return self.protocol_name_
-    
-    
-    def NIFD_DTI( self, Scans ):
-        return self.protocol_name_
-    
-    
+    def DTI( self, Scans ):
+        """Pulsed Arterial Spin Labeling (perfusion) MoCo"""
+        try:
+            #
+            # Check on ASL directory
+            self.protocols_["DTI-v2"][0] = True
+            self.protocols_["DTI-v4"][0] = True
+            protocol_dir = {}
+            protocol_dir["DTI-v2"] = []
+            protocol_dir["DTI-v4"] = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "ep2d-advdiff-511E_b" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
+                    print dir_name
+                    protocol_dir["DTI-v2"].append( os.path.join(Scans, dir_name) )
+                #
+                if "NIFD" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
+                    print dir_name
+                    protocol_dir["DTI-v4"].append( os.path.join(Scans, dir_name) )
+                #
+           # Check if we found a directory
+            if not protocol_dir["DTI-v2"]:
+                self.protocols_["DTI-v2"][0] = False
+                _log.warning("DTI directory does not exist.")
+            #
+            if not protocol_dir["DTI-v4"]:
+                self.protocols_["DTI-v4"][0] = False
+                _log.warning("DTI directory does not exist.")
+            #
+            # DICOMs zipping and change into nifti
+            if self.protocols_["DTI-v2"][0]:
+                files_to_zip = []
+                for dir_name in protocol_dir["DTI-v2"]:
+                    files_to_zip.append( self.zip_DICOMs_("DTI-v2", dir_name, "") )
+                #
+                # create temporary directory to store zip files
+                tempo_dir = tempfile.mkdtemp()
+                # TODO: log as warning
+                print tempo_dir
+                zip_file = "%s_%s.zip"%("DTI-v2", self.sourceIDX_)
+                # create the zip file
+                zf = zipfile.ZipFile( zip_file, mode='w' )
+                #
+                for file_name in files_to_zip:
+                    # LALALALALAL
+                    # move fichier dans temp dir et faire le zip local
+                    shutil.move( file_name, tempo_dir );
+                    zf.write( file_name )
+                #
+                #if not zf.test(): # check if the zip is valid
+                zf.close()
+                #
+                if not os.path.exists( zip_file ):
+                    raise Exception( "%s file does not exist."%zip_file )
+                else:
+                    target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
+                    shutil.move( zip_file, target_zip_file );
+                    self.protocols_["DTI-v2"][1].append( target_zip_file )
+                    self.protocols_["DTI-v2"][3].append( "%s %s"%(self.md5sum_(target_zip_file),
+                                                                  target_zip_file) )
+            #
+            if self.protocols_["DTI-v4"][0]:
+                for dir_name in protocol_dir["DTI-v4"]:
+                    self.zip_protocol_("DTI-v4", dir_name, len(protocol_dir["DTI-v4"]) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
     def Resting_state( self, Scans ):
         return self.protocol_name_
     
