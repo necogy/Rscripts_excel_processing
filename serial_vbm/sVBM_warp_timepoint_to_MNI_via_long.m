@@ -35,10 +35,14 @@ for subject = 1:size(scans_to_process,2) % for every subject
         img = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, scans_to_process(subject).Timepoint{timepoint}.File.name);
         basefile =strrep(scans_to_process(subject).Timepoint{timepoint}.File.name,'.img','.nii');
         
-        %c1file = ['c1' basefile];
-       % c2file = ['c2' basefile];
+        c1file = ['c1' basefile];
+        c2file = ['c2' basefile];
         
-        %files = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, {c1file, c2file});
+        files{1} = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, c1file);
+        files{2} = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, c2file);
+        files{3} = img;
+
+        
         avgfilename =['u_rc1avg_' strrep(scans_to_process(subject).Timepoint{1}.File.name, 'img', 'nii')];
         
         u_rcfile = fullfile(scans_to_process(subject).Fullpath, 'avg', avgfilename);
@@ -55,7 +59,7 @@ for subject = 1:size(scans_to_process,2) % for every subject
         matlabbatch{1}.spm.util.defs.comp{1}.inv.space =cellstr(img);
         matlabbatch{1}.spm.util.defs.out{1}.savedef.ofname = 'toAVGtoMNI_InvForPush'; % output image name
         matlabbatch{1}.spm.util.defs.out{1}.savedef.savedir.saveusr = cellstr(scans_to_process(subject).Timepoint{timepoint}.Fullpath) ; % out put folder
-        matlabbatch{1}.spm.util.defs.out{2}.push.fnames = cellstr(img);
+        matlabbatch{1}.spm.util.defs.out{2}.push.fnames = files;
         matlabbatch{1}.spm.util.defs.out{2}.push.weight = '';
         matlabbatch{1}.spm.util.defs.out{2}.push.savedir.savesrc = 1;
         matlabbatch{1}.spm.util.defs.out{2}.push.fov.file = cellstr(template);% cellstr(warpedavg); %image to base voxel dims (warped avg)
@@ -68,6 +72,13 @@ for subject = 1:size(scans_to_process,2) % for every subject
         try
             spm_jobman('run',matlabbatch);
         end
+        clear files
+        clear c1file
+        clear c2file
+        clear img
+        clear basefile
+        clear avgfilename
+        clear u_rcfile
     end
 end
 

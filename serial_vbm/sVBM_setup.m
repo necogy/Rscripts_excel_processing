@@ -90,13 +90,14 @@ sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, templatepath);
 
 
 %% 9. Extract ROI volumes from warped ICBM images
-extractionfileprefix = 'swc1avgj_'; % <-- specify what the prefix for the images to extract from is
+extractionfileprefix = 'smwc1MP'; % <-- specify what the prefix for the images to extract from is
 scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs,extractionfileprefix);
 
 % export them
 metric = 'sum'; % available options: 'mean', 'median', 'sum', 'svd', 'peak' 
 scantype = 'timepoint';
 ROIextractions = sVBM_export_ROI_values(scans_to_process,metric,scantype);
+ROIextractions = sVBM_export_ROI_values_to_excel(scans_to_process,metric);
 
 
 %% 10. Generate ROI time series 

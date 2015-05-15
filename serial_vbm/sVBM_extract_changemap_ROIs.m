@@ -35,6 +35,11 @@ for  nSubject = 1:size(scans_to_process,2)
         
         basename = fullfile(scans_to_process(nSubject).Timepoint{nTimepoint}.Fullpath, ...
             scans_to_process(nSubject).Timepoint{nTimepoint}.File.name);
+        
+        if strcmp(extractionfileprefix, 'smwc1MP')
+            extractionfileprefix = extractionfileprefix(1:end-2);
+        end
+        
         imagetoextractfrom= strrep(SAinsertStr2Paths(basename, extractionfileprefix),'img','nii');
         
         for r = 1:size(ROInames,2)
