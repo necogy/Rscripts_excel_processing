@@ -1,10 +1,11 @@
 import os, sys
-import shutil, tempfile, zipfile, csv
+import shutil, tempfile, zipfile, csv, json
 import logging
 import hashlib
 #
 from functools import partial
 #
+import neuroimaging_qc as niqc
 import Image_tools
 
 _log = logging.getLogger("__Scans_management__")
@@ -18,6 +19,20 @@ class Scans_management( object ):
     """
     def __init__( self ):
         """Return a new Scans_management instance."""
+
+        #
+        # KNECT API 
+        #
+        self.knect_username_ = 'knect_service_yann'
+        self.knect_password_ = 'C0nn#ct4Y@nn'
+        #
+        # must initialize with LDAP auth credentials, auth service URL, and workspace service URL
+        niqc.Init( self.knect_username_, self.knect_password_, 
+                   auth_url = 'https://knect.ucsf.edu/auth',
+                   service_url = 'https://knect.ucsf.edu/neuroimaging/qc' )
+        # successful auth will save a knect_auth_token in the library
+        knect_auth_token = niqc.knect_auth_token
+
         #
         # New scans directory
         self.main_new_scans_directory_ = os.path.join( os.sep, "mnt","macdata","groups","imaging_core","SNC-PACS-GW1-NEWDICOMS")
@@ -27,12 +42,12 @@ class Scans_management( object ):
         tempo_file = os.path.join(os.sep, "home","quality","devel","Python","imaging-core","new_arch","Quality_control","SourceID","Scan_Tracking_08_06_2014.csv")
         self.source_id_csv_ = open(tempo_file, 'rt')
         #
-        self.study_      = "NIFD"       # 
+        self.study_      = "" # 
         self.sourceID_   = "NIFD151-3"  # Prod by XL Scan Tracking file
-        self.PIDN_       = "16781"      # LAVA
-        self.First_Name_ = "Dianne"     # LAVA
-        self.Last_Name_  = "Graydon"    # LAVA
-        self.scan_date_  = "2015-02-24" # 
+        self.PIDN_       = "" # LAVA
+        self.First_Name_ = "" # LAVA
+        self.Last_Name_  = "" # LAVA
+        self.scan_date_  = "" # 
         self.Your_Name_  = "Yann Cobigo"
         #
         self.sourceIDX_   = "NIFD151X3"  # 
@@ -82,10 +97,10 @@ class Scans_management( object ):
             for scan in self.new_scans_:
                 for project in self.projects_:
                     if project in scan:
+                        #
                         # project and PIDN
-                        self.study_ = project
-                        self.PIDN_  = scan[len(project):]
-                        print self.study_, " ", self.PIDN_
+                        self.lava_access_( project, scan )
+                        #
                         # date
                         dates   = []
                         level_1 = os.path.join( self.main_new_scans_directory_, scan )
@@ -134,16 +149,16 @@ class Scans_management( object ):
             # ToDo make a select on the lava string 
             # "scansSummary"
             # ASL | ASL-MoCo | DTI-v2 | DTI-v4 | DWI-RPD-ADC | DWI-RPD-B0 | DWI-RPD-B2000 | ...
-#            self.T2( Scans_dir )
-#            self.T2_3DC( Scans_dir )
-#            self.FLAIR( Scans_dir )
-#            self.FLAIR_3DC( Scans_dir )
-#            self.T1_long( Scans_dir )
-#            self.T1_long_3DC( Scans_dir )
-#            self.T1_short( Scans_dir )
-#            self.T1_short_3DC( Scans_dir )
-#            self.pulsed_ASL( Scans_dir )
-#            self.DTI( Scans_dir )
+            self.T2( Scans_dir )
+            self.T2_3DC( Scans_dir )
+            self.FLAIR( Scans_dir )
+            self.FLAIR_3DC( Scans_dir )
+            self.T1_long( Scans_dir )
+            self.T1_long_3DC( Scans_dir )
+            self.T1_short( Scans_dir )
+            self.T1_short_3DC( Scans_dir )
+            self.pulsed_ASL( Scans_dir )
+            self.DTI( Scans_dir )
             #
             print  self.protocols_
         #
@@ -835,6 +850,45 @@ class Scans_management( object ):
             #
             #
             return nifti_file
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    def lava_access_( self, Project, Scan ):
+        """KNECT API for LAVA queries"""
+        #
+        try:
+            #
+            #
+            self.study_ = Project
+            self.PIDN_  = Scan[len(Project):]
+            print self.study_, " ", self.PIDN_
+            
+            #
+            # lava query 
+            #
+
+            #
+            # Name of the patient
+            inquiry_params = {'service_username':self.knect_username_, 'pidn':self.PIDN_}
+            # load in json
+            patient_lava = json.loads( niqc.get_patient(inquiry_params) )
+            # name of the patient
+            firstName = patient_lava["patient"]["firstName"]
+            lastName  = patient_lava["patient"]["lastName"]
+            # formating the name
+            self.First_Name_ = "%s%s"%(firstName[0],firstName[1:].lower())
+            self.Last_Name_  = "%s%s"%(lastName[0],lastName[1:].lower())
         #
         #
         except Exception as inst:
