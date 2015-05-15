@@ -6,10 +6,8 @@ import neuroimaging_qc as niqc
 #import knect.client.auth.AuthService as auth
 
 
-#service_username = 'knect_service_yann'
-#service_password = 'C0nn#ct4Y@nn'
-service_username = 'ycobigo'
-service_password = ''
+service_username = 'knect_service_yann'
+service_password = 'C0nn#ct4Y@nn'
 
 # must initialize with LDAP auth credentials, auth service URL, and workspace service URL
 niqc.Init(service_username, service_password, 

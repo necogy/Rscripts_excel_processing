@@ -143,7 +143,7 @@ class Scans_management( object ):
 #            self.T1_short( Scans_dir )
 #            self.T1_short_3DC( Scans_dir )
 #            self.pulsed_ASL( Scans_dir )
-            self.DTI( Scans_dir )
+#            self.DTI( Scans_dir )
             #
             print  self.protocols_
         #
@@ -282,11 +282,9 @@ class Scans_management( object ):
             #
             for dir_name in os.listdir( Scans ):
                 if "ep2d-advdiff-511E_b" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
-                    print dir_name
                     protocol_dir["DTI-v2"].append( os.path.join(Scans, dir_name) )
                 #
                 if "NIFD" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
-                    print dir_name
                     protocol_dir["DTI-v4"].append( os.path.join(Scans, dir_name) )
                 #
            # Check if we found a directory
@@ -297,26 +295,36 @@ class Scans_management( object ):
             if not protocol_dir["DTI-v4"]:
                 self.protocols_["DTI-v4"][0] = False
                 _log.warning("DTI directory does not exist.")
+
             #
             # DICOMs zipping and change into nifti
+            #
+
+            #
+            # "DTI-v2" protocol
             if self.protocols_["DTI-v2"][0]:
                 files_to_zip = []
                 for dir_name in protocol_dir["DTI-v2"]:
-                    files_to_zip.append( self.zip_DICOMs_("DTI-v2", dir_name, "") )
+                    if "b0" in dir_name:
+                        files_to_zip.append( self.zip_DICOMs_("DTI-b0-v2", dir_name, "") )
+                    elif "b2000_64" in dir_name:
+                        files_to_zip.append( self.zip_DICOMs_("DTI-64-v2", dir_name, "") )
+                    else:
+                        raise Exception( "Error in the DTI directory selection: %s."%dir_name )
                 #
                 # create temporary directory to store zip files
                 tempo_dir = tempfile.mkdtemp()
                 # TODO: log as warning
                 print tempo_dir
+                # 
+                os.chdir( tempo_dir )
                 zip_file = "%s_%s.zip"%("DTI-v2", self.sourceIDX_)
+                zip_file = os.path.join(tempo_dir, zip_file)
                 # create the zip file
                 zf = zipfile.ZipFile( zip_file, mode='w' )
-                #
                 for file_name in files_to_zip:
-                    # LALALALALAL
-                    # move fichier dans temp dir et faire le zip local
                     shutil.move( file_name, tempo_dir );
-                    zf.write( file_name )
+                    zf.write( os.path.basename(file_name) )
                 #
                 #if not zf.test(): # check if the zip is valid
                 zf.close()
@@ -329,7 +337,7 @@ class Scans_management( object ):
                     self.protocols_["DTI-v2"][1].append( target_zip_file )
                     self.protocols_["DTI-v2"][3].append( "%s %s"%(self.md5sum_(target_zip_file),
                                                                   target_zip_file) )
-            #
+            # "DTI-v4" protocol
             if self.protocols_["DTI-v4"][0]:
                 for dir_name in protocol_dir["DTI-v4"]:
                     self.zip_protocol_("DTI-v4", dir_name, len(protocol_dir["DTI-v4"]) is 1 )
@@ -625,12 +633,14 @@ class Scans_management( object ):
     #
     #
     def zip_DICOMs_( self, Protocol, Directory, Dir_num = ""):
-        """Zip file function"""
+        """Zip file function for DICOM files."""
         _log.info("%s sequence(s) found - zipping DICOM"%(Protocol))
         #
         try:
             #
-            # 
+            # Get the target directory name
+            Up_directory = os.path.split( Directory )
+            #
             os.chdir( Directory )
             # Gather the DICOMs list
             dicom_list = [];
@@ -658,16 +668,25 @@ class Scans_management( object ):
             zip_file = os.path.join(tempo_dir, zip_file)
             # create the zip file
             zf = zipfile.ZipFile( zip_file, mode='w' )
+
             #
+            # Recreate the directory structure
+            #
+            
+            #
+            # Create the dicom directoy in the temp directory
+            os.mkdir( os.path.join(tempo_dir, Up_directory[1]) )
+            # Copy DICOM files in the new directory and zip
+            os.chdir( tempo_dir )
             for file_name in dicom_list:
-                zf.write( file_name )
+                shutil.copy( os.path.join(Directory, file_name), 
+                             os.path.join(tempo_dir, Up_directory[1]) )
+                zf.write( os.path.join(Up_directory[1], file_name) )
+
             #
             #if not zf.test(): # check if the zip is valid
             zf.close()
             return zip_file
-            #else:
-            #    raise Exception( "Zipping process failed for protocol %s."%Protocol )
-
         except Exception as inst:
             print inst
             _log.error(inst)
@@ -678,8 +697,6 @@ class Scans_management( object ):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             quit(-1)
-        
-
     #
     #
     def dcm2nii_protocol_( self, Protocol, Directory, Dir_num = "" ):
