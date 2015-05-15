@@ -52,8 +52,12 @@ class Protocol( object ):
     ACPC_Alignment_  :string - ACPC aligned T2 directory
     PVE_Segmentation_:string - PVE T1 directory 
     ASL_dicom_       :string - ASL dicom directory
-    exec_path_       :string - path where the pipeline is run
-
+    T2_file_         :list   - T2 list. 0 nii; or (0,1) = (hdr,img)
+    T1_file_         :list   - T1 list. 0 nii; or (0,1) = (hdr,img)     
+    ASL_file_        :list   - ASL list. 0 zip
+    brain_mask_      :string - brain binary mask
+    brain_prob_      :string - brain probability mask
+    gm_mask_         :string - gray matter mask
     """
     def __init__( self ):
         """Return a new Protocol instance (constructor)."""
@@ -161,7 +165,7 @@ class Protocol( object ):
                 
 
             #
-            # T2 file
+            # T1 file
             # 
 
             #
@@ -1308,18 +1312,18 @@ class Protocol( object ):
     def run( self ):
         """ Run the complete Arterial Spin Labeling process"""
         self.check_environment()
-        _log.debug("Protocol ASL - check environment -- pass")
+        _log.info("Protocol ASL - check environment -- pass")
         self.initialization()
-        _log.debug("Protocol ASL - initialization -- pass")
+        _log.info("Protocol ASL - initialization -- pass")
         self.run_spm_segmentT1()
-        _log.debug("Protocol ASL - run spm segmentT1 -- pass")
+        _log.info("Protocol ASL - run spm segmentT1 -- pass")
         self.perfusion_weighted_imaging()
-        _log.debug("Protocol ASL - perfusion weighted imaging -- pass")
+        _log.info("Protocol ASL - perfusion weighted imaging -- pass")
         self.CBFscale_PWI_data()
-        _log.debug("Protocol ASL - CBFscale PWI data -- pass")
+        _log.info("Protocol ASL - CBFscale PWI data -- pass")
 #        self.perfusion_calculation()
-#        _log.debug("Protocol ASL - perfusion calculation -- pass")
+#        _log.info("Protocol ASL - perfusion calculation -- pass")
         self.T2_PWI_registration()
-        _log.debug("Protocol ASL - registration between T2 and PWI -- pass")
+        _log.info("Protocol ASL - registration between T2 and PWI -- pass")
         self.Cerebral_blood_flow()
-        _log.debug("Protocol ASL - Cerebral blood flow -- pass")
+        _log.info("Protocol ASL - Cerebral blood flow -- pass")
