@@ -23,8 +23,11 @@ class Scans_management( object ):
         #
         # KNECT API 
         #
-        self.knect_username_ = 'knect_service_yann'
-        self.knect_password_ = 'C0nn#ct4Y@nn'
+        json_data = open( "/home/quality/QC/knect.json" )
+        knect_connect = json.load( json_data )
+        print knect_connect
+        self.knect_username_ = knect_connect["knect_username"]
+        self.knect_password_ = knect_connect["knect_password"]
         #
         # must initialize with LDAP auth credentials, auth service URL, and workspace service URL
         niqc.Init( self.knect_username_, self.knect_password_, 
