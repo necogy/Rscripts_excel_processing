@@ -61,6 +61,7 @@ class Protocol( object ):
             #
             # public variables
             self.patient_dir_ = "" # Patient directory
+            self.status_      = True
             # private variables
             # T2
             self.ACPC_Alignment_   = ""
@@ -69,7 +70,7 @@ class Protocol( object ):
             self.PVE_Segmentation_ = ""
             self.T1_file_          = []
             # ASL
-            self.ASL_dicom_        = "";
+            self.ASL_dicom_        = ""
             self.ASL_file_         = []
             # Masks
             self.brain_mask_       = ""
@@ -110,13 +111,13 @@ class Protocol( object ):
         except Exception as inst:
             print inst
             _log.error(inst)
-            quit(-1)
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            self.status_ = False
     #
     #
     #
@@ -272,13 +273,14 @@ class Protocol( object ):
         except Exception as inst:
             print inst
             _log.error(inst)
-            quit(-1)
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            self.status_ = False
+            self.status_ = False
     #
     #
     #
@@ -431,13 +433,13 @@ class Protocol( object ):
         except Exception as inst:
             print inst
             _log.error(inst)
-            quit(-1)
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            self.status_ = False
     #
     #
     #
@@ -495,13 +497,13 @@ class Protocol( object ):
         except Exception as inst:
             print inst
             _log.error(inst)
-            quit(-1)
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            self.status_ = False
     #
     #
     #
@@ -591,7 +593,7 @@ class Protocol( object ):
         except Exception as inst:
             print inst
             _log.error(inst)
-            quit(-1)
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
         except:
@@ -822,13 +824,13 @@ class Protocol( object ):
         except Exception as inst:
             print inst
             _log.error(inst)
-            quit(-1)
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            self.status_ = False
     #
     #
     #
@@ -1045,13 +1047,13 @@ class Protocol( object ):
         except Exception as inst:
             print inst
             _log.error(inst)
-            quit(-1)
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            self.status_ = False
     #
     #
     #
@@ -1233,13 +1235,13 @@ class Protocol( object ):
         except Exception as inst:
             print inst
             _log.error(inst)
-            quit(-1)
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            self.status_ = False
     #
     #
     #
@@ -1294,32 +1296,40 @@ class Protocol( object ):
         except Exception as inst:
             print inst
             _log.error(inst)
-            quit(-1)
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
-        
+            self.status_ = False
     #
     #
     #
     def run( self ):
         """ Run the complete Arterial Spin Labeling process"""
-        self.check_environment()
-        _log.debug("Protocol ASL - check environment -- pass")
-        self.initialization()
-        _log.debug("Protocol ASL - initialization -- pass")
-        self.run_spm_segmentT1()
-        _log.debug("Protocol ASL - run spm segmentT1 -- pass")
-        self.perfusion_weighted_imaging()
-        _log.debug("Protocol ASL - perfusion weighted imaging -- pass")
-        self.CBFscale_PWI_data()
-        _log.debug("Protocol ASL - CBFscale PWI data -- pass")
+        if self.status_:
+            self.check_environment()
+            _log.debug("Protocol ASL - check environment -- pass")
+        if self.status_:
+            self.initialization()
+            _log.debug("Protocol ASL - initialization -- pass")
+        if self.status_:
+            self.run_spm_segmentT1()
+            _log.debug("Protocol ASL - run spm segmentT1 -- pass")
+        if self.status_:
+            self.perfusion_weighted_imaging()
+            _log.debug("Protocol ASL - perfusion weighted imaging -- pass")
+        if self.status_:
+            self.CBFscale_PWI_data()
+            _log.debug("Protocol ASL - CBFscale PWI data -- pass")
+#        if self.status_:
 #        self.perfusion_calculation()
 #        _log.debug("Protocol ASL - perfusion calculation -- pass")
-        self.T2_PWI_registration()
-        _log.debug("Protocol ASL - registration between T2 and PWI -- pass")
-        self.Cerebral_blood_flow()
-        _log.debug("Protocol ASL - Cerebral blood flow -- pass")
+        if self.status_:
+            self.T2_PWI_registration()
+            _log.debug("Protocol ASL - registration between T2 and PWI -- pass")
+        if self.status_:
+            self.Cerebral_blood_flow()
+            _log.debug("Protocol ASL - Cerebral blood flow -- pass")
+            

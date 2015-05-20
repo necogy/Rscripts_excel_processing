@@ -1,8 +1,9 @@
+*~
 *.asv
-*.m~
 *.nii
 *.log
 *.hdr
 *.img
 *.mat
 *.txt
+*.pyc
