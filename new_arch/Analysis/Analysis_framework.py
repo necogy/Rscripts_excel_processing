@@ -2,7 +2,7 @@ import logging
 import sys, os, shutil
 import csv
 import inspect
-import threading, Queue
+import threading, Queue, time
 singlelock = threading.Lock()
 #
 #
@@ -185,6 +185,8 @@ class Perfusion( Production ):
         # public attribute
         #
         self.check_environment()
+        #
+        #self.asl_ = []
     #
     #
     #
@@ -195,15 +197,18 @@ class Perfusion( Production ):
         # 
         # Loop on the tasks
         while True:
-            print "pass 0"
             #
             # Strategy pipeline
-            asl = Arterial_Spin_Labeling.Protocol()
-            asl.patient_dir_ = self.queue_.get()
+            singlelock.acquire()
+            time.sleep(1) # give some time to start rhe program on the good count
+            self.asl_.append( Arterial_Spin_Labeling.Protocol() )
+            count = len( self.asl_ ) - 1
+            self.asl_[count].patient_dir_ = self.queue_.get()
+            
+            #print "count in", count
+            singlelock.release()
             #
-            print "pass 1"
-            asl.run()
-            print "pass 2"
+            self.asl_[count].run()
             
             #
             # lock and add the file
@@ -212,9 +217,7 @@ class Perfusion( Production ):
 #            _log.debug( "Item %s treated."%(item) )
 #            singlelock.release()
             # job is done
-            print "pass 4"
             self.queue_.task_done()
-            print "pass 5"
 #        #
 #        #
 #        except Exception as inst:
