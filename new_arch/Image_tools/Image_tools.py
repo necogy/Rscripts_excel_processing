@@ -1,11 +1,15 @@
-import sys
-import shutil
+import os, sys, shutil, tempfile
 import logging
-import os
 import subprocess
 import nipype
 import nipype.interfaces.fsl as fsl
-
+#
+#
+#
+import Motion_control as Mc
+#
+#
+#
 _log = logging.getLogger("__Image_tools__")
 #
 # Global function
@@ -49,18 +53,33 @@ def generic_unix_cmd( Command ):
 #
 # FSL
 #
-def run_bet(Directory, Frac = 0.6, Robust = True, Mask = False):
+def run_bet( Directory, Frac = 0.6, Robust = True, Mask = False ):
     """ Function uses FSL Bet to skullstrip all the niftii files."""
-    os.chdir( Directory );
-    for file_name in os.listdir( os.getcwd() ):
+    os.chdir( Directory )
+    for file_name in os.listdir( Directory ):
         if file_name.endswith(".nii"):
-            btr = fsl.BET();
-            btr.inputs.in_file = file_name;
-            btr.inputs.frac    = Frac;
-            btr.inputs.robust  = Robust;
-            btr.inputs.mask    = Mask;
+            btr = fsl.BET()
+            btr.inputs.in_file = os.path.join( Directory, file_name )
+            btr.inputs.frac    = Frac
+            btr.inputs.robust  = Robust
+            btr.inputs.mask    = Mask
             print "Extracting brain from %s......" %(file_name)
-            res = btr.run();
+            res = btr.run()
+#
+# FSL
+#
+def run_ana2nii( File_in, File_ref, File_out ):
+    """ Function uses FSL flirt to transform analyze file into nifti."""
+    tmpdir = tempfile.mkdtemp()
+    out_mat_file = os.path.join(tmpdir, "out_matrix_file.mat")
+    #
+    flt = fsl.FLIRT()
+    flt.inputs.in_file         = File_in
+    flt.inputs.reference       = File_ref
+    flt.inputs.out_file        = File_out
+    flt.inputs.out_matrix_file = out_mat_file
+    flt.inputs.args            = "-dof 6"
+    res = flt.run()
 #
 #
 #

@@ -210,7 +210,7 @@ class EPI_distortion_correction( Deformation.Deformation ):
         try:
             #
             #
-            if not ( file_name.endswith(".nii") or file_name.endswith(".nii.gz") ):
+            if not ( file_name.endswith(".nii") ):
                 raise Exception("get_image_dimaension needs nifti file format.") 
             #
             # extract XLM information from input file using fslhd

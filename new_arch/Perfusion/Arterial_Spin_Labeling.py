@@ -127,7 +127,6 @@ class Protocol( object ):
         try:
             #
             # Check on the requiered files
-            #
             seeker = Image_tools.Seek_files( self.patient_dir_ )
 
             #
@@ -139,30 +138,23 @@ class Protocol( object ):
             if seeker.seek_nifti( "T2_" ):
                 self.T2_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T2_file_[0]), self.ACPC_Alignment_ )
+                #
+                self.T2_file_[0] = os.path.join( self.ACPC_Alignment_, self.T2_file_[0] )
             # Find the T2 analyze file
             elif seeker.seek_analyze( "T2_" ):
                 self.T2_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.T2_file_[0]), self.ACPC_Alignment_ )
-                shutil.copy( os.path.join(self.patient_dir_, self.T2_file_[1]), self.ACPC_Alignment_ )
                 # change into nifti
-                os.chdir(self.ACPC_Alignment_)
-                ana2nii = spm.Analyze2nii();
-                ana2nii.inputs.analyze_file = self.T2_file_[0]
-                ana2nii.nifti_file          = "%s.nii"%(self.T2_file_[0][:-4])
-                ana2nii.run();
+                Image_tools.run_ana2nii( os.path.join(self.patient_dir_, self.T2_file_[0]),
+                                         os.path.join(self.patient_dir_, self.T2_file_[0]),
+                                         os.path.join(self.ACPC_Alignment_, "%s.nii.gz"%(self.T2_file_[0][:-4])) )
                 #
-                os.remove( os.path.join(self.ACPC_Alignment_, self.T2_file_[0]) )
-                os.remove( os.path.join(self.ACPC_Alignment_, self.T2_file_[1]) )
-                self.T2_file_[0] = ana2nii.nifti_file
+                self.T2_file_[0] = os.path.join( self.ACPC_Alignment_, "%s.nii.gz"%(self.T2_file_[0][:-4]) )
                 self.T2_file_[1] = ""
-                #
-                os.chdir(self.patient_dir_)
             else:
                 raise Exception("T2 file does not exist.")
                 
-
             #
-            # T2 file
+            # T1 file
             # 
 
             #
@@ -170,85 +162,48 @@ class Protocol( object ):
             if seeker.seek_nifti( "MP-LAS-long" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+                #
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, self.T1_file_[0] )
             elif seeker.seek_nifti( "MP-LAS-3DC" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+                #
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, self.T1_file_[0] )
             elif seeker.seek_nifti( "MP-LAS_" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-            # Find the T1 zip file
-            elif seeker.seek_zip( "MP-LAS-long" ):
-                self.T1_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-                # unzip
-                os.chdir(self.PVE_Segmentation_);
-                with zf( self.T1_file_[0] ) as zf_name:
-                    zf_name.extractall();
-                # change into nifti
-                cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n *'
-                Image_tools.generic_unix_cmd(cmd)
-                cmd = 'rm c*.nii o*.nii'
-                Image_tools.generic_unix_cmd(cmd)
-                # replace extention
-                for fname in os.listdir(  self.PVE_Segmentation_ ):
-                    if fname.endswith( "nii" ):
-                        self.T1_file_[0] = fname
-                # Back to the orignal directory
-                os.chdir(self.patient_dir_);
-            #  Find the T1 analyze file
+                #
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, self.T1_file_[0] )
             elif seeker.seek_analyze( "MP-LAS-long" ):
                 self.T1_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
                 # change into nifti
-                os.chdir(self.PVE_Segmentation_);
-                ana2nii = spm.Analyze2nii();
-                ana2nii.inputs.analyze_file = self.T1_file_[0]
-                ana2nii.nifti_file          = "%s.nii"%(self.T1_file_[0][:-4])
-                ana2nii.run();
-                #
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[0]) )
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[1]) )
-                self.T1_file_[0] = ana2nii.nifti_file
+                Image_tools.run_ana2nii( os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4])) )
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4]))
                 self.T1_file_[1] = ""
-                #
-                os.chdir(self.patient_dir_);
             elif seeker.seek_analyze( "MP-LAS-3DC" ):
                 self.T1_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
-                 # change into nifti
-                os.chdir(self.PVE_Segmentation_);
-                ana2nii = spm.Analyze2nii();
-                ana2nii.inputs.analyze_file = self.T1_file_[0]
-                ana2nii.nifti_file          = "%s.nii"%(self.T1_file_[0][:-4])
-                ana2nii.run();
-                #
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[0]) )
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[1]) )
-                self.T1_file_[0] = ana2nii.nifti_file
+                # change into nifti
+                Image_tools.run_ana2nii( os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4])) )
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4]))
                 self.T1_file_[1] = ""
-                #
-                os.chdir(self.patient_dir_);
             elif seeker.seek_analyze( "MP-LAS_" ):
                 self.T1_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
                 # change into nifti
-                os.chdir(self.PVE_Segmentation_);
-                ana2nii = spm.Analyze2nii();
-                ana2nii.inputs.analyze_file = self.T1_file_[0]
-                ana2nii.nifti_file          = "%s.nii"%(self.T1_file_[0][:-4])
-                ana2nii.run();
-                #
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[0]) )
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[1]) )
-                self.T1_file_[0] = ana2nii.nifti_file
+                Image_tools.run_ana2nii( os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4])) )
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4]))
                 self.T1_file_[1] = ""
-                #
-                os.chdir(self.patient_dir_);
             else:
                 raise Exception("T1 file does not exist.")
+
+            #
+            # ASL
+            #
 
             #
             # Set the ASL-raw folder
@@ -280,7 +235,6 @@ class Protocol( object ):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             self.status_ = False
-            self.status_ = False
     #
     #
     #
@@ -298,24 +252,23 @@ class Protocol( object ):
         try:
             #
             #
-            os.chdir( self.ASL_dicom_ )
-            os.mkdir('nii_all');
+            nii_all = os.path.join( self.ASL_dicom_, "nii_all" )
+            os.mkdir( nii_all )
             # DICOM to nifti again ...
-            for file_name in os.listdir( os.getcwd() ):
-                if file_name != "tagged" and file_name != "untagged" and file_name != "nii_all":
-                    cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %file_name
+            for file_name in os.listdir( self.ASL_dicom_ ):
+                if not "nii_all" in file_name:
+                    dicom = os.path.join( self.ASL_dicom_, file_name )
+                    cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %dicom
                     Image_tools.generic_unix_cmd(cmd)
             #
             # move nifti files into the nii_all dir
             for nii_file in os.listdir( self.ASL_dicom_ ):
                 if nii_file.endswith('.nii'):
-                    shutil.move( os.path.join(self.ASL_dicom_, nii_file), 
-                                 os.path.join(self.ASL_dicom_, 'nii_all') );
+                    shutil.move( os.path.join(self.ASL_dicom_, nii_file), nii_all );
 
 
             #
             # Create 4D asl image
-            os.chdir( os.path.join(self.ASL_dicom_, 'nii_all') );
             # asl.nii.gz file
             realigned_stripped_dir = os.path.join( self.ASL_dicom_, 'nii_all', 'realigned_stripped')
             os.mkdir( realigned_stripped_dir );
@@ -324,9 +277,9 @@ class Protocol( object ):
             m0_roi   = os.path.join( realigned_stripped_dir, "m0_brain.nii.gz")
             # Get list of all EPIs
             stripped_list = [];
-            for file_name in os.listdir( os.path.join(self.ASL_dicom_, 'nii_all') ):
+            for file_name in os.listdir( nii_all ):
                 if file_name.endswith('.nii'):
-                    stripped_list.append( file_name );
+                    stripped_list.append(  os.path.join(nii_all, file_name) );
             # Sort the list to be realigned on m0
             stripped_list.sort();
             #
@@ -362,21 +315,16 @@ class Protocol( object ):
 
             #
             # Skull stripping using SPM mask
-            os.chdir( os.path.join(self.ASL_dicom_,'nii_all','realigned_stripped') )
-            #
-            head_T2_m0       = os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped",
-                                            "head_T2_m0.nii.gz")
-            brain_T2_mask_m0 = os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped",
-                                            "brain_T2_mask_m0.nii.gz")
+            head_T2_m0       = os.path.join( realigned_stripped_dir, "head_T2_m0.nii.gz" )
+            brain_T2_mask_m0 = os.path.join( realigned_stripped_dir, "brain_T2_mask_m0.nii.gz" )
             #
             head_m0        = m0_roi #"r%s"%( stripped_list.pop(0) )
-            head_T2_m0_mat = os.path.join(self.ASL_dicom_,"nii_all","realigned_stripped",
-                                          "head_T2_m0.mat")
+            head_T2_m0_mat = os.path.join( realigned_stripped_dir, "head_T2_m0.mat" )
             #
             # Register T2 and mask in EPI framwork
             # T2 head
             flt = fsl.FLIRT()
-            flt.inputs.in_file         = os.path.join( self.ACPC_Alignment_, self.T2_file_[0] )
+            flt.inputs.in_file         = self.T2_file_[0]
             flt.inputs.reference       = head_m0
             flt.inputs.out_file        = head_T2_m0
             flt.inputs.out_matrix_file = head_T2_m0_mat
@@ -422,12 +370,15 @@ class Protocol( object ):
             #   * 'ct' control-tag pairs (with control coming as the first volume)
             # --out diff between tag-control
             # --mean average of diff between tag-control
-            cmd='asl_file --data=asl_brain.nii.gz --ntis=1 --iaf=tc --diff --out=diffdata --mean=diffdata_mean'
+            asl_file      = os.path.join( realigned_stripped_dir, "asl.nii.gz")
+            diffdata      = os.path.join( realigned_stripped_dir, "diffdata.nii.gz")
+            diffdata_mean = os.path.join( realigned_stripped_dir, "diffdata_mean.nii.gz")
+            cmd='asl_file --data=%s --ntis=1 --iaf=tc --diff --out=%s --mean=%s'%("%s_brain.nii.gz"%(asl_file[:-7]), 
+                                                                                  diffdata, diffdata_mean)
             Image_tools.generic_unix_cmd(cmd)
-            os.system('gunzip *.nii.gz')
+            os.system( 'gunzip %s'%diffdata_mean )
             # copy m0 frame
-            shutil.copy( m0_roi[:-3], 
-                         os.path.join(self.ASL_dicom_, 'nii_all') );
+            shutil.copy( m0_roi, os.path.join(self.ASL_dicom_, 'nii_all') );
         #
         #
         except Exception as inst:
@@ -454,150 +405,150 @@ class Protocol( object ):
         #
         mlc.inputs.script = cmd
         mlc.run()
-    #
-    #
-    #
-    def EPI_realignment_( self ):
-        """Realigning the EPIs to the non-perfusion weighted m0 using spm_realign. """
-        try: 
-            #
-            #
-            tagg_stripped_list = []
-            tagged_untagged_directory = {'tagged':   os.path.join(self.ASL_dicom_, 'tagged'),
-                                         'untagged': os.path.join(self.ASL_dicom_, 'untagged') }
-            #
-            for pref, directory in tagged_untagged_directory.iteritems():
-                os.mkdir( os.path.join(directory, 'skull_stripped') )
-                os.chdir(directory)
-                # Convert tagged and untagged EPIs to .nii and extract brain
-                for file_name in os.listdir(directory):
-                    if file_name.startswith(pref):
-                        cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %file_name
-                        Image_tools.generic_unix_cmd(cmd)
-                    elif file_name.startswith('m0'):
-                        cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %file_name
-                        Image_tools.generic_unix_cmd(cmd)
-                Image_tools.run_bet( directory, 0.7 )
-                # Realign the brain files
-                for file_name in os.listdir(directory):
-                    if file_name.endswith('brain.nii.gz'):
-                        shutil.move( os.path.join(directory, file_name), 
-                                     os.path.join( directory, 'skull_stripped') )
-                        os.system( 'gunzip %s' %(os.path.join( directory, 'skull_stripped', 
-                                                               file_name)) )
-                        # Get final list of unzipped skull-stripped files
-                        tagg_stripped_list.append(file_name[:-3])
-                # Run spm realign on un/tagged skull stripped images
-                self.run_spm_realign( os.path.join( directory, 'skull_stripped'), 
-                                      tagg_stripped_list )
-                # reset the lists
-                tagg_stripped_list = []
-        #
-        #
-        except Exception as inst:
-            print inst
-            _log.error(inst)
-            self.status_ = False
-        except IOError as e:
-            print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            self.status_ = False
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            self.status_ = False
-    #
-    #
-    #
-    def perfusion_calculation( self ):
-        """Function sums and avgs skull stripped/aligned EPIs for tagged and untagged aquisitions."""
-        try: 
-            #
-            # sort/rename even numbered (untagged), odd numbered (tagged), and m0 EPIs
-            os.mkdir( os.path.join(self.ASL_dicom_, 'tagged') )
-            os.mkdir( os.path.join(self.ASL_dicom_, 'untagged') )
-            # Place even numbered acquistions in untagged folder, 
-            # and odd acquisitions in tagged folder
-            for file_name in os.listdir( self.ASL_dicom_ ):
-                if file_name == 'tagged' or file_name == 'untagged':
-                    pass; # skipp dir names
-                elif float(file_name[9:12])%2 == 0 and file_name[9:12] != '001':
-                    # copy odd file
-                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
-                                 os.path.join(self.ASL_dicom_, 'untagged','untagged_' + file_name[9:12]) );
-                elif float(file_name[9:12])%2 != 0 and file_name[9:12] != '001':
-                    # copy even file
-                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
-                                 os.path.join(self.ASL_dicom_, 'tagged','tagged_' + file_name[9:12]) );
-                elif file_name[9:12] == '001':
-                    # create m0 from first non-perfusion weighted EPI
-                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
-                                 os.path.join(self.ASL_dicom_, 'm0') );
-            # Store variables for tagged and untagged dirs, move a copy of m0 to each
-            shutil.copy( os.path.join(self.ASL_dicom_, 'm0'),  
-                         os.path.join(self.ASL_dicom_, 'tagged') )
-            shutil.copy( os.path.join(self.ASL_dicom_, 'm0'),  
-                         os.path.join(self.ASL_dicom_, 'untagged') )
-
-            #
-            # Realigned the EPI on m0
-            self.EPI_realignment_()
-
-            #
-            #
-            aligned_list =[]
-            tagg_directory = {'tagged':   os.path.join(self.ASL_dicom_, 'tagged', 'skull_stripped'), 
-                              'untagged': os.path.join(self.ASL_dicom_, 'untagged', 'skull_stripped')}
-            #
-            raw_perfusion_dir = os.path.join(self.patient_dir_, 'Raw_Perfusion')
-            os.mkdir( raw_perfusion_dir )
-            #
-            # sums skull stripped/aligned EPIs
-            for pref, directory in tagg_directory.iteritems():
-                os.chdir(directory);
-                #
-                for file_name in os.listdir(directory):
-                    if file_name.startswith('r' + pref):
-                        aligned_list.append(file_name);
-                # Sum of all aligned {tagged,untagged} files
-                aligned_list.sort();
-                maths = fsl.ImageMaths(in_file = aligned_list[0], 
-                                       op_string = '-add %s' %(aligned_list[1]), 
-                                       out_file = pref + '_sum.nii.gz')
-                maths.run();
-                # decomposition into two sums does not make sens ...
-                for fname in aligned_list[2:]:
-                    print 'Summing EPI %s' %(fname)
-                    maths = fsl.ImageMaths(in_file = fname, 
-                                           op_string = '-add %s' %(pref + '_sum.nii.gz'), 
-                                           out_file = pref + '_sum.nii.gz')
-                    maths.run();
-                #
-                # avgs skull stripped/aligned EPIs
-                denom = len(aligned_list);
-                maths = fsl.ImageMaths(in_file = pref + '_sum.nii.gz', 
-                                       op_string = '-div %s' %(denom), 
-                                       out_file = pref + '_avg.nii.gz')
-                maths.run();
-                #
-                shutil.move( pref + '_avg.nii.gz', raw_perfusion_dir )
-                #
-                aligned_list = [];
-            #
-            #
-            os.chdir(raw_perfusion_dir);
-            maths = fsl.ImageMaths(in_file = 'tagged_avg.nii.gz', 
-                                   op_string = '-sub %s' %('untagged_avg.nii.gz'), 
-                                   out_file = 'mean_perfusion_raw.nii.gz')
-            maths.run();
-        #
-        #
-        except Exception as inst:
-            print inst
-            _log.error(inst)
-            self.status_ = False
-        except IOError as e:
-            print "I/O error({0}): {1}".format(e.errno, e.strerror)
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
+#    #
+#    #
+#    #
+#    def EPI_realignment_( self ):
+#        """Realigning the EPIs to the non-perfusion weighted m0 using spm_realign. """
+#        try: 
+#            #
+#            #
+#            tagg_stripped_list = []
+#            tagged_untagged_directory = {'tagged':   os.path.join(self.ASL_dicom_, 'tagged'),
+#                                         'untagged': os.path.join(self.ASL_dicom_, 'untagged') }
+#            #
+#            for pref, directory in tagged_untagged_directory.iteritems():
+#                os.mkdir( os.path.join(directory, 'skull_stripped') )
+#                os.chdir(directory)
+#                # Convert tagged and untagged EPIs to .nii and extract brain
+#                for file_name in os.listdir(directory):
+#                    if file_name.startswith(pref):
+#                        cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %file_name
+#                        Image_tools.generic_unix_cmd(cmd)
+#                    elif file_name.startswith('m0'):
+#                        cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n %s' %file_name
+#                        Image_tools.generic_unix_cmd(cmd)
+#                Image_tools.run_bet( directory, 0.7 )
+#                # Realign the brain files
+#                for file_name in os.listdir(directory):
+#                    if file_name.endswith('brain.nii.gz'):
+#                        shutil.move( os.path.join(directory, file_name), 
+#                                     os.path.join( directory, 'skull_stripped') )
+#                        os.system( 'gunzip %s' %(os.path.join( directory, 'skull_stripped', 
+#                                                               file_name)) )
+#                        # Get final list of unzipped skull-stripped files
+#                        tagg_stripped_list.append(file_name[:-3])
+#                # Run spm realign on un/tagged skull stripped images
+#                self.run_spm_realign( os.path.join( directory, 'skull_stripped'), 
+#                                      tagg_stripped_list )
+#                # reset the lists
+#                tagg_stripped_list = []
+#        #
+#        #
+#        except Exception as inst:
+#            print inst
+#            _log.error(inst)
+#            self.status_ = False
+#        except IOError as e:
+#            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+#            self.status_ = False
+#        except:
+#            print "Unexpected error:", sys.exc_info()[0]
+#            self.status_ = False
+#    #
+#    #
+#    #
+#    def perfusion_calculation( self ):
+#        """Function sums and avgs skull stripped/aligned EPIs for tagged and untagged aquisitions."""
+#        try: 
+#            #
+#            # sort/rename even numbered (untagged), odd numbered (tagged), and m0 EPIs
+#            os.mkdir( os.path.join(self.ASL_dicom_, 'tagged') )
+#            os.mkdir( os.path.join(self.ASL_dicom_, 'untagged') )
+#            # Place even numbered acquistions in untagged folder, 
+#            # and odd acquisitions in tagged folder
+#            for file_name in os.listdir( self.ASL_dicom_ ):
+#                if file_name == 'tagged' or file_name == 'untagged':
+#                    pass; # skipp dir names
+#                elif float(file_name[9:12])%2 == 0 and file_name[9:12] != '001':
+#                    # copy odd file
+#                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
+#                                 os.path.join(self.ASL_dicom_, 'untagged','untagged_' + file_name[9:12]) );
+#                elif float(file_name[9:12])%2 != 0 and file_name[9:12] != '001':
+#                    # copy even file
+#                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
+#                                 os.path.join(self.ASL_dicom_, 'tagged','tagged_' + file_name[9:12]) );
+#                elif file_name[9:12] == '001':
+#                    # create m0 from first non-perfusion weighted EPI
+#                    shutil.copy( os.path.join(self.ASL_dicom_, file_name), 
+#                                 os.path.join(self.ASL_dicom_, 'm0') );
+#            # Store variables for tagged and untagged dirs, move a copy of m0 to each
+#            shutil.copy( os.path.join(self.ASL_dicom_, 'm0'),  
+#                         os.path.join(self.ASL_dicom_, 'tagged') )
+#            shutil.copy( os.path.join(self.ASL_dicom_, 'm0'),  
+#                         os.path.join(self.ASL_dicom_, 'untagged') )
+#
+#            #
+#            # Realigned the EPI on m0
+#            self.EPI_realignment_()
+#
+#            #
+#            #
+#            aligned_list =[]
+#            tagg_directory = {'tagged':   os.path.join(self.ASL_dicom_, 'tagged', 'skull_stripped'), 
+#                              'untagged': os.path.join(self.ASL_dicom_, 'untagged', 'skull_stripped')}
+#            #
+#            raw_perfusion_dir = os.path.join(self.patient_dir_, 'Raw_Perfusion')
+#            os.mkdir( raw_perfusion_dir )
+#            #
+#            # sums skull stripped/aligned EPIs
+#            for pref, directory in tagg_directory.iteritems():
+#                os.chdir(directory);
+#                #
+#                for file_name in os.listdir(directory):
+#                    if file_name.startswith('r' + pref):
+#                        aligned_list.append(file_name);
+#                # Sum of all aligned {tagged,untagged} files
+#                aligned_list.sort();
+#                maths = fsl.ImageMaths(in_file = aligned_list[0], 
+#                                       op_string = '-add %s' %(aligned_list[1]), 
+#                                       out_file = pref + '_sum.nii.gz')
+#                maths.run();
+#                # decomposition into two sums does not make sens ...
+#                for fname in aligned_list[2:]:
+#                    print 'Summing EPI %s' %(fname)
+#                    maths = fsl.ImageMaths(in_file = fname, 
+#                                           op_string = '-add %s' %(pref + '_sum.nii.gz'), 
+#                                           out_file = pref + '_sum.nii.gz')
+#                    maths.run();
+#                #
+#                # avgs skull stripped/aligned EPIs
+#                denom = len(aligned_list);
+#                maths = fsl.ImageMaths(in_file = pref + '_sum.nii.gz', 
+#                                       op_string = '-div %s' %(denom), 
+#                                       out_file = pref + '_avg.nii.gz')
+#                maths.run();
+#                #
+#                shutil.move( pref + '_avg.nii.gz', raw_perfusion_dir )
+#                #
+#                aligned_list = [];
+#            #
+#            #
+#            os.chdir(raw_perfusion_dir);
+#            maths = fsl.ImageMaths(in_file = 'tagged_avg.nii.gz', 
+#                                   op_string = '-sub %s' %('untagged_avg.nii.gz'), 
+#                                   out_file = 'mean_perfusion_raw.nii.gz')
+#            maths.run();
+#        #
+#        #
+#        except Exception as inst:
+#            print inst
+#            _log.error(inst)
+#            self.status_ = False
+#        except IOError as e:
+#            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+#        except:
+#            print "Unexpected error:", sys.exc_info()[0]
     #
     #
     #
@@ -605,19 +556,15 @@ class Protocol( object ):
         """Run SPM new segmentation. The results will be aligned within the T2 framework for the partial volume estimation (PVE) and the partial volume correction of the cerebral blood flow analysise. """
         try: 
             #
-            # Go into dir with PVE t1 and find the t1 filename
-            os.chdir( self.PVE_Segmentation_ )
             # 
             T1_file = self.T1_file_[0]
+            #
+            if not os.path.isfile( T1_file ):
+                raise Exception( "No T1 nifti file found in %s"%self.PVE_Segmentation_ )
+            #
             if T1_file.endswith(".nii.gz"):
                 os.system('gunzip %s'%self.T1_file_[0] )
-                T1_file = "%s.nii"%(self.T1_file_[0][:-4])
-            #
-            if not os.path.isfile( os.path.join(self.PVE_Segmentation_, T1_file) ):
-                raise Exception( "No T1 nifti file found" )
-            else:
-                T1_file = os.path.join(self.PVE_Segmentation_, T1_file)
-
+                T1_file = "%s"%(self.T1_file_[0][:-3])
             #
             # Run Spm_NewSegment on the T1 to get GM,WM,ventricles
             seg = spm.NewSegment();
@@ -632,27 +579,21 @@ class Protocol( object ):
             c3_file = "" # CSF
             for file_name in os.listdir( self.PVE_Segmentation_ ):
                 if file_name.startswith("c1"):
-                    c1_file = file_name
+                    c1_file = os.path.join( self.PVE_Segmentation_, file_name )
                 if file_name.startswith("c2"):
-                    c2_file = file_name
+                    c2_file = os.path.join( self.PVE_Segmentation_, file_name )
                 if file_name.startswith("c3"):
-                    c3_file = file_name
+                    c3_file = os.path.join( self.PVE_Segmentation_, file_name )
                 if file_name.startswith("m"):
                     T1_file = os.path.join( self.PVE_Segmentation_, file_name )
 
             #
             # Need T2 for the registration: next step
-            T2_file = ""
-            for file_name in os.listdir( self.ACPC_Alignment_ ):
-                if file_name.startswith("T2") and file_name.endswith("nii") and "brain" not in file_name:
-                    T2_file = os.path.join( self.ACPC_Alignment_, file_name ) 
-            # check we have the file
-            if not os.path.isfile( T2_file ):
-                raise Exception( "No T2 nifti file found" )
+            T2_file =  self.T2_file_[0]
 
             #
             # T1, c1, c2, c3 Rigid registration on T2; degree of freedom = 6 (rotation, translation)
-            matrix_T1_in_T2 = os.path.join(self.PVE_Segmentation_, "T1_in_T2.mat")
+            matrix_T1_in_T2 = os.path.join( self.PVE_Segmentation_, "T1_in_T2.mat" )
             # T1
             T1_in_T2 = "%s_T2.nii.gz"%(T1_file[:-4])
             #
@@ -664,7 +605,7 @@ class Protocol( object ):
             flt.inputs.dof             = 6
             res = flt.run() 
             # c1
-            c1_in_T2 = "%s_T2.nii.gz"%(c1_file[:-4])
+            c1_in_T2 = "%s_T2.nii.gz"%(c1_file[:-7])
             #
             flt = fsl.FLIRT()
             flt.inputs.in_file         = c1_file
@@ -703,31 +644,30 @@ class Protocol( object ):
 
             #
             # Create brain probability map
+            self.brain_prob_ = os.path.join( self.PVE_Segmentation_, "brain_map.nii.gz" )
             maths = fsl.ImageMaths( in_file   = c1_in_T2,
                                     op_string = '-add %s '%(c2_in_T2), 
-                                    out_file  = "brain_map.nii.gz" )
+                                    out_file  = self.brain_prob_ )
             maths.run();
-            #
-            self.brain_prob_ = os.path.join( self.PVE_Segmentation_, "brain_map.nii.gz" )
 
             #
             # Add c1 (GM), c2 (WM) and c3 (CSF) and create a binary mask
+            self.brain_mask_ = os.path.join( self.PVE_Segmentation_, "brain_mask.nii.gz" )
             maths = fsl.ImageMaths( in_file   = c1_in_T2,
                                     op_string = '-add %s '%(c2_in_T2), 
-                                    out_file  = "brain_mask.nii.gz" )
+                                    out_file  = self.brain_mask_ )
             maths.run();
             #
-            maths = fsl.ImageMaths( in_file   = "brain_mask.nii.gz",
+            maths = fsl.ImageMaths( in_file   = self.brain_mask_,
                                     op_string = '-add %s'%(c3_in_T2), 
-                                    out_file  = "brain_mask.nii.gz" )
+                                    out_file  = self.brain_mask_ )
             maths.run();
             # TODO: somehow hang calculation ...
-            maths = fsl.ImageMaths( in_file       = "brain_mask.nii.gz",
+            maths = fsl.ImageMaths( in_file       = self.brain_mask_,
                                     op_string     = '-thr 0.3 -fillh26 -bin',
                                     out_data_type = "char",
-                                    out_file      = "brain_mask.nii.gz" )
+                                    out_file      =  self.brain_mask_)
             maths.run();
-            self.brain_mask_ = os.path.join( self.PVE_Segmentation_, "brain_mask.nii.gz" )
 
 
             #
@@ -737,21 +677,16 @@ class Protocol( object ):
             
             #
             # This filter will remove 0 +- epsilon values from the flow spectrum
+            self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
             maths = fsl.ImageMaths( in_file       = c1_in_T2,
                                     op_string     = "-thr 0.3  -fillh26 -bin",
                                     out_data_type = "char",
-                                    out_file      = "c1_T2_mask.nii.gz")
+                                    out_file      = self.gm_mask_)
             maths.run();
-            self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
-            #
-            os.system("gunzip %s"%(T1_in_T2))
-            os.system("gunzip %s"%(c1_in_T2))
-            os.system("gunzip %s"%(c2_in_T2))
-            os.system("gunzip %s"%(c3_in_T2))
 
             #
             # extraction of T1 brain
-            maths = fsl.ImageMaths( in_file   = T1_in_T2[:-3],
+            maths = fsl.ImageMaths( in_file   = T1_in_T2,
                                     op_string = '-mas %s'%(self.brain_mask_), 
                                     out_file  = "T1_brain.nii.gz" )
             maths.run();
@@ -839,44 +774,49 @@ class Protocol( object ):
         try: 
             #
             # Start in Anterior/Posterior Commissures directory
-            os.chdir( self.ACPC_Alignment_ )
+#ch            os.chdir( self.ACPC_Alignment_ )
             #
             # Extract skull from T2 and the mask. Using the T1 brain mask
             # cut around the mask
+            T2_skull_stripped = os.path.join( self.ACPC_Alignment_, "T2_brain.nii.gz" )
+            #
             maths = fsl.ImageMaths( in_file   = self.T2_file_[0],
                                     op_string = '-mas %s'%(self.brain_mask_), 
-                                    out_file  = "T2_brain.nii.gz" )
+                                    out_file  = T2_skull_stripped )
             maths.run();
-            #
-            T2_skull_stripped = "T2_brain.nii.gz"
-            #
-            os.system( "gunzip %s"%T2_skull_stripped ) 
+#ch            #
+#ch            os.system( "gunzip %s"%T2_skull_stripped ) 
 
             #
             # Create PWI.nii
-            os.mkdir("PWI")
+            PWI_dir = os.path.join( self.ACPC_Alignment_, "PWI")
+            os.mkdir( PWI_dir )
             # Distortion will be done on m0, and th correction will be done on CBF_Scaled_PWI.nii
-            DeltaM   = os.path.join(self.ACPC_Alignment_, "PWI", "CBF_Scaled_PWI.nii")
-            shutil.copy( os.path.join(self.ASL_dicom_, "nii_all", "realigned_stripped",
-                                      "CBF_Scaled_PWI.nii"), DeltaM )
+            DeltaM   = os.path.join( PWI_dir, "CBF_Scaled_PWI.nii" )
+            shutil.copy( os.path.join(self.ASL_dicom_, "nii_all", "realigned_stripped", "CBF_Scaled_PWI.nii"), 
+                         DeltaM )
             #
-            M0_brain = os.path.join(self.ACPC_Alignment_, "PWI", "m0_brain.nii")
-            shutil.copy( os.path.join(self.ASL_dicom_, "nii_all", "m0_brain.nii"), 
-                         M0_brain );
+            M0_brain = os.path.join( PWI_dir, "m0_brain.nii.gz" )
+            shutil.copy( os.path.join(self.ASL_dicom_, "nii_all", "m0_brain.nii.gz"), 
+                         M0_brain )
+            # Gunzip for EPI deformation algo
+            os.system( "gunzip %s"%M0_brain )
+            M0_brain = os.path.join( PWI_dir, "m0_brain.nii" )
 
             #
             # Rigid registration of T2 (or mask) in m0 with repading; degree of freedom = 12
-            T2_registration = os.path.join(self.ACPC_Alignment_, "PWI", "T2_registration.nii.gz" )
+            T2_registration = os.path.join( PWI_dir, "T2_registration.nii.gz" )
             #
             flt = fsl.FLIRT()
-            flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_, T2_skull_stripped[:-3])
+            flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_, T2_skull_stripped)
             flt.inputs.reference       = M0_brain
             flt.inputs.out_file        = T2_registration
-            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "PWI", "T22m0.mat")
+            flt.inputs.out_matrix_file = os.path.join( PWI_dir, "T22m0.mat")
             flt.inputs.args            = "-dof 12"
             res = flt.run() 
-            #
-            os.system("gunzip PWI/T2_registration.nii.gz")
+            # Gunzip for EPI deformation algo
+            os.system( "gunzip %s"%T2_registration )
+            T2_registration = os.path.join( PWI_dir, "T2_registration.nii" )
 
             #
             # MNI atlas registration 
@@ -898,9 +838,9 @@ class Protocol( object ):
             # Registration high resolution
             flt = fsl.FLIRT()
             flt.inputs.in_file         = MNI_atlas
-            flt.inputs.reference       = os.path.join(self.ACPC_Alignment_, T2_skull_stripped[:-3])
+            flt.inputs.reference       = os.path.join( self.ACPC_Alignment_, T2_skull_stripped )
             flt.inputs.out_file        = MNI_HD
-            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "MNI2T2.mat")
+            flt.inputs.out_matrix_file = os.path.join( self.ACPC_Alignment_, "MNI2T2.mat" )
             flt.inputs.args            = "-dof 12"
             res = flt.run() 
 
@@ -908,9 +848,9 @@ class Protocol( object ):
             # Registration low resolution
             flt = fsl.FLIRT()
             flt.inputs.in_file         = MNI_atlas
-            flt.inputs.reference       = T2_registration[:-3]
+            flt.inputs.reference       = T2_registration
             flt.inputs.out_file        = MNI_LD
-            flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "MNI2m0.mat")
+            flt.inputs.out_matrix_file = os.path.join( self.ACPC_Alignment_, "MNI2m0.mat" )
             flt.inputs.args            = "-dof 12"
             res = flt.run() 
 
@@ -921,10 +861,10 @@ class Protocol( object ):
             #
             # m0 and DeltaM correction
             distortion = EPI_distortion_correction.EPI_distortion_correction()
-            distortion.working_dir_ = os.path.join(self.ACPC_Alignment_, "test_wd")
+            distortion.working_dir_ = os.path.join( self.ACPC_Alignment_, "test_wd" )
             distortion.control_     = M0_brain
-            distortion.t2_          = T2_registration[:-3]
-            distortion.transform_   = os.path.join(self.ACPC_Alignment_, "field_correction.nii")
+            distortion.t2_          = T2_registration
+            distortion.transform_   = os.path.join( self.ACPC_Alignment_, "field_correction.nii" )
             distortion.control_corrected_ = os.path.join(self.ACPC_Alignment_, "m0_brain_corrected.nii")
             distortion.calculate_transform()
             #
@@ -938,7 +878,7 @@ class Protocol( object ):
             #
             # Apply transform on DeltaM
             distortion.control_ = DeltaM
-            distortion.control_corrected_ = os.path.join(self.ACPC_Alignment_, "PWI_corrected.nii")
+            distortion.control_corrected_ = os.path.join( self.ACPC_Alignment_, "PWI_corrected.nii" )
             distortion.apply_transform()
             # Smooth the maps. Using 3D filter, we assume the blood flow being the same in the neighboring voxels
             maths = fsl.ImageMaths( in_file   = distortion.control_corrected_, 
@@ -977,7 +917,7 @@ class Protocol( object ):
             #
             flt = fsl.FLIRT()
             flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_, "m0_brain_corrected.nii")
-            flt.inputs.reference       = T2_skull_stripped[:-3]
+            flt.inputs.reference       = T2_skull_stripped
             flt.inputs.out_file        = m0_brain_corrected_T2
             flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "m02T2.mat")
             flt.inputs.dof             = 6
@@ -1000,11 +940,6 @@ class Protocol( object ):
             maths = fsl.ImageMaths( in_file   = m0_brain_corrected_T2, 
                                     op_string = '-fmean -kernel gauss 3.121 ', 
                                     out_file  = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]) )
-#            maths.run();
-#            # Filter the result with brain mask
-#            maths = fsl.ImageMaths( in_file   = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]),
-#                                    op_string = "-mas %s"%(self.brain_mask_), 
-#                                    out_file  = "%s_3D.nii.gz" %(m0_brain_corrected_T2[:-7]) )
             maths.run();
 
             #
@@ -1013,7 +948,7 @@ class Protocol( object ):
             #
             flt = fsl.FLIRT()
             flt.inputs.in_file         = os.path.join(self.ACPC_Alignment_, "PWI_corrected.nii")
-            flt.inputs.reference       = T2_skull_stripped[:-3]
+            flt.inputs.reference       = T2_skull_stripped
             flt.inputs.out_file        = PWI_corrected_T2
             flt.inputs.out_matrix_file = os.path.join(self.ACPC_Alignment_, "PWI2T2.mat")
             flt.inputs.dof             = 6
@@ -1037,11 +972,6 @@ class Protocol( object ):
                                     op_string = '-fmean -kernel gauss 3.121 ', 
                                     out_file  = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]) )
             maths.run();
-#            # Filter the result with brain mask
-#            maths = fsl.ImageMaths( in_file   = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]),
-#                                    op_string = "-mas %s"%(self.brain_mask_), 
-#                                    out_file  = "%s_3D.nii.gz" %(PWI_corrected_T2[:-7]) )
-#            maths.run();
         #
         #
         except Exception as inst:
@@ -1062,7 +992,7 @@ class Protocol( object ):
         try: 
             #
             # realigne PWI with m0
-            os.chdir( self.ACPC_Alignment_ )
+#ch            os.chdir( self.ACPC_Alignment_ )
             # brain and GM mask
             # Rigid registration of PWI in m0; degree of freedom = 12
             PWI_corrected_m0 = os.path.join(self.ACPC_Alignment_, "PWI_corrected_3D_m0.nii.gz" )
@@ -1102,62 +1032,61 @@ class Protocol( object ):
                 raise Exception( "Missing partial volumes." )
             #
             reference     = os.path.join( self.ACPC_Alignment_, "PWI", "T2_registration.nii" )
-            #
             GM_warped_m0  = os.path.join( self.ACPC_Alignment_, "GM_warped_m0.nii.gz" )
-            self.partial_volume_warping_( c1_file, reference, GM_warped_m0 )
-            #
             WM_warped_m0  = os.path.join( self.ACPC_Alignment_, "WM_warped_m0.nii.gz" )
-            self.partial_volume_warping_( c2_file, reference, WM_warped_m0 )
-            #
             CSF_warped_m0 = os.path.join( self.ACPC_Alignment_, "CSF_warped_m0.nii.gz" )
+            #
+            self.partial_volume_warping_( c1_file, reference, GM_warped_m0 )
+            self.partial_volume_warping_( c2_file, reference, WM_warped_m0 )
             self.partial_volume_warping_( c3_file, reference, CSF_warped_m0 )
 
             #
             # Cerebral blood flow within gray matter
             #
-            
+
             #
             # CBF low resolution
-            maths = fsl.ImageMaths( in_file   = "PWI_corrected_3D.nii.gz", 
-                                    op_string = "-div m0_brain_corrected_3D.nii.gz",
-                                    out_file  = "CBF.nii.gz")
+            maths = fsl.ImageMaths( in_file   = os.path.join( self.ACPC_Alignment_, "PWI_corrected_3D.nii.gz"), 
+                                    op_string = "-div %s_3D.nii.gz"%(m0_brain_corrected_T2[:-7]),
+                                    out_file  = os.path.join( self.ACPC_Alignment_, "CBF.nii.gz") )
             maths.run();
             # CBF and GM
-            maths = fsl.ImageMaths( in_file   = "CBF.nii.gz", 
+            maths = fsl.ImageMaths( in_file   = os.path.join( self.ACPC_Alignment_, "CBF.nii.gz"), 
                                     op_string = "-mul %s"%(GM_warped_m0),
-                                    out_file  = "CBF_GM.nii.gz")
+                                    out_file  = os.path.join( self.ACPC_Alignment_, "CBF_GM.nii.gz") )
             maths.run();
             
             #
             # CBF, PWI and CBF filter on GM in high resolution
-            maths = fsl.ImageMaths( in_file   = "PWI_corrected_T2_3D.nii.gz", 
-                                    op_string = "-div m0_brain_corrected_T2_3D.nii.gz",
-                                    out_file  = "CBF_T2.nii.gz")
+            maths = fsl.ImageMaths( in_file   = os.path.join( self.ACPC_Alignment_, "PWI_corrected_T2_3D.nii.gz" ), 
+                                    op_string = "-div %s"%os.path.join(self.ACPC_Alignment_,"m0_brain_corrected_T2_3D.nii.gz"), 
+                                    out_file  = os.path.join( self.ACPC_Alignment_, "CBF_T2.nii.gz" ) )
             maths.run();
             # CBF in GM HD
-            maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz", 
+            maths = fsl.ImageMaths( in_file   = os.path.join( self.ACPC_Alignment_, "CBF_T2.nii.gz" ), 
                                     op_string = "-mul %s"%(c1_file),
-                                    out_file  = "CBF_GM_T2.nii.gz")
+                                    out_file  = os.path.join( self.ACPC_Alignment_, "CBF_GM_T2.nii.gz" ) )
             maths.run();
             # CBF^2 for standard deviation purposes
-            maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz",
-                                    op_string = '-mul %s -mul %s'%("CBF_T2.nii.gz", self.brain_prob_), 
-                                    out_file  = "CBF2_T2.nii.gz")
+            maths = fsl.ImageMaths( in_file   = os.path.join( self.ACPC_Alignment_, "CBF_T2.nii.gz" ),
+                                    op_string = '-mul %s -mul %s'%(os.path.join( self.ACPC_Alignment_, "CBF_T2.nii.gz" ), 
+                                                                   self.brain_prob_), 
+                                    out_file  = os.path.join( self.ACPC_Alignment_, "CBF2_T2.nii.gz") )
             maths.run();
             # CBF estimator around the brain prob 
-            maths = fsl.ImageMaths( in_file   = "CBF_T2.nii.gz",
+            maths = fsl.ImageMaths( in_file   = os.path.join( self.ACPC_Alignment_, "CBF_T2.nii.gz" ),
                                     op_string = '-mul %s'%(self.brain_prob_), 
-                                    out_file  = "CBF_brain_T2.nii.gz")
+                                    out_file  = os.path.join( self.ACPC_Alignment_, "CBF_brain_T2.nii.gz") )
             maths.run();
             # filtering with the GM mask 
-            maths = fsl.ImageMaths( in_file   = "CBF_GM_T2.nii.gz",
+            maths = fsl.ImageMaths( in_file   = os.path.join( self.ACPC_Alignment_, "CBF_GM_T2.nii.gz" ),
                                     op_string = '-mas %s'%(self.gm_mask_), 
-                                    out_file  = "CBF_GM_filtered_T2.nii.gz")
+                                    out_file  = os.path.join( self.ACPC_Alignment_, "CBF_GM_filtered_T2.nii.gz") )
             maths.run();
             # PWI in GM HD
-            maths = fsl.ImageMaths( in_file   = "PWI_corrected_T2_3D.nii.gz", 
+            maths = fsl.ImageMaths( in_file   = os.path.join(self.ACPC_Alignment_, "PWI_corrected_T2_3D.nii.gz") , 
                                     op_string = "-mul %s"%(c1_file),
-                                    out_file  = "PWI_GM_T2.nii.gz")
+                                    out_file  = os.path.join(self.ACPC_Alignment_, "PWI_GM_T2.nii.gz") )
             maths.run();
 
             if False:
@@ -1245,19 +1174,6 @@ class Protocol( object ):
     #
     #
     #
-    def run_spm_realign( self, Directory, List_files, Register_to_mean = False ):
-        """ Function uses SPM realigne with the first run sequence."""
-        os.chdir(Directory)
-        List_files.sort()
-        realign = spm.Realign()
-        realign.inputs.in_files         = List_files
-        realign.inputs.register_to_mean = Register_to_mean
-        realign.inputs.paths            = Directory
-        print "Realigning list of files ..."
-        realign.run()
-    #
-    #
-    #
     def partial_volume_warping_( self, In_file, Ref_file, Out_file ):
         #
         mat           = tempfile.NamedTemporaryFile(delete = False)
@@ -1311,25 +1227,46 @@ class Protocol( object ):
         if self.status_:
             self.check_environment()
             _log.debug("Protocol ASL - check environment -- pass")
+        else:
+            _log.debug("Protocol ASL - check environment -- failed")
+        #
         if self.status_:
             self.initialization()
             _log.debug("Protocol ASL - initialization -- pass")
+        else:
+            _log.debug("Protocol ASL - initialization -- failed")
+        #
         if self.status_:
             self.run_spm_segmentT1()
             _log.debug("Protocol ASL - run spm segmentT1 -- pass")
+        else:
+            _log.debug("Protocol ASL - run spm segmentT1 -- failed")
+        #
         if self.status_:
             self.perfusion_weighted_imaging()
             _log.debug("Protocol ASL - perfusion weighted imaging -- pass")
+        else:
+            _log.debug("Protocol ASL - perfusion weighted imaging -- failed")
+        #
         if self.status_:
             self.CBFscale_PWI_data()
             _log.debug("Protocol ASL - CBFscale PWI data -- pass")
+        else:
+            _log.debug("Protocol ASL - CBFscale PWI data -- failed")
+        #
 #        if self.status_:
 #        self.perfusion_calculation()
 #        _log.debug("Protocol ASL - perfusion calculation -- pass")
+        #
         if self.status_:
             self.T2_PWI_registration()
             _log.debug("Protocol ASL - registration between T2 and PWI -- pass")
+        else:
+            _log.debug("Protocol ASL - registration between T2 and PWI -- failed")
+        #
         if self.status_:
             self.Cerebral_blood_flow()
             _log.debug("Protocol ASL - Cerebral blood flow -- pass")
+        else:
+            _log.debug("Protocol ASL - Cerebral blood flow -- failed")
             

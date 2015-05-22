@@ -150,7 +150,8 @@ class Production( object ):
                 dir = os.path.join( Directory, row[0], row[2])
                 if os.path.exists( dir ):
                     for patient in os.listdir( dir ):
-                        self.queue_.put( os.path.join(dir, patient) )
+                        self.queue_.put( [Arterial_Spin_Labeling.Protocol(),
+                                          os.path.join(dir, patient)] )
             # block until all tasks are done
             self.queue_.join()
         #
@@ -199,16 +200,9 @@ class Perfusion( Production ):
         while True:
             #
             # Strategy pipeline
-            singlelock.acquire()
-            time.sleep(1) # give some time to start rhe program on the good count
-            self.asl_.append( Arterial_Spin_Labeling.Protocol() )
-            count = len( self.asl_ ) - 1
-            self.asl_[count].patient_dir_ = self.queue_.get()
-            
-            #print "count in", count
-            singlelock.release()
-            #
-            self.asl_[count].run()
+            [asl, patient_dir] = self.queue_.get()
+            asl.patient_dir_   = patient_dir
+            asl.run()
             
             #
             # lock and add the file
