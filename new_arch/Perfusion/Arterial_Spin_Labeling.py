@@ -4,6 +4,7 @@ import sys, os, shutil
 import tempfile
 import subprocess
 import numpy
+import nifti as ni
 import nipype
 import nipype.interfaces.fsl as fsl
 import nipype.interfaces.spm as spm
@@ -79,7 +80,6 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             quit(-1)
         except IOError as e:
@@ -109,14 +109,16 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
+            _log.error("Protocol ASL - check environment -- failed")
             self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            _log.erro("Protocol ASL - check environment -- failed")
             self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
+            _log.error("Protocol ASL - check environment -- failed")
             self.status_ = False
     #
     #
@@ -151,7 +153,7 @@ class Protocol( object ):
                 self.T2_file_[0] = os.path.join( self.ACPC_Alignment_, "%s.nii.gz"%(self.T2_file_[0][:-4]) )
                 self.T2_file_[1] = ""
             else:
-                raise Exception("T2 file does not exist.")
+                raise Exception( "T2 file does not exist in %s."%(self.patient_dir_) )
                 
             #
             # T1 file
@@ -226,14 +228,16 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
+            _log.error("Protocol ASL - initialization -- failed")
             self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            _log.error("Protocol ASL - initialization -- failed")
             self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
+            _log.error("Protocol ASL - initialization -- failed")
             self.status_ = False
     #
     #
@@ -382,29 +386,96 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
+            _log.error("Protocol ASL - perfusion weighted imaging -- failed")
             self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            _log.error("Protocol ASL - perfusion weighted imaging -- failed")
             self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
+            _log.error("Protocol ASL - perfusion weighted imaging -- failed")
             self.status_ = False
     #
     #
     #
     def CBFscale_PWI_data( self ):
         """Scale PWI for time lag and compute CBF. CBF_Scaled_PWI.nii don't provide CBF. To produce CBF the map as to be normalized with m0 map"""
+        try: 
+            #
+            #
+            all_aligned_dir = os.path.join( self.ASL_dicom_, 'nii_all/realigned_stripped' )
+            #
+            nim = ni.NiftiImage( os.path.join(all_aligned_dir, "diffdata_mean.nii") )
+            # Extract volume data
+            volume = nim.data
+
+
+            #
+            # Process PWI data
+            K = 100 * 60 * 1000 # Per 100 gram * sec per min * msec per sec
+            Lambda = 0.90
+            alpha  = 0.95
+            TI1    = 700.
+            TI2    = 1800.
+            T1a    = 1684.
+            tau    = 22.5
+
+            #
+            # nim.header['dim'] -> [3,  64, 56, 16, 1, 1, 1, 1] 
+            #                       dim, X,  Y,  Z, ...
+            for slice in range( 0, nim.header['dim'][3] ):
+                TI2_delay = TI2 + tau * slice
+                volume[slice,:,:] *= K *  Lambda * numpy.exp(TI2_delay/T1a) / (2*alpha*TI1)
+                
+            #
+            # Save the result
+            nim.save( os.path.join(all_aligned_dir, "CBF_Scaled_PWI.nii") )
+
+#            #
+#            mlc = mlab.MatlabCommand()
+#            cmd = "cd(\'%s\'); raw_pwi = spm_vol(\'diffdata_mean.nii\'); scaled_pwi = raw_pwi; scaled_pwi.fname = \'CBF_Scaled_PWI.nii\'; scaled_pwi.descript = \'Scaled from the PWI Image\'; pwi_data = spm_read_vols(raw_pwi); Lamda = 0.9000; Alpha = 0.9500; Tau = 22.50; R1A = (1684)^-1; PER100G = 100; SEC_PER_MIN = 60; MSEC_PER_SEC = 1000; TI1 = 700; TI2 = 1800; PWI_scale = zeros(size(pwi_data)); sliceNumbers = (1:size(pwi_data, 3)); Constant = Lamda / (2 * Alpha * TI1) * (PER100G * SEC_PER_MIN * MSEC_PER_SEC); Slice_based_const = exp(R1A * (TI2 + (sliceNumbers - 1) * Tau)); Numerator = pwi_data; for n =1:size(sliceNumbers); PWI_scale(:,:,n) = Constant * Slice_based_const(n) * Numerator(:,:,n); end; spm_write_vol(scaled_pwi, PWI_scale);" %"/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL/3673/2012-05-07/NIFD071-1_Fargusson,Anne/ASL-raw/pASL_700_1700_1800_aah_11/nii_all/realigned_stripped/"
+#
+##            cmd = """
+##            cd('%(PWI_dir)s'); 
+##            raw_pwi = spm_vol('diffdata_mean.nii'); 
+##            scaled_pwi = raw_pwi; 
+##            scaled_pwi.fname = 'CBF_Scaled_PWI.nii'; 
+##            scaled_pwi.descript = 'Scaled from the PWI Image'; 
+##            pwi_data = spm_read_vols(raw_pwi); 
+##            Lamda = 0.9000; Alpha = 0.9500; Tau = 22.50; R1A = (1684)^-1; PER100G = 100; 
+##            SEC_PER_MIN = 60; MSEC_PER_SEC = 1000; TI1 = 700; TI2 = 1800; 
+##            PWI_scale = zeros(size(pwi_data)); sliceNumbers = (1:size(pwi_data, 3));
+##            Constant = Lamda / (2 * Alpha * TI1) * (PER100G * SEC_PER_MIN * MSEC_PER_SEC); 
+##
+##            Slice_based_const = exp(R1A * (TI2 + (sliceNumbers - 1) * Tau)); 
+##
+##            Numerator = pwi_data; 
+##
+##            for n =1:size(sliceNumbers);    
+##              PWI_scale(:,:,n) = Constant * Slice_based_const(n) * Numerator(:,:,n); 
+##            end;  
+##            spm_write_vol(scaled_pwi, PWI_scale);
+##            """ % {'PWI_dir':"/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL/3673/2012-05-07/NIFD071-1_Fargusson,Anne/ASL-raw/pASL_700_1700_1800_aah_11/nii_all/realigned_stripped/"}#all_aligned_dir
+#            #
+#            mlc.inputs.script = cmd
+#            #mlc.inputs.mfile  = False
+#            mlc.run()
         #
         #
-        all_aligned_dir = os.path.join( self.ASL_dicom_, 'nii_all/realigned_stripped' )
-        #
-        mlc = mlab.MatlabCommand()
-        cmd = "cd('%s'); raw_pwi = spm_vol('diffdata_mean.nii'); scaled_pwi = raw_pwi; scaled_pwi.fname = 'CBF_Scaled_PWI.nii'; scaled_pwi.descript = 'Scaled from the PWI Image'; pwi_data = spm_read_vols(raw_pwi); Lamda = 0.9000; Alpha = 0.9500; Tau = 22.50; R1A = (1684)^-1; PER100G = 100; SEC_PER_MIN = 60; MSEC_PER_SEC = 1000; TI1 = 700; TI2 = 1800; PWI_scale = zeros(size(pwi_data)); sliceNumbers = (1:size(pwi_data, 3))'; Constant = Lamda / (2 * Alpha * TI1) * (PER100G * SEC_PER_MIN * MSEC_PER_SEC); Slice_based_const = exp(R1A * (TI2 + (sliceNumbers - 1) * Tau)); Numerator = pwi_data; for n =1:size(sliceNumbers);    PWI_scale(:,:,n) = Constant * Slice_based_const(n) * Numerator(:,:,n); end;  spm_write_vol(scaled_pwi, PWI_scale);" %all_aligned_dir
-        #
-        mlc.inputs.script = cmd
-        mlc.run()
+        except Exception as inst:
+            _log.error(inst)
+            _log.error("Protocol ASL - perfusion weighted imaging -- failed")
+            self.status_ = False
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            _log.error("Protocol ASL - perfusion weighted imaging -- failed")
+            self.status_ = False
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            _log.error("Protocol ASL - perfusion weighted imaging -- failed")
+            self.status_ = False
 #    #
 #    #
 #    #
@@ -565,12 +636,35 @@ class Protocol( object ):
             if T1_file.endswith(".nii.gz"):
                 os.system('gunzip %s'%self.T1_file_[0] )
                 T1_file = "%s"%(self.T1_file_[0][:-3])
+
             #
-            # Run Spm_NewSegment on the T1 to get GM,WM,ventricles
-            seg = spm.NewSegment();
-            seg.inputs.channel_files = T1_file;
-            seg.inputs.channel_info  = (0.0001, 60, (True, True))
-            seg.run();
+            # Run Spm_NewSegment on the T1 
+            mlc = mlab.MatlabCommand()
+            cmd = """
+            if isempty(which(\'spm\')),
+              throw(MException(\'SPMCheck:NotFound\', \'SPM not in matlab path\'));
+            end;
+            [name, version] = spm(\'ver\');
+            spm(\'Defaults\',\'fMRI\');
+            if strcmp(name, \'SPM8\') || strcmp(name, \'SPM12b\'),
+              spm_jobman(\'initcfg\');
+              spm_get_defaults(\'cmdline\', 1);
+            end;
+            jobs{1}.spm.tools.preproc8.channel(1).biasreg  = 0.0001;
+            jobs{1}.spm.tools.preproc8.channel(1).write(1) = 1;
+            jobs{1}.spm.tools.preproc8.channel(1).write(2) = 1;
+            jobs{1}.spm.tools.preproc8.channel(1).biasfwhm = 60.0;
+            jobs{1}.spm.tools.preproc8.channel(1).vols = {\'%(T1)s'};
+            spm_jobman(\'run\', jobs);"""%{'T1':T1_file}
+            # 
+            mlc.inputs.script = cmd
+            mlc.inputs.mfile  = False
+            mlc.run()
+#
+#            seg = spm.NewSegment();
+#            seg.inputs.channel_files = T1_file;
+#            seg.inputs.channel_info  = (0.0001, 60, (True, True))
+#            seg.run();
 
             #
             # Gather GM, WM and CSF
@@ -688,7 +782,7 @@ class Protocol( object ):
             # extraction of T1 brain
             maths = fsl.ImageMaths( in_file   = T1_in_T2,
                                     op_string = '-mas %s'%(self.brain_mask_), 
-                                    out_file  = "T1_brain.nii.gz" )
+                                    out_file  = os.path.join( self.PVE_Segmentation_, "T1_brain.nii.gz") )
             maths.run();
 
             if False:
@@ -757,14 +851,16 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
+            _log.error("Protocol ASL - run spm segmentT1 -- failed")
             self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            _log.error("Protocol ASL - run spm segmentT1 -- failed")
             self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
+            _log.error("Protocol ASL - run spm segmentT1 -- failed")
             self.status_ = False
     #
     #
@@ -897,13 +993,13 @@ class Protocol( object ):
             c2_file = "" # WM  registered T2
             c3_file = "" # CSF registered T2
             for file_name in os.listdir( self.PVE_Segmentation_ ):
-                if file_name.startswith("c1") and file_name.endswith("T2.nii"):
+                if file_name.startswith("c1") and file_name.endswith("T2.nii.gz"):
                     c1_file = os.path.join( self.PVE_Segmentation_, file_name )
-                if file_name.startswith("c2") and file_name.endswith("T2.nii"):
+                if file_name.startswith("c2") and file_name.endswith("T2.nii.gz"):
                     c2_file = os.path.join( self.PVE_Segmentation_, file_name )
-                if file_name.startswith("c3") and file_name.endswith("T2.nii"):
+                if file_name.startswith("c3") and file_name.endswith("T2.nii.gz"):
                     c3_file = os.path.join( self.PVE_Segmentation_, file_name )
-                if file_name.startswith("m") and file_name.endswith("T2.nii"):
+                if file_name.startswith("m") and file_name.endswith("T2.nii.gz"):
                     T1_file = os.path.join( self.PVE_Segmentation_, file_name )
             # Check we have the maps
             if not ( os.path.isfile( c1_file ) or 
@@ -975,14 +1071,16 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
+            _log.error("Protocol ASL - registration between T2 and PWI -- failed")
             self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            _log.error("Protocol ASL - registration between T2 and PWI -- failed")
             self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
+            _log.error("Protocol ASL - registration between T2 and PWI -- failed")
             self.status_ = False
     #
     #
@@ -1015,16 +1113,14 @@ class Protocol( object ):
             c2_file = "" # WM
             c3_file = "" # CSF
             for file_name in os.listdir( self.PVE_Segmentation_ ):
-                if file_name.startswith("c1") and file_name.endswith("T2.nii"):
+                if file_name.startswith("c1") and file_name.endswith("T2.nii.gz"):
                     c1_file = os.path.join( self.PVE_Segmentation_, file_name )
-                if file_name.startswith("c2") and file_name.endswith("T2.nii"):
+                if file_name.startswith("c2") and file_name.endswith("T2.nii.gz"):
                     c2_file = os.path.join( self.PVE_Segmentation_, file_name )
-                if file_name.startswith("c3") and file_name.endswith("T2.nii"):
+                if file_name.startswith("c3") and file_name.endswith("T2.nii.gz"):
                     c3_file = os.path.join( self.PVE_Segmentation_, file_name )
-                if file_name.startswith("m") and file_name.endswith("T2.nii"):
+                if file_name.startswith("m") and file_name.endswith("T2.nii.gz"):
                     T1_file = os.path.join( self.PVE_Segmentation_, file_name )
-
-            #
             # Rigid registration of GM in m0/T2_registration with repading; degree of freedom = 12
             if not ( os.path.isfile( c1_file ) or 
                      os.path.isfile( c2_file ) or 
@@ -1047,7 +1143,7 @@ class Protocol( object ):
             #
             # CBF low resolution
             maths = fsl.ImageMaths( in_file   = os.path.join( self.ACPC_Alignment_, "PWI_corrected_3D.nii.gz"), 
-                                    op_string = "-div %s_3D.nii.gz"%(m0_brain_corrected_T2[:-7]),
+                                    op_string = "-div %s"%( os.path.join( self.ACPC_Alignment_, "m0_brain_corrected_3D.nii.gz") ),
                                     out_file  = os.path.join( self.ACPC_Alignment_, "CBF.nii.gz") )
             maths.run();
             # CBF and GM
@@ -1162,14 +1258,16 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
+            _log.error("Protocol ASL - Cerebral blood flow -- failed")
             self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            _log.error("Protocol ASL - Cerebral blood flow -- failed")
             self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
+            _log.error("Protocol ASL - Cerebral blood flow -- failed")
             self.status_ = False
     #
     #
@@ -1224,49 +1322,36 @@ class Protocol( object ):
     #
     def run( self ):
         """ Run the complete Arterial Spin Labeling process"""
-        if self.status_:
-            self.check_environment()
-            _log.debug("Protocol ASL - check environment -- pass")
-        else:
-            _log.debug("Protocol ASL - check environment -- failed")
+        self.check_environment()
         #
         if self.status_:
+            _log.info("Protocol ASL - check environment -- pass")
             self.initialization()
-            _log.debug("Protocol ASL - initialization -- pass")
-        else:
-            _log.debug("Protocol ASL - initialization -- failed")
         #
         if self.status_:
+            _log.info("Protocol ASL - initialization -- pass")
             self.run_spm_segmentT1()
-            _log.debug("Protocol ASL - run spm segmentT1 -- pass")
-        else:
-            _log.debug("Protocol ASL - run spm segmentT1 -- failed")
         #
         if self.status_:
+            _log.info("Protocol ASL - run spm segmentT1 -- pass")
             self.perfusion_weighted_imaging()
-            _log.debug("Protocol ASL - perfusion weighted imaging -- pass")
-        else:
-            _log.debug("Protocol ASL - perfusion weighted imaging -- failed")
         #
         if self.status_:
+            _log.info("Protocol ASL - perfusion weighted imaging -- pass")
             self.CBFscale_PWI_data()
-            _log.debug("Protocol ASL - CBFscale PWI data -- pass")
-        else:
-            _log.debug("Protocol ASL - CBFscale PWI data -- failed")
         #
 #        if self.status_:
 #        self.perfusion_calculation()
 #        _log.debug("Protocol ASL - perfusion calculation -- pass")
         #
         if self.status_:
+            _log.info("Protocol ASL - CBFscale PWI data -- pass")
             self.T2_PWI_registration()
-            _log.debug("Protocol ASL - registration between T2 and PWI -- pass")
-        else:
-            _log.debug("Protocol ASL - registration between T2 and PWI -- failed")
         #
         if self.status_:
+            _log.info("Protocol ASL - registration between T2 and PWI -- pass")
             self.Cerebral_blood_flow()
-            _log.debug("Protocol ASL - Cerebral blood flow -- pass")
-        else:
-            _log.debug("Protocol ASL - Cerebral blood flow -- failed")
+        #
+        if self.status_:
+            _log.info("Protocol ASL - Cerebral blood flow -- pass")
             
