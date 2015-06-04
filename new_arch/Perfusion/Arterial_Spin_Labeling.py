@@ -77,6 +77,36 @@ class Protocol( object ):
             self.brain_mask_       = ""
             self.brain_prob_       = ""
             self.gm_mask_          = ""
+
+            #
+            # Acquisition data
+            self.TR_    = 2522.1
+            self.TE_    = 11.
+            self.TI1_   = 700.
+            self.TI2_   = 1800.
+            # delay of the acquisition slice by slice
+            self.tau_   = 22.
+            # Efficientcy of the spin inversion process 
+            self.alpha_ = 0.95
+
+            #
+            # Physical data
+            # T1 relaxation time
+            self.T1_gm_  = 1110.
+            self.T1_wm_  = 1600.
+            self.T1_csf_ = 4136.
+            # T1 relaxation time for blood
+            self.T1a_    = 1684.
+            # T2 relaxation time
+            self.T2_gm_  = 60.
+            self.T2_wm_  = 80.
+            self.T2_csf_ = 1442.
+            # The water content in the tissue
+            self.rho_gm_  = 0.82
+            self.rho_wm_  = 0.72
+            self.rho_csf_ = 1.
+            # Tissue-blood ratio
+            self.lambda_  = 0.90  
         #
         #
         except Exception as inst:
@@ -412,60 +442,21 @@ class Protocol( object ):
             # Extract volume data
             volume = delta.data
 
-
             #
             # Process PWI data
             K = 100 * 60 * 1000 # Per 100 gram * sec per min * msec per sec
-            Lambda = 0.90
-            alpha  = 0.95
-            TI1    = 700.
-            TI2    = 1800.
-            T1a    = 1684.
-            tau    = 22.5
-
-            #
             # delta.header['dim'] -> [3,  64, 56, 16, 1, 1, 1, 1] 
             #                       dim, X,  Y,  Z, ...
             for slice in range( 0, delta.header['dim'][3] ):
-                TI2_delay = TI2 + tau * slice
-                volume[slice,:,:] *= K *  Lambda * numpy.exp(TI2_delay/T1a) / (2*alpha*TI1)
-            #
-            delta.data   = volume
-            delta.header = M0.header
-                
+                TI2_delay = self.TI2_ + self.tau_ * slice
+                volume[slice,:,:] *= K *  self.lambda_ * numpy.exp(TI2_delay/self.T1a_)
+                volume[slice,:,:] /= ( 2 * self.alpha_ * self.TI1_ )
             #
             # Save the result
+            delta.data   = volume
+            delta.header = M0.header
+            #
             delta.save( os.path.join(all_aligned_dir, "CBF_Scaled_PWI.nii") )
-
-#            #
-#            mlc = mlab.MatlabCommand()
-#            cmd = "cd(\'%s\'); raw_pwi = spm_vol(\'diffdata_mean.nii\'); scaled_pwi = raw_pwi; scaled_pwi.fname = \'CBF_Scaled_PWI.nii\'; scaled_pwi.descript = \'Scaled from the PWI Image\'; pwi_data = spm_read_vols(raw_pwi); Lamda = 0.9000; Alpha = 0.9500; Tau = 22.50; R1A = (1684)^-1; PER100G = 100; SEC_PER_MIN = 60; MSEC_PER_SEC = 1000; TI1 = 700; TI2 = 1800; PWI_scale = zeros(size(pwi_data)); sliceNumbers = (1:size(pwi_data, 3)); Constant = Lamda / (2 * Alpha * TI1) * (PER100G * SEC_PER_MIN * MSEC_PER_SEC); Slice_based_const = exp(R1A * (TI2 + (sliceNumbers - 1) * Tau)); Numerator = pwi_data; for n =1:size(sliceNumbers); PWI_scale(:,:,n) = Constant * Slice_based_const(n) * Numerator(:,:,n); end; spm_write_vol(scaled_pwi, PWI_scale);" %"/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL/3673/2012-05-07/NIFD071-1_Fargusson,Anne/ASL-raw/pASL_700_1700_1800_aah_11/nii_all/realigned_stripped/"
-#
-##            cmd = """
-##            cd('%(PWI_dir)s'); 
-##            raw_pwi = spm_vol('diffdata_mean.nii'); 
-##            scaled_pwi = raw_pwi; 
-##            scaled_pwi.fname = 'CBF_Scaled_PWI.nii'; 
-##            scaled_pwi.descript = 'Scaled from the PWI Image'; 
-##            pwi_data = spm_read_vols(raw_pwi); 
-##            Lamda = 0.9000; Alpha = 0.9500; Tau = 22.50; R1A = (1684)^-1; PER100G = 100; 
-##            SEC_PER_MIN = 60; MSEC_PER_SEC = 1000; TI1 = 700; TI2 = 1800; 
-##            PWI_scale = zeros(size(pwi_data)); sliceNumbers = (1:size(pwi_data, 3));
-##            Constant = Lamda / (2 * Alpha * TI1) * (PER100G * SEC_PER_MIN * MSEC_PER_SEC); 
-##
-##            Slice_based_const = exp(R1A * (TI2 + (sliceNumbers - 1) * Tau)); 
-##
-##            Numerator = pwi_data; 
-##
-##            for n =1:size(sliceNumbers);    
-##              PWI_scale(:,:,n) = Constant * Slice_based_const(n) * Numerator(:,:,n); 
-##            end;  
-##            spm_write_vol(scaled_pwi, PWI_scale);
-##            """ % {'PWI_dir':"/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL/3673/2012-05-07/NIFD071-1_Fargusson,Anne/ASL-raw/pASL_700_1700_1800_aah_11/nii_all/realigned_stripped/"}#all_aligned_dir
-#            #
-#            mlc.inputs.script = cmd
-#            #mlc.inputs.mfile  = False
-#            mlc.run()
         #
         #
         except Exception as inst:
@@ -627,7 +618,7 @@ class Protocol( object ):
     #
     #
     #
-    def run_spm_segmentT1( self ):
+    def segmentation_T1( self ):
         """Run SPM new segmentation. The results will be aligned within the T2 framework for the partial volume estimation (PVE) and the partial volume correction of the cerebral blood flow analysise. """
         try: 
             #
@@ -664,11 +655,6 @@ class Protocol( object ):
             mlc.inputs.script = cmd
             mlc.inputs.mfile  = False
             mlc.run()
-#
-#            seg = spm.NewSegment();
-#            seg.inputs.channel_files = T1_file;
-#            seg.inputs.channel_info  = (0.0001, 60, (True, True))
-#            seg.run();
 
             #
             # Gather GM, WM and CSF
@@ -762,34 +748,63 @@ class Protocol( object ):
             maths.run();
             # TODO: somehow hang calculation ...
             maths = fsl.ImageMaths( in_file       = self.brain_mask_,
-                                    op_string     = '-thr 0.3 -fillh26 -bin',
-                                    out_data_type = "char",
-                                    out_file      =  self.brain_mask_)
+                                    op_string     = '-thr 0.3 -bin',
+                                    out_file      =  self.brain_mask_,
+                                    out_data_type = "char" )
             maths.run();
+            
+            #
+            # This filter will remove 0 +- epsilon values from the flow spectrum
+            if True:
+                self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
+                #
+                brain_mask = ni.NiftiImage( self.brain_mask_ )
+                GM         = ni.NiftiImage( c1_in_T2 )
+                WM         = ni.NiftiImage( c2_in_T2 )
+                CSF        = ni.NiftiImage( c3_in_T2 )
+                #
+                mask = ni.NiftiImage( c1_in_T2 )
+                
+                #
+                #
+                for z in range( 0, mask.header['dim'][1] - 1 ):
+                    for y in range( 0, mask.header['dim'][2] - 1 ):
+                        for x in range( 0, mask.header['dim'][3] - 1 ):
+                            if brain_mask.data[x,y,z] == 1:
+                                if GM.data[x,y,z] > 0.1:
+                                    if GM.data[x,y,z] > WM.data[x,y,z] and GM.data[x,y,z] > CSF.data[x,y,z]:
+                                        mask.data[x,y,z] = 1
+                                    else:
+                                        mask.data[x,y,z] = 0
+                                else:
+                                    mask.data[x,y,z] = 0
+                            else:
+                                mask.data[x,y,z] = 0
+                #
+                mask.save( self.gm_mask_ )
 
+            else:
+                self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
+                maths = fsl.ImageMaths( in_file       = c1_in_T2,
+                                        op_string     = "-thr 0.3  -fillh26 -bin",
+                                        out_data_type = "char",
+                                        out_file      = self.gm_mask_)
+                maths.run();
 
             #
             # Create a mask only for the gray matter
             # WARNING: visualization purposes
             #
-            
-            #
-            # This filter will remove 0 +- epsilon values from the flow spectrum
-            self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
-            maths = fsl.ImageMaths( in_file       = c1_in_T2,
-                                    op_string     = "-thr 0.3  -fillh26 -bin",
-                                    out_data_type = "char",
-                                    out_file      = self.gm_mask_)
-            maths.run();
-
-            #
-            # extraction of T1 brain
-            maths = fsl.ImageMaths( in_file   = T1_in_T2,
-                                    op_string = '-mas %s'%(self.brain_mask_), 
-                                    out_file  = os.path.join( self.PVE_Segmentation_, "T1_brain.nii.gz") )
-            maths.run();
 
             if False:
+                #
+                # extraction of T1 brain
+                maths = fsl.ImageMaths( in_file   = T1_in_T2,
+                                        op_string = '-mas %s'%(self.brain_mask_), 
+                                        out_file  = os.path.join( self.PVE_Segmentation_, 
+                                                                  "T1_brain.nii.gz") )
+                maths.run();
+
                 #
                 # Mapping of T1 within MNI152
                 #
@@ -1258,6 +1273,13 @@ class Protocol( object ):
             self.partial_volume_warping_( c1_file, reference, GM_warped_m0 )
             self.partial_volume_warping_( c2_file, reference, WM_warped_m0 )
             self.partial_volume_warping_( c3_file, reference, CSF_warped_m0 )
+            # create a low resolution mask of the gray matter
+            maths = fsl.ImageMaths( in_file       = GM_warped_m0,
+                                    op_string     = '-thr 0.3 -bin',
+                                    out_file      =  os.path.join( self.ACPC_Alignment_, "GM_mask_m0.nii.gz" ),
+                                    out_data_type = "char" )
+            maths.run();
+
 
             #
             # Correction map
@@ -1293,36 +1315,52 @@ class Protocol( object ):
             maths.run()
 
             #
+            # M0 ratio
+            #
+            
+            #
+            # Low resolution
+            M0_PVC_LR     = os.path.join( self.ACPC_Alignment_, "m0_PVC_LR.nii.gz" )
+            #
+            brain_mask_m0 = os.path.join( self.ASL_dicom_, 
+                                          "nii_all", "realigned_stripped", 
+                                          "brain_T2_mask_m0.nii.gz" )
+            self.Ratio_M0_( Image_output = M0_PVC_LR, Mask = brain_mask_m0,
+                            GM = GM_warped_m0, WM = WM_warped_m0, CSF = CSF_warped_m0 )
+
+            #
+            # High resolution
+            M0_PVC_HR = os.path.join( self.ACPC_Alignment_, "m0_PVC_HR.nii.gz" )
+            #
+            self.Ratio_M0_( Image_output = M0_PVC_HR, Mask = self.brain_mask_,
+                            GM = c1_file, WM = c2_file, CSF = c2_file )
+
+            #
             # Cerebral blood flow within the gray matter
             #
 
             #
             # CBF low resolution partial volume corrected for GM
             maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF.nii.gz"), 
-                                    op_string = "-div %s"%PVC_LR,
+                                    op_string = "-mul %s -div %s "%(M0_PVC_LR, PVC_LR),
                                     out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM_PVC_LR.nii.gz" ) )
             maths.run();
             # CBF and GM
             maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF_GM_PVC_LR.nii.gz" ), 
-                                    op_string = "-mul %s"%(GM_warped_m0),
+                                    op_string = "-mul %s"%( os.path.join( self.ACPC_Alignment_, "GM_mask_m0.nii.gz" ) ),
                                     out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM.nii.gz") )
             maths.run();
             
             #
             # CBF filter on GM in high resolution
             maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF_T2.nii.gz" ), 
-                                    op_string = "-div %s"%PVC_HR, 
+                                    op_string = "-mul %s -div %s"%(M0_PVC_HR, PVC_HR), 
                                     out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM_PVC_HR.nii.gz" ) )
             maths.run();
             # CBF in GM HD
             maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF_GM_PVC_HR.nii.gz" ), 
-                                    op_string = "-mul %s"%(c1_file),
+                                    op_string = "-mul %s"%self.gm_mask_,
                                     out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM_T2.nii.gz" ) )
-            maths.run();
-            # filtering with the GM mask 
-            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF_GM_T2.nii.gz" ),
-                                    op_string = '-mas %s'%(self.gm_mask_), 
-                                    out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM_filtered_T2.nii.gz") )
             maths.run();
 
             #
@@ -1333,7 +1371,7 @@ class Protocol( object ):
             maths.run();
             #
             maths = fsl.ImageMaths( in_file   =   os.path.join(self.ACPC_Alignment_, "PWI_GM_PVC_HR.nii.gz") , 
-                                    op_string = "-mul %s"%c1_file,
+                                    op_string = "-mul %s"%self.gm_mask_,
                                     out_file  =   os.path.join(self.ACPC_Alignment_, "PWI_GM_T2.nii.gz") )
             maths.run();
         #
@@ -1401,6 +1439,71 @@ class Protocol( object ):
     #
     #
     #
+    def Ratio_M0_( self, Image_output, Mask, GM, WM, CSF ):
+        """ Compute the M0 partial volume correction."""
+        try: 
+            #
+            # 
+            brain_mask = ni.NiftiImage( Mask )
+            # 
+            #GM_proba   = ni.NiftiImage( GM )
+            WM_proba   = ni.NiftiImage( WM )
+            CSF_proba  = ni.NiftiImage( CSF )
+            #
+            ratio = ni.NiftiImage( GM )
+            #
+            for z in range( 0, ratio.header['dim'][1] - 1 ):
+                for y in range( 0, ratio.header['dim'][2] - 1 ):
+                    for x in range( 0, ratio.header['dim'][3] - 1 ):
+                        if brain_mask.data[x,y,z] == 1:
+                            Mgm  = self.magnetization_(self.rho_gm_, self.T1_gm_, self.T2_gm_)
+                            Mwm  = self.magnetization_(self.rho_wm_, self.T1_wm_, self.T2_wm_)
+                            Mcsf = self.magnetization_(self.rho_csf_, self.T1_csf_, self.T2_csf_)
+                            #
+                            ratio.data[x,y,z] += WM_proba.data[x,y,z]  * Mwm / Mgm
+                            ratio.data[x,y,z] += CSF_proba.data[x,y,z] * Mcsf / Mgm
+                        else:
+                            ratio.data[x,y,z] = 0.
+                            
+            #
+            # Save image
+            ratio.save( Image_output )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            self.status_ = False
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            self.status_ = False
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            self.status_ = False
+    #
+    #
+    #
+    def magnetization_( self, Rho, T2, T1 ):
+        """ Compute magnetization of a tissue i."""
+        try: 
+            #
+            # 
+            return Rho * numpy.exp( - self.TE_ / T2 ) * (1 - numpy.exp( - self.TR_ / T1 ))
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            self.status_ = False
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            self.status_ = False
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            self.status_ = False
+    #
+    #
+    #
     def run( self ):
         """ Run the complete Arterial Spin Labeling process"""
         self.check_environment()
@@ -1411,10 +1514,10 @@ class Protocol( object ):
         #
         if self.status_:
             _log.info("Protocol ASL - initialization -- pass")
-            self.run_spm_segmentT1()
+            self.segmentation_T1()
         #
         if self.status_:
-            _log.info("Protocol ASL - run spm segmentT1 -- pass")
+            _log.info("Protocol ASL - segmentation T1 -- pass")
             self.perfusion_weighted_imaging()
         #
         if self.status_:
