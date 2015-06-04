@@ -1,6 +1,6 @@
 import logging
 import inspect
-import sys, os, shutil
+import sys, os, shutil, tempfile
 import tempfile
 import subprocess
 import numpy
@@ -38,7 +38,6 @@ class Protocol( object ):
     5.) 
     6.) 
 
-
     
     Attributes:
     patient_dir_     :string - ASL-pipe directory
@@ -68,6 +67,9 @@ class Protocol( object ):
             self.brain_prob_       = ""
             # Prior probqbilities
             self.priors_           = [] 
+            self.priors_directory_ = tempfile.mkdtemp()
+            os.mkdir( os.path.join(self.priors_directory_, "priors") ) # Turn around R: drive symbolic links issue
+            print self.priors_directory_
         #
         #
         except Exception as inst:
@@ -91,11 +93,18 @@ class Protocol( object ):
             if not os.path.exists(self.patient_dir_):
                 raise Exception( "User must set _ variable, or directory %s not found." 
                                  %self.patient_dir_ )
+            
+            #
+            # Check ANTs environment vairable is set up
+            if os.environ.get(''):
+                raise Exception( "$FSLDIR env variable is not setup on your system" )
+
+
             #
             # make a directory for the FLAIR        
             self.FLAIR_directory_ = os.path.join(self.patient_dir_, 'FLAIR_processing')
             os.mkdir( self.FLAIR_directory_ )
-            os.mkdir( os.path.join(self.FLAIR_directory_, "Prior_probabilities") )
+            os.mkdir( os.path.join(self.FLAIR_directory_, "priors") )
             
             # make a directory for the Partial Volume Extraction (PVE) T1
             self.PVE_Segmentation_ = os.path.join(self.patient_dir_, 'PVE_Segmentation')
@@ -298,12 +307,12 @@ class Protocol( object ):
                     T1_file = os.path.join( self.PVE_Segmentation_, file_name )
             # Add c1 (GM), c2 (WM) and c3 (CSF) and create a binary mask
             maths = fsl.ImageMaths( in_file   = c1_file,
-                                    op_string = '-add %s '%(c2_file), 
+                                    op_string = '-add %s -add %s'%(c2_file, c3_file), 
                                     out_file  = "brain_mask.nii.gz" )
             maths.run();
             # TODO: somehow hang calculation ...
             maths = fsl.ImageMaths( in_file       = "brain_mask.nii.gz",
-                                    op_string     = '-thr 0.3 -fillh26 -bin',
+                                    op_string     = '-thr 0.25 -fillh26 -bin -ero',
                                     out_data_type = "char",
                                     out_file      = "brain_mask.nii.gz" )
             maths.run();
@@ -312,9 +321,13 @@ class Protocol( object ):
 
             #
             # copy probability maps in FLAIR prior directory
-            shutil.copy( c1_file, os.path.join(self.FLAIR_directory_, "Prior_probabilities") )
-            shutil.copy( c2_file, os.path.join(self.FLAIR_directory_, "Prior_probabilities") )
-            shutil.copy( c3_file, os.path.join(self.FLAIR_directory_, "Prior_probabilities") )
+            self.priors_.append(  os.path.join(self.priors_directory_, "priors", "POSTERIOR_01.nii.gz") )
+            self.priors_.append(  os.path.join(self.priors_directory_, "priors", "POSTERIOR_02.nii.gz") )
+            self.priors_.append(  os.path.join(self.priors_directory_, "priors", "POSTERIOR_03.nii.gz") )
+            #
+            shutil.copy( c1_file, self.priors_[0] )
+            shutil.copy( c2_file, self.priors_[1] )
+            shutil.copy( c3_file, self.priors_[2] )
         #
         #
         except Exception as inst:
@@ -367,18 +380,19 @@ class Protocol( object ):
 
             #
             # Segment FLAIR image to isolate WMH probability density
+            N = 15 # number of tissues in segmentation
             at = ants.Atropos()
             at.inputs.dimension                = 3
             at.inputs.intensity_images         = FLAIR_in_T1_unb
             at.inputs.mask_image               = self.brain_mask_
             # initialization
-            at.inputs.initialization = 'KMeans'
-            at.inputs.number_of_tissue_classes = 15
+            at.inputs.number_of_tissue_classes = N
+            at.inputs.initialization           = 'KMeans'
             # -c [5,1.e-4]
-            at.inputs.n_iterations             = 5
             at.inputs.convergence_threshold    = 1.e-4
+            at.inputs.n_iterations             = 5
             #  -m [0.5,1x1x1]
-            at.inputs.mrf_smoothing_factor     = 0.2
+            at.inputs.mrf_smoothing_factor     = 0.5
             at.inputs.mrf_radius               = [1, 1, 1]
             #
             at.inputs.posterior_formulation         = 'Socrates'
@@ -387,27 +401,39 @@ class Protocol( object ):
             at.inputs.save_posteriors               =  True
             #
             at.run()
-            # Add the wmh prior in the set of prior for next step
-            # copy the prior Prior_probabilitiesdirectory
-            # self.priors_
-            
 
             #
-            # Run four tissues segmentation to process balanced WMH probability map
+            # Selects the WMH probability map 
+            self.priors_.append( os.path.join(self.priors_directory_, "priors", "POSTERIOR_04.nii.gz") )
+            # Sorts the ntissues segmentation probability maps
+            os.mkdir( os.path.join(self.FLAIR_directory_, "Seg_n_tissues") )
+            # 
+            for posterior in os.listdir(self.FLAIR_directory_):
+                if "POSTERIOR" in posterior:
+                    shutil.move( posterior, os.path.join(self.FLAIR_directory_, "Seg_n_tissues") )
+                if "POSTERIOR" in posterior and str(N) in posterior:
+                    # Add the wmh prior in the set of prior for next step
+                    shutil.copy( os.path.join(self.FLAIR_directory_, "Seg_n_tissues", posterior), self.priors_[3] )
+
+            #
+            # Run four tissues segmentation (GM, WM, CSF, WMH) to process balanced WMH probability map
+            # Turn around R: drive symbolic links issue
+            os.chdir( self.priors_directory_ )
+            #
             at = ants.Atropos()
             at.inputs.dimension                = 3
             at.inputs.intensity_images         = FLAIR_in_T1_unb
             at.inputs.mask_image               = self.brain_mask_
             # initialization
-            at.inputs.initialization = 'PriorProbabilityImages'
-            at.inputs.number_of_tissue_classes = 4
-            at.inputs.prior_probability_images = self.priors_
-            at.inputs.prior_weighting          = 0.8
+            at.inputs.number_of_tissue_classes =  4
+            at.inputs.initialization           = 'PriorProbabilityImages'
+            at.inputs.prior_probability_images =  self.priors_
+            at.inputs.prior_weighting          =  0.3
             # -c [5,1.e-4]
-            at.inputs.n_iterations             = 5
             at.inputs.convergence_threshold    = 1.e-4
+            at.inputs.n_iterations             = 5
             #  -m [0.5,1x1x1]
-            at.inputs.mrf_smoothing_factor     = 0.2
+            at.inputs.mrf_smoothing_factor     = 0.3
             at.inputs.mrf_radius               = [1, 1, 1]
             #
             at.inputs.posterior_formulation         = 'Socrates'
@@ -416,6 +442,14 @@ class Protocol( object ):
             at.inputs.save_posteriors               =  True
             #
             at.run()
+            # Turn around R: drive symbolic links issue
+            os.chdir( self.FLAIR_directory_ )
+            # Copy back the results
+            os.mkdir( os.path.join(self.FLAIR_directory_, "output") )
+            for res in os.listdir( self.priors_directory_ ):
+                if "POSTERIOR" in res:
+                    shutil.copy( os.path.join(self.priors_directory_, res), 
+                                 os.path.join(self.FLAIR_directory_, "output") )
         #
         #
         except Exception as inst:
