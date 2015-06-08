@@ -752,44 +752,19 @@ class Protocol( object ):
                                     out_file      =  self.brain_mask_,
                                     out_data_type = "char" )
             maths.run();
-            
+
             #
             # This filter will remove 0 +- epsilon values from the flow spectrum
             if True:
                 self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
-                #
-                brain_mask = ni.NiftiImage( self.brain_mask_ )
-                GM         = ni.NiftiImage( c1_in_T2 )
-                WM         = ni.NiftiImage( c2_in_T2 )
-                CSF        = ni.NiftiImage( c3_in_T2 )
-                #
-                mask = ni.NiftiImage( c1_in_T2 )
-                
-                #
-                #
-                for z in range( 0, mask.header['dim'][1] - 1 ):
-                    for y in range( 0, mask.header['dim'][2] - 1 ):
-                        for x in range( 0, mask.header['dim'][3] - 1 ):
-                            if brain_mask.data[x,y,z] == 1:
-                                if GM.data[x,y,z] > 0.1:
-                                    if GM.data[x,y,z] > WM.data[x,y,z] and GM.data[x,y,z] > CSF.data[x,y,z]:
-                                        mask.data[x,y,z] = 1
-                                    else:
-                                        mask.data[x,y,z] = 0
-                                else:
-                                    mask.data[x,y,z] = 0
-                            else:
-                                mask.data[x,y,z] = 0
-                #
-                mask.save( self.gm_mask_ )
-
+                Image_tools.natural_gray_matter( self.gm_mask_, c1_in_T2, c2_in_T2, c3_in_T2, self.brain_mask_)
             else:
                 self.gm_mask_ = os.path.join( self.PVE_Segmentation_, "c1_T2_mask.nii.gz" )
                 maths = fsl.ImageMaths( in_file       = c1_in_T2,
                                         op_string     = "-thr 0.3  -fillh26 -bin",
                                         out_data_type = "char",
                                         out_file      = self.gm_mask_)
-                maths.run();
+                maths.run()
 
             #
             # Create a mask only for the gray matter
@@ -1285,94 +1260,121 @@ class Protocol( object ):
             # Correction map
             # 
 
+            # 
+            # parameters
+            parameters = "%(rho_gm)s %(rho_wm)s %(rho_csf)s %(T1_gm)s %(T1_wm)s %(T1_csf)s %(T2_gm)s %(T2_wm)s %(T2_csf)s %(TE)s %(TR)s"%{"rho_gm": self.rho_gm_, 
+                                                                                                                                          "rho_wm": self.rho_wm_, 
+                                                                                                                                          "rho_csf":self.rho_csf_, 
+                                                                                                                                          "T1_gm":  self.T1_gm_, 
+                                                                                                                                          "T1_wm":  self.T1_wm_, 
+                                                                                                                                          "T1_csf": self.T1_csf_, 
+                                                                                                                                          "T2_gm":  self.T2_gm_, 
+                                                                                                                                          "T2_wm":  self.T2_wm_, 
+                                                                                                                                          "T2_csf": self.T2_csf_, 
+                                                                                                                                          "TE":     self.TE_, 
+                                                                                                                                          "TR":     self.TR_}
+
+
             #
             # Correction ratio from the partial volume correction for the gray matter
             PVC_LR = os.path.join( self.ACPC_Alignment_, "PVC_LR.nii.gz" )
             PVC_HR = os.path.join( self.ACPC_Alignment_, "PVC_HR.nii.gz" )
-
-            #
-            # Low resolution
-            maths = fsl.ImageMaths( in_file   =  WM_warped_m0, 
-                                    op_string = "-mul 0.4",
-                                    out_file  =  PVC_LR )
-            maths.run()
-            #
-            maths = fsl.ImageMaths( in_file   =  PVC_LR, 
-                                    op_string = "-add %s"%GM_warped_m0,
-                                    out_file  =  PVC_LR )
-            maths.run()
-
-            #
-            # High resolution
-            maths = fsl.ImageMaths( in_file   =  c2_file, 
-                                    op_string = "-mul 0.4",
-                                    out_file  =  PVC_HR )
-            maths.run()
-            #
-            maths = fsl.ImageMaths( in_file   =  PVC_HR, 
-                                    op_string = "-add %s"%c1_file,
-                                    out_file  =  PVC_HR )
-            maths.run()
-
-            #
-            # M0 ratio
-            #
-            
-            #
-            # Low resolution
-            M0_PVC_LR     = os.path.join( self.ACPC_Alignment_, "m0_PVC_LR.nii.gz" )
-            #
             brain_mask_m0 = os.path.join( self.ASL_dicom_, 
                                           "nii_all", "realigned_stripped", 
                                           "brain_T2_mask_m0.nii.gz" )
-            self.Ratio_M0_( Image_output = M0_PVC_LR, Mask = brain_mask_m0,
-                            GM = GM_warped_m0, WM = WM_warped_m0, CSF = CSF_warped_m0 )
+            # Low resolution
+            Image_tools.CBF_gm_ratio( PVC_LR, parameters, GM_warped_m0, WM_warped_m0, CSF_warped_m0, brain_mask_m0)
+
+#            maths = fsl.ImageMaths( in_file   =  WM_warped_m0, 
+#                                    op_string = "-mul 0.4",
+#                                    out_file  =  PVC_LR )
+#            maths.run()
+#            #
+#            maths = fsl.ImageMaths( in_file   =  PVC_LR, 
+#                                    op_string = "-add %s"%GM_warped_m0,
+#                                    out_file  =  PVC_LR )
+#            maths.run()
 
             #
             # High resolution
-            M0_PVC_HR = os.path.join( self.ACPC_Alignment_, "m0_PVC_HR.nii.gz" )
-            #
-            self.Ratio_M0_( Image_output = M0_PVC_HR, Mask = self.brain_mask_,
-                            GM = c1_file, WM = c2_file, CSF = c2_file )
+            Image_tools.CBF_gm_ratio( PVC_HR, parameters, c1_file, c2_file, c3_file, self.brain_mask_)
+#
+#            maths = fsl.ImageMaths( in_file   =  c2_file, 
+#                                    op_string = "-mul 0.4",
+#                                    out_file  =  PVC_HR )
+#            maths.run()
+#            #
+#            maths = fsl.ImageMaths( in_file   =  PVC_HR, 
+#                                    op_string = "-add %s"%c1_file,
+#                                    out_file  =  PVC_HR )
+#            maths.run()
+
+#            #
+#            # M0 ratio
+#            #
+#            
+#            #
+#            # Low resolution
+#            M0_PVC_LR     = os.path.join( self.ACPC_Alignment_, "m0_PVC_LR.nii.gz" )
+#            #
+#            self.Ratio_M0_( Image_output = M0_PVC_LR, Mask = brain_mask_m0,
+#                            GM = GM_warped_m0, WM = WM_warped_m0, CSF = CSF_warped_m0 )
+#
+#            #
+#            # High resolution
+#            M0_PVC_HR = os.path.join( self.ACPC_Alignment_, "m0_PVC_HR.nii.gz" )
+#            #
+#            self.Ratio_M0_( Image_output = M0_PVC_HR, Mask = self.brain_mask_,
+#                            GM = c1_file, WM = c2_file, CSF = c2_file )
 
             #
             # Cerebral blood flow within the gray matter
             #
 
             #
-            # CBF low resolution partial volume corrected for GM
-            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF.nii.gz"), 
-                                    op_string = "-mul %s -div %s "%(M0_PVC_LR, PVC_LR),
-                                    out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM_PVC_LR.nii.gz" ) )
+            # CBF GM low resolution
+            # PWI GM partial volume effect
+            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "PWI_corrected.nii" ), 
+                                    op_string = "-mul %s"%(PVC_LR), 
+                                    out_file  =   os.path.join( self.ACPC_Alignment_, "PWI_GM_PVC_LR.nii.gz" ) )
             maths.run();
-            # CBF and GM
-            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF_GM_PVC_LR.nii.gz" ), 
-                                    op_string = "-mul %s"%( os.path.join( self.ACPC_Alignment_, "GM_mask_m0.nii.gz" ) ),
-                                    out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM.nii.gz") )
+            # PWI GM partial volume effect smoothed
+            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "PWI_GM_PVC_LR.nii.gz" ), 
+                                    op_string = "-s 3", 
+                                    out_file  =   os.path.join( self.ACPC_Alignment_, "PWI_GM_PVC_s3_LR.nii.gz" ) )
+            maths.run();
+            # CBF GM partial volume effect
+            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "PWI_GM_PVC_s3_LR.nii.gz" ), 
+                                    op_string = "-div %s"%os.path.join(self.ACPC_Alignment_,"m0_brain_corrected_3D.nii.gz"), 
+                                    out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM.nii.gz" ) )
+            maths.run();
+            # CBF in GM 
+            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF_GM.nii.gz" ), 
+                                    op_string = "-mul %s"%os.path.join( self.ACPC_Alignment_, "GM_mask_m0.nii.gz" ),
+                                    out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM.nii.gz" ) )
             maths.run();
             
             #
-            # CBF filter on GM in high resolution
-            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF_T2.nii.gz" ), 
-                                    op_string = "-mul %s -div %s"%(M0_PVC_HR, PVC_HR), 
-                                    out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM_PVC_HR.nii.gz" ) )
+            # CBF GM high resolution
+            # PWI GM partial volume effect
+            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "PWI_corrected_T2.nii.gz" ), 
+                                    op_string = "-mul %s"%(PVC_HR), 
+                                    out_file  =   os.path.join( self.ACPC_Alignment_, "PWI_GM_PVC_HR.nii.gz" ) )
             maths.run();
-            # CBF in GM HD
-            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF_GM_PVC_HR.nii.gz" ), 
-                                    op_string = "-mul %s"%self.gm_mask_,
+            # PWI GM partial volume effect smoothed
+            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "PWI_GM_PVC_HR.nii.gz" ), 
+                                    op_string = "-s 3", 
+                                    out_file  =   os.path.join( self.ACPC_Alignment_, "PWI_GM_PVC_s3_HR.nii.gz" ) )
+            maths.run();
+            # CBF GM partial volume effect
+            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "PWI_GM_PVC_s3_HR.nii.gz" ), 
+                                    op_string = "-div %s"%os.path.join(self.ACPC_Alignment_,"m0_brain_corrected_T2_3D.nii.gz"), 
                                     out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM_T2.nii.gz" ) )
             maths.run();
-
-            #
-            # PWI in GM HD
-            maths = fsl.ImageMaths( in_file   =   os.path.join(self.ACPC_Alignment_, "PWI_corrected_T2_3D.nii.gz") , 
-                                    op_string = "-div %s"%PVC_HR,
-                                    out_file  =   os.path.join(self.ACPC_Alignment_, "PWI_GM_PVC_HR.nii.gz") )
-            maths.run();
-            #
-            maths = fsl.ImageMaths( in_file   =   os.path.join(self.ACPC_Alignment_, "PWI_GM_PVC_HR.nii.gz") , 
+            # CBF in GM HD
+            maths = fsl.ImageMaths( in_file   =   os.path.join( self.ACPC_Alignment_, "CBF_GM_T2.nii.gz" ), 
                                     op_string = "-mul %s"%self.gm_mask_,
-                                    out_file  =   os.path.join(self.ACPC_Alignment_, "PWI_GM_T2.nii.gz") )
+                                    out_file  =   os.path.join( self.ACPC_Alignment_, "CBF_GM_T2.nii.gz" ) )
             maths.run();
         #
         #
@@ -1427,7 +1429,6 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             self.status_ = False
         except IOError as e:
@@ -1471,7 +1472,6 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             self.status_ = False
         except IOError as e:
@@ -1492,7 +1492,6 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             self.status_ = False
         except IOError as e:

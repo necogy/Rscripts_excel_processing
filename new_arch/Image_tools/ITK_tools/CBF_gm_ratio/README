@@ -1,0 +1,6 @@
+mkdir build
+cd build
+cmake -DITK_DIR=/home/ycobigo/devel/CPP/ITK/install-4.7.0-static/lib/cmake/ITK-4.7/ ../
+
+./CBF_gm_ratio "la_vie_est_belle.nii.gz" "0.82 0.72 1. 1110. 1600. 4136. 60. 80. 1442. 11. 2522.1" c1_file.nii.gz c2_file.nii.gz c3_file.nii.gz mask.nii.gz
+

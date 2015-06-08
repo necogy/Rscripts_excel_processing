@@ -8,6 +8,27 @@ import nipype.interfaces.fsl as fsl
 #
 import Motion_control as Mc
 #
+# Global functions
+def which(program):
+    """ This function meemic the UNIX command 'which' new Python interpretor carries this command in the shutil library"""
+    #
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    #
+    #
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path     = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe( exe_file ):
+                return exe_file
+    #
+    return None
+#
 #
 #
 _log = logging.getLogger("__Image_tools__")
@@ -50,6 +71,106 @@ def generic_unix_cmd( Command ):
         quit(-1)
 
 
+#
+# 
+#
+def natural_gray_matter( Output, GM, WM, CSF, Mask ):
+    """ Function compute the natural gray matter, between CSF and Wm.
+
+    Output:file       - output file saved after computing
+    GM:file           - gray matter probability map
+    WM:file           - white matter probability map
+    CSF:file          - CSF probability map
+
+    Example:
+    ./gray_matter_mask "la_vie_est_belle.nii.gz" c1_file.nii.gz c2_file.nii.gz c3_file.nii.gz mask.nii.gz
+    """
+    #
+    #
+    try:
+        #
+        # 
+        # Check we have ITK convert between file executable
+        # gray_matter_mask "la_vie_est_belle.nii.gz" c1_file.nii.gz c2_file.nii.gz c3_file.nii.gz mask.nii.gz
+        #        gray_matter_mask = which("gray_matter_mask")
+        gray_matter_mask = which("/home/ycobigo/devel/Python/ASL-ana/new_arch/Image_tools/ITK_tools/bin/gray_matter_mask")
+        if gray_matter_mask is None:
+            raise Exception("Missing gray_matter_mask in the path")
+        _log.debug(gray_matter_mask)
+        #
+        cmd = '%s \"%s\" %s %s %s %s' %(gray_matter_mask, Output, GM, WM, CSF, Mask)
+        proc = subprocess.Popen( cmd, shell=True,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE )
+        (output, error) = proc.communicate()
+        if error: 
+            raise Exception(error)
+        if output: 
+            _log.debug("gray_matter_mask tool pass")
+            _log.info(output)
+        if proc.returncode != 0:
+            raise Exception( cmd + ': exited with error\n' + error )
+    #
+    #
+    except Exception as inst:
+        _log.error(inst)
+        quit(-1)
+    except IOError as e:
+        print "I/O error({0}): {1}".format(e.errno, e.strerror)
+        quit(-1)
+    except:
+        print "Unexpected error:", sys.exc_info()[0]
+        quit(-1)
+#
+# 
+#
+def CBF_gm_ratio( Output, Parameters, GM, WM, CSF, Mask ):
+    """ Function computes the CBF gray matter ratio.
+    
+    Output:file       - output file saved after computing
+    Parameters:string - Parameter for computing the CBF gray matter ratio
+    GM:file           - gray matter probability map
+    WM:file           - white matter probability map
+    CSF:file          - CSF probability map
+
+    Example:
+    ./CBF_gm_ratio "la_vie_est_belle.nii.gz" "0.82 0.72 1. 1110. 1600. 4136. 60. 80. 1442. 11. 2522.1" c1_file.nii.gz c2_file.nii.gz c3_file.nii.gz mask.nii.
+    """
+    #
+    #
+    try:
+        #
+        # 
+        # CBF_gm_ratio "la_vie_est_belle.nii.gz" c1_file.nii.gz c2_file.nii.gz c3_file.nii.gz mask.nii.gz
+        #        CBF_gm_ratio = which("CBF_gm_ratio")
+        CBF_gm_ratio = which("/home/ycobigo/devel/Python/ASL-ana/new_arch/Image_tools/ITK_tools/bin/CBF_gm_ratio")
+        if CBF_gm_ratio is None:
+            raise Exception("Missing CBF_gm_ratio in the path")
+        _log.debug(CBF_gm_ratio)
+        #
+        cmd = '%s \"%s\" \"%s\" %s %s %s %s' %(CBF_gm_ratio, Output, Parameters, GM, WM, CSF, Mask)
+        proc = subprocess.Popen( cmd, shell=True,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE )
+        (output, error) = proc.communicate()
+        if error: 
+            raise Exception(error)
+        if output: 
+            _log.debug("CBF_gm_ratio tool pass")
+            _log.info(output)
+        if proc.returncode != 0:
+            raise Exception( cmd + ': exited with error\n' + error )
+    #
+    #
+    except Exception as inst:
+        _log.error(inst)
+        quit(-1)
+    except IOError as e:
+        print "I/O error({0}): {1}".format(e.errno, e.strerror)
+        quit(-1)
+    except:
+        print "Unexpected error:", sys.exc_info()[0]
+        quit(-1)
 #
 # FSL
 #

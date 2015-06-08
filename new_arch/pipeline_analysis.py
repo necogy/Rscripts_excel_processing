@@ -23,7 +23,7 @@ import Analysis_framework as ana
 #
 # Argument: CVS file is the base of analysis
 prod = ana.Perfusion("/home/ycobigo/study/EPI/ASL-pipeline/Tools/asl.csv", 
-                     Procs = 16)
+                     Procs = 8)
 
 ################################################################################
 ## Image extraction
