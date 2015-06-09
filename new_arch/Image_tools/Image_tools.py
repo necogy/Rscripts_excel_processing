@@ -1,15 +1,34 @@
-import sys
-import shutil
+import sys, os, tempfile, shutil
 import logging
-import os
 import subprocess
 import nipype
 import nipype.interfaces.fsl as fsl
 
 _log = logging.getLogger("__Image_tools__")
 #
-# Global function
+# Global functions
+def which(program):
+    """ This function meemic the UNIX command 'which' new Python interpretor carries this command in the shutil library"""
+    #
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    #
+    #
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path     = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe( exe_file ):
+                return exe_file
+    #
+    return None
 # 
+#
+#
 def generic_unix_cmd( Command ):
     #
     #
@@ -61,6 +80,80 @@ def run_bet(Directory, Frac = 0.6, Robust = True, Mask = False):
             btr.inputs.mask    = Mask;
             print "Extracting brain from %s......" %(file_name)
             res = btr.run();
+#
+# FSL
+#
+def run_ana2nii( File_in, File_ref, File_out ):
+    """ Function uses FSL flirt to transform analyze file into nifti."""
+    tmpdir = tempfile.mkdtemp()
+    out_mat_file = os.path.join(tmpdir, "out_matrix_file.mat")
+    #
+    flt = fsl.FLIRT()
+    flt.inputs.in_file         = File_in
+    flt.inputs.reference       = File_ref
+    flt.inputs.out_file        = File_out
+    flt.inputs.out_matrix_file = out_mat_file
+    flt.inputs.args            = "-dof 6"
+    res = flt.run()
+#
+# ANTs
+#
+def ANTs_Atropos( Input, Mask, Number_of_tissue_classes, Prior_probability_format, Prior_weighting, MRF_smoothing_factor, MRF_radius, Output_labeled, Output_posterior_format, Initialization = "PriorProbabilityImages", Iteration = 5, Convergence_threshold = 1.e-4,Dimension = 3 ):
+    """ Function uses ANTs Atropos for tissue segmentation."""
+    # at.inputs.prior_probability_images =  self.priors_ Prior_probability_format
+    #  MRF_radius 1x1x1
+    try:
+        #
+        # 
+        # Check we have Atropos
+        atropos = which("Atropos")
+        if atropos is None:
+            raise Exception("Missing Atropos in the path")
+        _log.debug(atropos)
+
+        #
+        # Commande line
+        # Atropos -d 3 -x brain_mask.nii.gz -c [5,1.e-4] -a  FLAIR_GHB219X1_T1_unbias.nii.gz -i  PriorProbabilityImages[4,T1_3_output/tmpSegmentationPosteriors%d.nii.gz,0.3]  -k Gaussian -m [0.3,1x1x1] -r 1 -p Socrates[1] -o [output/tmpSegmentation.nii.gz,output/tmpSegmentationPosteriors%d.nii.gz] 
+        cmd = """%(bin)s  -d %(Dimension)s -x %(Mask)s  -c [%(Iteration)s,%(Convergence_threshold)s]  -a %(Input)s -i %(Initialization)s[%(Number_of_tissue_classes)s,%(Prior_probability_format)s,%(Prior_weighting)s] -k Gaussian -m [%(MRF_smoothing_factor)s,%(MRF_radius)s] -r 1 -p Socrates[1] -o [%(Output_labeled)s,%(Output_posterior_format)s] """ % {
+            'bin':atropos,
+            'Dimension':Dimension,
+            'Mask':Mask,
+            'Iteration':Iteration,
+            'Convergence_threshold':Convergence_threshold,
+            'Input':Input,
+            'Initialization':Initialization,
+            'Number_of_tissue_classes':Number_of_tissue_classes,
+            'Prior_probability_format':Prior_probability_format,
+            'Prior_weighting':Prior_weighting,
+            'MRF_smoothing_factor':MRF_smoothing_factor,
+            'MRF_radius':MRF_radius,
+            'Output_labeled':Output_labeled,
+            'Output_posterior_format':Output_posterior_format
+        }
+        print cmd
+        #
+        proc = subprocess.Popen( cmd, shell=True,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE )
+        (output, error) = proc.communicate()
+        if error: 
+            raise Exception(error)
+        if output: 
+            _log.debug("gray_matter_mask tool pass")
+            _log.info(output)
+        if proc.returncode != 0:
+            raise Exception( cmd + ': exited with error\n' + error )
+    #
+    #
+    except Exception as inst:
+        _log.error(inst)
+        quit(-1)
+    except IOError as e:
+        print "I/O error({0}): {1}".format(e.errno, e.strerror)
+        quit(-1)
+    except:
+        print "Unexpected error:", sys.exc_info()[0]
+        quit(-1)
 #
 #
 #

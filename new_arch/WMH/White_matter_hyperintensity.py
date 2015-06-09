@@ -1,14 +1,13 @@
 import logging
 import inspect
 import sys, os, shutil, tempfile
-import tempfile
 import subprocess
 import numpy
 import nipype
 import nipype.interfaces.fsl  as fsl
 import nipype.interfaces.spm  as spm
 import nipype.interfaces.ants as ants
-#import nipype.interfaces.matlab as mlab
+import nipype.interfaces.matlab as mlab
 #
 #
 #
@@ -19,7 +18,7 @@ import Image_tools
 #
 #
 #
-_log = logging.getLogger("__Arterial_Spin_Labeling__")
+_log = logging.getLogger("__White_Matter_hyperintensity__")
 #
 #
 #
@@ -40,7 +39,7 @@ class Protocol( object ):
 
     
     Attributes:
-    patient_dir_     :string - ASL-pipe directory
+    patient_dir_     :string - WMH-pipe directory
     FLAIR_directory_ :string - ACPC aligned T2 directory
     PVE_Segmentation_:string - PVE T1 directory 
     FLAIR_file_      :list   - FLAIR list. 0 nii; or (0,1) = (hdr,img)
@@ -55,7 +54,8 @@ class Protocol( object ):
             #
             # public variables
             self.patient_dir_ = "" # Patient directory
-            # private variables
+            self.status_      = True
+           # private variables
             # Fluid-attenuated inversion recovery
             self.FLAIR_directory_   = ""
             self.FLAIR_file_        = []
@@ -112,15 +112,17 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
-            quit(-1)
+            _log.error("Protocol WMH - check environment -- failed")
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            _log.erro("Protocol WMH - check environment -- failed")
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            _log.error("Protocol WMH - check environment -- failed")
+            self.status_ = False
     #
     #
     #
@@ -146,23 +148,14 @@ class Protocol( object ):
             # Find the FLAIR analyze file
             elif seeker.seek_analyze( "FLAIR_" ):
                 self.FLAIR_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.FLAIR_file_[0]), 
-                             self.FLAIR_directory_ )
-                shutil.copy( os.path.join(self.patient_dir_, self.FLAIR_file_[1]), 
-                             self.FLAIR_directory_ )
-                # change into nifti
-                os.chdir(self.FLAIR_directory_)
-                ana2nii = spm.Analyze2nii();
-                ana2nii.inputs.analyze_file = self.FLAIR_file_[0]
-                ana2nii.nifti_file          = "%s.nii"%(self.FLAIR_file_[0][:-4])
-                ana2nii.run();
+                # change into nifti format
+                Image_tools.run_ana2nii( os.path.join(self.patient_dir_, self.FLAIR_file_[0]), # input
+                                         os.path.join(self.patient_dir_, self.FLAIR_file_[0]), # ref
+                                         os.path.join(self.FLAIR_directory_, 
+                                                      "%s.nii.gz"%(self.FLAIR_file_[0][:-4])) )# output
                 #
-                os.remove( os.path.join(self.FLAIR_directory_, self.FLAIR_file_[0]) )
-                os.remove( os.path.join(self.FLAIR_directory_, self.FLAIR_file_[1]) )
-                self.FLAIR_file_[0] = ana2nii.nifti_file
+                self.FLAIR_file_[0] = os.path.join(self.FLAIR_directory_, "%s.nii.gz"%(self.FLAIR_file_[0][:-4]))
                 self.FLAIR_file_[1] = ""
-                #
-                os.chdir(self.patient_dir_)
             else:
                 raise Exception("FLAIR file does not exist.")
                 
@@ -176,120 +169,98 @@ class Protocol( object ):
             if seeker.seek_nifti( "MP-LAS-long" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+                #
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, self.T1_file_[0] )
             elif seeker.seek_nifti( "MP-LAS-3DC" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
+                #
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, self.T1_file_[0] )
             elif seeker.seek_nifti( "MP-LAS_" ):
                 self.T1_file_ = seeker.get_files()
                 shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-            # Find the T1 zip file
-            elif seeker.seek_zip( "MP-LAS-long" ):
-                self.T1_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-                # unzip
-                os.chdir(self.PVE_Segmentation_);
-                with zf( self.T1_file_[0] ) as zf_name:
-                    zf_name.extractall();
-                # change into nifti
-                cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n *'
-                Image_tools.generic_unix_cmd(cmd)
-                cmd = 'rm c*.nii o*.nii'
-                Image_tools.generic_unix_cmd(cmd)
-                # replace extention
-                for fname in os.listdir(  self.PVE_Segmentation_ ):
-                    if fname.endswith( "nii" ):
-                        self.T1_file_[0] = fname
-                # Back to the orignal directory
-                os.chdir(self.patient_dir_);
-            #  Find the T1 analyze file
+                #
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, self.T1_file_[0] )
             elif seeker.seek_analyze( "MP-LAS-long" ):
                 self.T1_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
                 # change into nifti
-                os.chdir(self.PVE_Segmentation_);
-                ana2nii = spm.Analyze2nii();
-                ana2nii.inputs.analyze_file = self.T1_file_[0]
-                ana2nii.nifti_file          = "%s.nii"%(self.T1_file_[0][:-4])
-                ana2nii.run();
-                #
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[0]) )
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[1]) )
-                self.T1_file_[0] = ana2nii.nifti_file
+                Image_tools.run_ana2nii( os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4])) )
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4]))
                 self.T1_file_[1] = ""
-                #
-                os.chdir(self.patient_dir_);
             elif seeker.seek_analyze( "MP-LAS-3DC" ):
                 self.T1_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
-                 # change into nifti
-                os.chdir(self.PVE_Segmentation_);
-                ana2nii = spm.Analyze2nii();
-                ana2nii.inputs.analyze_file = self.T1_file_[0]
-                ana2nii.nifti_file          = "%s.nii"%(self.T1_file_[0][:-4])
-                ana2nii.run();
-                #
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[0]) )
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[1]) )
-                self.T1_file_[0] = ana2nii.nifti_file
+                # change into nifti
+                Image_tools.run_ana2nii( os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4])) )
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4]))
                 self.T1_file_[1] = ""
-                #
-                os.chdir(self.patient_dir_);
             elif seeker.seek_analyze( "MP-LAS_" ):
                 self.T1_file_ = seeker.get_files()
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[0]), self.PVE_Segmentation_ )
-                shutil.copy( os.path.join(self.patient_dir_, self.T1_file_[1]), self.PVE_Segmentation_ )
                 # change into nifti
-                os.chdir(self.PVE_Segmentation_);
-                ana2nii = spm.Analyze2nii();
-                ana2nii.inputs.analyze_file = self.T1_file_[0]
-                ana2nii.nifti_file          = "%s.nii"%(self.T1_file_[0][:-4])
-                ana2nii.run();
-                #
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[0]) )
-                os.remove( os.path.join(self.PVE_Segmentation_, self.T1_file_[1]) )
-                self.T1_file_[0] = ana2nii.nifti_file
+                Image_tools.run_ana2nii( os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.patient_dir_, self.T1_file_[0] ),
+                                         os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4])) )
+                self.T1_file_[0] = os.path.join( self.PVE_Segmentation_, "%s.nii.gz"%(self.T1_file_[0][:-4]))
                 self.T1_file_[1] = ""
-                #
-                os.chdir(self.patient_dir_);
             else:
                 raise Exception("T1 file does not exist.")
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
-            quit(-1)
+            _log.error("Protocol WMH - initialization -- failed")
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            _log.error("Protocol WMH - initialization -- failed")
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            _log.error("Protocol WMH - initialization -- failed")
+            self.status_ = False
     #
     #
     #
-    def run_spm_segmentT1( self ):
+    def segmentation_T1( self ):
         """Run SPM new segmentation. This function produces probability map for the main tisues and creates the brain mask. """
         try: 
             #
-            # Go into dir with PVE t1 and find the t1 filename
-            os.chdir( self.PVE_Segmentation_ )
             # 
             T1_file = self.T1_file_[0]
             #
-            if not os.path.isfile( os.path.join(self.PVE_Segmentation_, T1_file) ):
-                raise Exception( "No T1 nifti file found" )
-            else:
-                T1_file = os.path.join(self.PVE_Segmentation_, T1_file)
+            if not os.path.isfile( T1_file ):
+                raise Exception( "No T1 nifti file found in %s"%self.PVE_Segmentation_ )
+            #
+            if T1_file.endswith(".nii.gz"):
+                os.system('gunzip %s'%self.T1_file_[0] )
+                T1_file = "%s"%(self.T1_file_[0][:-3])
 
             #
-            # Run Spm_NewSegment on the T1 to get GM,WM,ventricles
-            seg = spm.NewSegment();
-            seg.inputs.channel_files = T1_file;
-            seg.inputs.channel_info  = (0.0001, 60, (True, True))
-            seg.run();
+            # Run Spm_NewSegment on the T1 
+            mlc = mlab.MatlabCommand()
+            cmd = """
+            if isempty(which(\'spm\')),
+              throw(MException(\'SPMCheck:NotFound\', \'SPM not in matlab path\'));
+            end;
+            [name, version] = spm(\'ver\');
+            spm(\'Defaults\',\'fMRI\');
+            if strcmp(name, \'SPM8\') || strcmp(name, \'SPM12b\'),
+              spm_jobman(\'initcfg\');
+              spm_get_defaults(\'cmdline\', 1);
+            end;
+            jobs{1}.spm.tools.preproc8.channel(1).biasreg  = 0.0001;
+            jobs{1}.spm.tools.preproc8.channel(1).write(1) = 1;
+            jobs{1}.spm.tools.preproc8.channel(1).write(2) = 1;
+            jobs{1}.spm.tools.preproc8.channel(1).biasfwhm = 60.0;
+            jobs{1}.spm.tools.preproc8.channel(1).vols = {\'%(T1)s'};
+            spm_jobman(\'run\', jobs);"""%{'T1':T1_file}
+            # 
+            mlc.inputs.script = cmd
+            mlc.inputs.mfile  = False
+            mlc.run()
 
             #
             # Gather GM, WM and CSF
@@ -298,26 +269,29 @@ class Protocol( object ):
             c3_file = "" # CSF
             for file_name in os.listdir( self.PVE_Segmentation_ ):
                 if file_name.startswith("c1"):
-                    c1_file = file_name
+                    c1_file = os.path.join( self.PVE_Segmentation_, file_name )
                 if file_name.startswith("c2"):
-                    c2_file = file_name
+                    c2_file = os.path.join( self.PVE_Segmentation_, file_name )
                 if file_name.startswith("c3"):
-                    c3_file = file_name
+                    c3_file = os.path.join( self.PVE_Segmentation_, file_name )
                 if file_name.startswith("m"):
                     T1_file = os.path.join( self.PVE_Segmentation_, file_name )
+
+            #
+            # Binary brain mask
+            self.brain_mask_ = os.path.join( self.PVE_Segmentation_, "brain_mask.nii.gz" )
             # Add c1 (GM), c2 (WM) and c3 (CSF) and create a binary mask
             maths = fsl.ImageMaths( in_file   = c1_file,
                                     op_string = '-add %s -add %s'%(c2_file, c3_file), 
-                                    out_file  = "brain_mask.nii.gz" )
+                                    out_file  = self.brain_mask_ )
             maths.run();
             # TODO: somehow hang calculation ...
-            maths = fsl.ImageMaths( in_file       = "brain_mask.nii.gz",
-                                    op_string     = '-thr 0.25 -fillh26 -bin -ero',
+            maths = fsl.ImageMaths( in_file       = self.brain_mask_,
+                                    op_string     = '-thr 0.25',
                                     out_data_type = "char",
-                                    out_file      = "brain_mask.nii.gz" )
+                                    out_file      = self.brain_mask_ )
             maths.run();
             #
-            self.brain_mask_ = os.path.join( self.PVE_Segmentation_, "brain_mask.nii.gz" )
 
             #
             # copy probability maps in FLAIR prior directory
@@ -331,15 +305,17 @@ class Protocol( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
-            quit(-1)
+            _log.error("Protocol WMH - run spm segmentT1 -- failed")
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            _log.error("Protocol WMH - run spm segmentT1 -- failed")
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            _log.error("Protocol WMH - run spm segmentT1 -- failed")
+            self.status_ = False
     #
     #
     #
@@ -347,17 +323,13 @@ class Protocol( object ):
         """White matter hyperintensity probability map.  """
         try: 
             #
-            # Go into dir with PVE t1 and find the t1 filename
-            os.chdir( self.FLAIR_directory_ )
-
-            #
             # Allign FLAIR with T1
             matrix_FLAIR_in_T1 = os.path.join(self.FLAIR_directory_, "F_in_T1.mat")
             FLAIR_in_T1        = os.path.join(self.FLAIR_directory_, "FLAIR_T1.nii.gz")
             #
             flt = fsl.FLIRT()
             flt.inputs.in_file         = os.path.join( self.FLAIR_directory_, self.FLAIR_file_[0] )
-            flt.inputs.reference       = os.path.join( self.PVE_Segmentation_, self.T1_file_[0] )
+            flt.inputs.reference       = os.path.join( self.PVE_Segmentation_, self.T1_file_[0][:-3] )
             flt.inputs.out_file        = FLAIR_in_T1
             flt.inputs.out_matrix_file = matrix_FLAIR_in_T1
             flt.inputs.dof             = 6
@@ -365,7 +337,7 @@ class Protocol( object ):
 
             #
             # Run N4 alorithm to remove bias field
-            FLAIR_in_T1_unb = os.path.join(self.FLAIR_directory_, "FLAIR_T1_nubiased.nii.gz")
+            FLAIR_in_T1_unb = os.path.join(self.FLAIR_directory_, "FLAIR_T1_unbiased.nii.gz")
             #
             n4 = ants.N4BiasFieldCorrection()
             n4.inputs.dimension                = 3
@@ -380,11 +352,17 @@ class Protocol( object ):
 
             #
             # Segment FLAIR image to isolate WMH probability density
+            os.mkdir( os.path.join(self.FLAIR_directory_,  "Seg_n_tissues") )
+            os.mkdir( os.path.join(self.priors_directory_, "Seg_n_tissues") )
+            #
             N = 15 # number of tissues in segmentation
             at = ants.Atropos()
-            at.inputs.dimension                = 3
-            at.inputs.intensity_images         = FLAIR_in_T1_unb
-            at.inputs.mask_image               = self.brain_mask_
+            at.inputs.dimension                       = 3
+            at.inputs.intensity_images                = FLAIR_in_T1_unb
+            at.inputs.mask_image                      = self.brain_mask_
+            at.inputs.output_posteriors_name_template =  os.path.join(self.priors_directory_, 
+                                                                      "Seg_n_tissues", 
+                                                                      "POSTERIOR_%02d.nii.gz")
             # initialization
             at.inputs.number_of_tissue_classes = N
             at.inputs.initialization           = 'KMeans'
@@ -406,11 +384,10 @@ class Protocol( object ):
             # Selects the WMH probability map 
             self.priors_.append( os.path.join(self.priors_directory_, "priors", "POSTERIOR_04.nii.gz") )
             # Sorts the ntissues segmentation probability maps
-            os.mkdir( os.path.join(self.FLAIR_directory_, "Seg_n_tissues") )
-            # 
-            for posterior in os.listdir(self.FLAIR_directory_):
-                if "POSTERIOR" in posterior:
-                    shutil.move( posterior, os.path.join(self.FLAIR_directory_, "Seg_n_tissues") )
+            for posterior in os.listdir( os.path.join(self.priors_directory_, "Seg_n_tissues") ):
+                # select white matter hyperintensity probability map
+                shutil.copy( os.path.join(self.priors_directory_, "Seg_n_tissues", posterior), 
+                             os.path.join(self.FLAIR_directory_,  "Seg_n_tissues", posterior))
                 if "POSTERIOR" in posterior and str(N) in posterior:
                     # Add the wmh prior in the set of prior for next step
                     shutil.copy( os.path.join(self.FLAIR_directory_, "Seg_n_tissues", posterior), self.priors_[3] )
@@ -418,68 +395,58 @@ class Protocol( object ):
             #
             # Run four tissues segmentation (GM, WM, CSF, WMH) to process balanced WMH probability map
             # Turn around R: drive symbolic links issue
-            os.chdir( self.priors_directory_ )
+            os.mkdir( os.path.join(self.FLAIR_directory_,  "output") )
+            os.mkdir( os.path.join(self.priors_directory_, "output") )
             #
-            at = ants.Atropos()
-            at.inputs.dimension                = 3
-            at.inputs.intensity_images         = FLAIR_in_T1_unb
-            at.inputs.mask_image               = self.brain_mask_
-            # initialization
-            at.inputs.number_of_tissue_classes =  4
-            at.inputs.initialization           = 'PriorProbabilityImages'
-            at.inputs.prior_probability_images =  self.priors_
-            at.inputs.prior_weighting          =  0.3
-            # -c [5,1.e-4]
-            at.inputs.convergence_threshold    = 1.e-4
-            at.inputs.n_iterations             = 5
-            #  -m [0.5,1x1x1]
-            at.inputs.mrf_smoothing_factor     = 0.3
-            at.inputs.mrf_radius               = [1, 1, 1]
-            #
-            at.inputs.posterior_formulation         = 'Socrates'
-            at.inputs.use_mixture_model_proportions =  True
-            at.inputs.likelihood_model              = 'Gaussian'
-            at.inputs.save_posteriors               =  True
-            #
-            at.run()
-            # Turn around R: drive symbolic links issue
-            os.chdir( self.FLAIR_directory_ )
+            Image_tools.ANTs_Atropos( Input = FLAIR_in_T1_unb, 
+                                      Mask = self.brain_mask_, 
+                                      Number_of_tissue_classes = 4, 
+                                      Prior_probability_format = os.path.join(self.priors_directory_, 
+                                                                              "priors", "POSTERIOR_%02d.nii.gz"), 
+                                      Prior_weighting = 0.3, 
+                                      MRF_smoothing_factor = 0.3, 
+                                      MRF_radius = "1x1x1", 
+                                      Output_labeled = os.path.join(self.priors_directory_,  
+                                                                    "output", "FLAIR_labeled.nii.gz"), 
+                                      Output_posterior_format = os.path.join(self.priors_directory_, 
+                                                                             "output", 
+                                                                             "POSTERIOR_%02d.nii.gz") )
             # Copy back the results
-            os.mkdir( os.path.join(self.FLAIR_directory_, "output") )
-            for res in os.listdir( self.priors_directory_ ):
-                if "POSTERIOR" in res:
-                    shutil.copy( os.path.join(self.priors_directory_, res), 
-                                 os.path.join(self.FLAIR_directory_, "output") )
+            for res in os.listdir( os.path.join(self.priors_directory_, "output") ):
+                shutil.copy( os.path.join(self.priors_directory_, "output", res), 
+                             os.path.join(self.FLAIR_directory_, "output") )
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
-            quit(-1)
+            _log.error("Protocol WMH - wmh probability -- failed")
+            self.status_ = False
         except IOError as e:
             print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
+            _log.error("Protocol WMH - run spm segmentT1 -- failed")
+            self.status_ = False
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
+            _log.error("Protocol WMH - run spm segmentT1 -- failed")
+            self.status_ = False
     #
     #
     #
     def run( self ):
         """ Run the complete Hyperintense white matter process"""
         self.check_environment()
-        _log.info("Protocol WMH - check environment -- pass")
-        self.initialization()
-        _log.info("Protocol WMH - initialization -- pass")
-        self.run_spm_segmentT1()
-        _log.info("Protocol WMH - run spm segmentT1 -- pass")
-        self.wmh_probability()
-        _log.info("Protocol WMH - perfusion weighted imaging -- pass")
-#        self.CBFscale_PWI_data()
-#        _log.info("Protocol ASL - CBFscale PWI data -- pass")
-##        self.perfusion_calculation()
-##        _log.info("Protocol ASL - perfusion calculation -- pass")
-#        self.T2_PWI_registration()
-#        _log.info("Protocol ASL - registration between T2 and PWI -- pass")
-#        self.Cerebral_blood_flow()
-#        _log.info("Protocol ASL - Cerebral blood flow -- pass")
+        #
+        if self.status_:
+            _log.info("Protocol WMH - check environment -- pass")
+            self.initialization()
+        #
+        if self.status_:
+            _log.info("Protocol WMH - initialization -- pass")
+            self.segmentation_T1()
+        #
+        if self.status_:
+            _log.info("Protocol WMH - run spm segmentT1 -- pass")
+            self.wmh_probability()
+        #
+        if self.status_:
+            _log.info("Protocol WMH - white matter probability maps -- pass")
