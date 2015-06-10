@@ -175,7 +175,7 @@ class Protocol( object ):
             # Find the T2 analyze file
             elif seeker.seek_analyze( "T2_" ):
                 self.T2_file_ = seeker.get_files()
-                # change into nifti
+                # change into nifti format 
                 Image_tools.run_ana2nii( os.path.join(self.patient_dir_, self.T2_file_[0]),
                                          os.path.join(self.patient_dir_, self.T2_file_[0]),
                                          os.path.join(self.ACPC_Alignment_, "%s.nii.gz"%(self.T2_file_[0][:-4])) )
@@ -1522,10 +1522,6 @@ class Protocol( object ):
         if self.status_:
             _log.info("Protocol ASL - perfusion weighted imaging -- pass")
             self.CBFscale_PWI_data()
-        #
-#        if self.status_:
-#        self.perfusion_calculation()
-#        _log.debug("Protocol ASL - perfusion calculation -- pass")
         #
         if self.status_:
             _log.info("Protocol ASL - CBFscale PWI data -- pass")
