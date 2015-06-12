@@ -12,7 +12,8 @@ _log = logging.getLogger("__Analysis_tools__")
 #
 #
 #
-import Arterial_Spin_Labeling
+import Arterial_Spin_Labeling 
+import White_matter_hyperintensity
 import Analysis_tools
 #
 #
@@ -137,6 +138,9 @@ class Production( object ):
                         if self.prod_ == "ASL":
                             self.queue_.put( [Arterial_Spin_Labeling.Protocol(),
                                               os.path.join(dir, patient)] )
+                        if self.prod_ == "WMH":
+                            self.queue_.put( [White_matter_hyperintensity.Protocol(),
+                                              os.path.join(dir, patient)] )
                         else:
                             raise Exception( "Protocol %s is not yet implemented."%(self.prod_) )
 
@@ -172,7 +176,7 @@ class Perfusion( Production ):
         super( Perfusion, self ).__init__( CSV_file, Procs )
         # attribute
         # Production pipeline
-        self.prod_ = "ASLLL"
+        self.prod_ = "ASL"
         #
         self.production_failed_ = []
 
@@ -563,6 +567,57 @@ class Perfusion( Production ):
                            self.GM_1_list_ )
             template.modulation( os.path.join(self.ana_res_, "GM_dir"), 
                                  self.GM_1_list_ )
+        #
+        #
+        except Exception as inst:
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+
+################################################################################
+## 
+## Image treatment pipeline -- White matter hyper-intensity -- 
+## 
+################################################################################
+
+class WM_hyperintensity( Production ):
+    """ This class runs the white matter hyperintensity pipeline.
+    
+    """
+    #
+    #
+    def __init__( self,  CSV_file, Procs = 8 ):
+        """Return a new WM_hyperintensity instance."""
+        super( WM_hyperintensity, self ).__init__( CSV_file, Procs )
+        # attribute
+        # Production pipeline
+        self.prod_ = "WMH"
+        #
+        self.production_failed_ = []
+    #
+    #
+    #
+    def run_( self ):
+        """Run the pipeline."""
+        try:
+
+            # 
+            # Loop on the tasks
+            while True:
+                #
+                # Strategy pipeline
+                [wmh, patient_dir] = self.queue_.get()
+                wmh.patient_dir_   = patient_dir
+                wmh.run()
+                
+                #
+                # job is done
+                self.queue_.task_done()
         #
         #
         except Exception as inst:

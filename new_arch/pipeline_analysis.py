@@ -15,14 +15,16 @@ import Analysis_framework as ana
 ##
 ## The user choses the pipeline for analysis. Available:
 ##    - Perfusion: Arterial Spin Labeling perfusion (ASL)
-##    - 
+##      * /home/ycobigo/study/EPI/ASL-pipeline/Tools/asl.csv
+##    - WM_hyperintensity: white matter hyper-intensity
+##      * 
 ##    - 
 ##    - 
 ## 
 #
 # Argument: CVS file is the base of analysis
-prod = ana.Perfusion("/home/ycobigo/study/EPI/ASL-pipeline/Tools/asl.csv", 
-                     Procs = 8)
+prod = ana.WM_hyperintensity("/home/ycobigo/study/Structural/WhiteMatterHyperintensity/wmh.csv", 
+                             Procs = 8)
 
 ################################################################################
 ## Image extraction
@@ -32,15 +34,16 @@ prod = ana.Perfusion("/home/ycobigo/study/EPI/ASL-pipeline/Tools/asl.csv",
 ##    - Perfusion: ignore_patterns_ = ( "ASL-MoCo*","DTI*","FLAIR*","GRE*",
 ##                                      "rsfMRI*","DWI*" )
 ## 
+##    - WMH: ignore_patterns_ = ( "ASL*","DTI*","GRE*","rsfMRI*","DWI*" )
+## 
 ## 
 #
 #
-if False:
+if True:
     # Pattern to ignore within extraction
-    prod.ignore_patterns_ = ( "ASL-MoCo*","DTI*","FLAIR*",
-                              "GRE*","rsfMRI*","DWI*" )
+    prod.ignore_patterns_ = ( "ASL*","DTI*","GRE*","rsfMRI*","DWI*" )
     # extract directory
-    Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL"
+    Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/WMH/Raw-WMH"
     # run
     prod.extrac_images_to( Copy_dir )
 
@@ -64,7 +67,7 @@ if False:
 ##
 #
 #
-if True:
+if False:
     # Where the extraction was done
     Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL"
     # Study: ["BV","NORM (BV)","SD","R_SD","L_SD","NORM (SD)","PNFA","NORM (PNFA)"]
