@@ -698,7 +698,7 @@ class Make_brain_template( Make_template ):
 
     """
     def __init__( self, Code, Ana_dir, Dir_T1_brain, List_T1_brain, Dir_T1, List_T1, 
-                  Procs = 7  ):
+                  Procs = 8  ):
         """Return a new Protocol instance (constructor)."""
         super( Make_brain_template, self ).__init__( Code, Ana_dir, Procs )
         try:
@@ -1265,10 +1265,10 @@ class Make_brain_template( Make_template ):
     def run( self ):
         """ Run the complete Arterial Spin Labeling process"""
         self.check_environment()
-        _log.debug("ASL ana - check environment -- pass")
+        _log.debug("Analysis tools - check environment -- pass")
         #
         if "FSL" in self.code_:
             self.normalization()
-            _log.debug("ASL ana - FSL normalization -- pass")
+            _log.debug("Analysis tools - FSL normalization -- pass")
         else:
-            _log.debug("ASL ana - %s normalization not yet implemented -- failed"%self.code_)
+            _log.debug("Analysis tools - %s normalization not yet implemented -- failed"%self.code_)

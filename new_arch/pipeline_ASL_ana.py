@@ -1,69 +1,63 @@
 #!/usr/bin/python
+#import pdb; pdb.set_trace()
+import logging
+import csv
+import sys, getopt, os, shutil
+import datetime
+import nipype
+import nipype.interfaces.fsl as fsl
 
 #
 # Usage:
 # ./pipeline_ASL_ana.py /home/ycobigo/study/EPI/ASL-pipeline/Tools/asl.csv
 #
 
-#import pdb; pdb.set_trace()
-import logging
-import csv
-import sys, getopt
-import os, shutil
-import datetime
-
-#
-# Preamble
-#
-
+################################################################################
+##
+## Preamble
+##
+## The pipeline creates an analysis directory where it copies all the files 
+## needed for the study specific treatment.
+##
 #
 # Date and log
 date  = []
 today = datetime.date.today()
 date.append(today)
-#print date[0]
-
 #
-# Arguments
-#study_list = sys.argv[1]
-if len(sys.argv) > 1:
-    csv_file   = open(sys.argv[1], 'rt')
-else:
-    print "Usage pipeline_ASL_ana.pl /path/to/file.csv"
-    quit(-1)
-
-#
-# Create a log file
+# Create a local log file
 if not os.path.exists( "log_ASL_ana-%s"%(date[0]) ):
     os.mkdir( "log_ASL_ana-%s"%(date[0]) )
 # Log file
 log_file = os.path.join( os.getcwd(), "log_ASL_ana-%s"%(date[0]), "analysis.log" )
-print log_file
+#
 logging.basicConfig( filename = log_file, level = logging.DEBUG )
 logging.info("__Analysis_pipeline__")
 
+################################################################################
+## Run VBM cross-sectional analysis
+##
+## The user runs the pipeline selected
+##
 #
 # Start the study
-# import later for log issues ...
-#
 import Analysis_tools
 
-
 #
-# Study specifics
-ASL_study = os.path.join(os.sep, 
-                         "mnt","macdata","groups","imaging_core","yann","study","ASL", "Raw-ASL" )
 #
-if not os.path.exists( os.path.join(ASL_study, "ana_res-%s"%(date[0])) ):
-    os.mkdir( os.path.join(ASL_study, "ana_res-%s"%(date[0])) )
-ana_res = os.path.join( ASL_study, "ana_res-%s"%(date[0]) )
-#ana_res = os.path.join( ASL_study, "ana_res-2015-04-27" )
+csv_file = open("/home/ycobigo/study/EPI/ASL-pipeline/Tools/asl.csv", 'rt')
+Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL"
 # Study specific diseases
 study = ["BV","NORM (BV)","SD","R_SD","L_SD","NORM (SD)","PNFA","NORM (PNFA)"]
+#
+#
+if not os.path.exists( os.path.join(Copy_dir, "ana_res-%s"%(date[0])) ):
+    os.mkdir( os.path.join(Copy_dir, "ana_res-%s"%(date[0])) )
+# Create analysise of result directory
+ana_res = os.path.join( Copy_dir, "ana_res-%s"%(date[0]) )
 
 #
-# Copy 
-#
+# local copy of results
 try:
     #
     # csv format
@@ -71,16 +65,13 @@ try:
     # 1416, NORM (BV), 2010-09-07, 65,      179680,  NIC 3T,    GHB034-3, HILLBLOM, 100,7266,PNFA
     # 1416, NORM (BV), 2013-09-26, 68,      287565,  NIC 3T,    GHB034-4, HILLBLOM, 100,12640,PNFA
     #
-    # We are building a list of gray matter files in to create a template
-
-    #
     # Load csv file
     reader = csv.reader( csv_file )
     # loop over csv file for study specific
     estimators        = {}
     production_failed = []
     for row in reader:
-        if study[6] in row[1]:
+        if study[0] in row[1]:
             #
             # create estimators if PIDN does not exist
             if not estimators.has_key(row[0]):
@@ -107,7 +98,7 @@ try:
                 acquisition_T1_brain_map_T2 = []
                 estimators[row[0]]["T1_brain_map_T2"] = acquisition_T1_brain_map_T2
             #
-            dir = os.path.join( ASL_study, row[0], row[2])
+            dir = os.path.join( Copy_dir, row[0], row[2])
 
             #
             # Checks patient dir exit
@@ -122,14 +113,13 @@ try:
                     # 
                     # Check the production happened
                     if os.path.exists( os.path.join(patient_dir, "ACPC_Alignment", "CBF.nii.gz") ):
-                        
                         #
                         # file - 1: gray matter registered T2
                         PVE = os.path.join(patient_dir, "PVE_Segmentation")
                         GM_T2 = ""
                         if os.path.exists( PVE ):
                             for gm in os.listdir( PVE ):
-                                if gm.startswith("c1") and gm.endswith("T2.nii"):
+                                if gm.startswith("c1") and gm.endswith("T2.nii.gz"):
                                     GM_T2 = os.path.join(PVE, gm)
                             #
                             if os.path.exists( GM_T2 ):
@@ -157,7 +147,7 @@ try:
                         # file - 4: T1 registered T2
                         T1_T2 = ""
                         for f in os.listdir( PVE ):
-                            if f.startswith("m") and f.endswith("_T2.nii"):
+                            if f.startswith("m") and f.endswith("_T2.nii.gz"):
                                 T1_T2 = os.path.join( PVE, f )
                         #
                         if os.path.exists( T1_T2 ):
@@ -166,18 +156,19 @@ try:
                             production_failed.append( patient_dir )
                         
                         #
-                        # file - 5: T1 brain registered T2
-                        T1_brain_T2 = os.path.join(PVE, "T1_brain.nii.gz")
-                        if os.path.exists( T1_brain_T2 ):
-                            estimators[row[0]]["T1_brain_T2"].append( T1_brain_T2 ) 
-                        else:
-                            production_failed.append( patient_dir )
-                        
-                        #
-                        # file - 6: T1 brain map registered T2
+                        # file - 5: T1 brain map registered T2
                         T1_brain_map_T2 = os.path.join(PVE, "brain_map.nii.gz")
                         if os.path.exists( T1_brain_map_T2 ):
                             estimators[row[0]]["T1_brain_map_T2"].append( T1_brain_map_T2 ) 
+                        else:
+                            production_failed.append( patient_dir )
+
+                        #
+                        # file - 6: T1 brain registered T2
+                        T1_brain_T2 = os.path.join(PVE, "T1_brain.nii.gz")
+                        #
+                        if os.path.exists( T1_brain_T2 ):
+                            estimators[row[0]]["T1_brain_T2"].append( T1_brain_T2 ) 
                         else:
                             production_failed.append( patient_dir )
                     #
@@ -222,13 +213,11 @@ try:
                 #
                 # GM
                 # destination: GM_"PIDN"_"multiplicity"
-                dstname_GM = "GM_%s_%s.nii"%(PIDN,"1")
+                dstname_GM = "GM_%s_%s.nii.gz"%(PIDN,"1")
                 shutil.copy( estimators[PIDN]["GM_T2"][0], 
                              os.path.join(GM_dir, dstname_GM) )
-                # zip the file
-                os.system('gzip %s/%s'%(GM_dir,dstname_GM) )
                 #
-                GM_1_list.append( "%s.gz"%dstname_GM )
+                GM_1_list.append( dstname_GM )
                 #
                 # CBF GM
                 # destination: CBF_GM_"PIDN"_"multiplicity"
@@ -311,6 +300,7 @@ try:
         template.run()
         # Warp the CBF maps
         template.warp_CBF_map( CBF_GM_dir, CBF_GM_1_list )
+    #
     # Brain
     if True:
         template = Analysis_tools.Make_brain_template( "FSL", ana_res, 
@@ -326,8 +316,8 @@ try:
         #
         template.warp( T1_brain_dir, T1_brain_1_list )
         #
-        template.warp( GM_dir, GM_1_list )
-        template.modulation( GM_dir, GM_1_list )
+#        template.warp( GM_dir, GM_1_list )
+#        template.modulation( GM_dir, GM_1_list )
         #
 
     
