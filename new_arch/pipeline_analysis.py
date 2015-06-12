@@ -68,4 +68,4 @@ if True:
     # Where the extraction was done
     Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL"
     # Study: ["BV","NORM (BV)","SD","R_SD","L_SD","NORM (SD)","PNFA","NORM (PNFA)"]
-    prod.VBM_X_sectional( Copy_dir, "PNFA" )
+    prod.VBM_X_sectional( Copy_dir, "SD" )

@@ -93,7 +93,7 @@ def natural_gray_matter( Output, GM, WM, CSF, Mask ):
         # Check we have ITK convert between file executable
         # gray_matter_mask "la_vie_est_belle.nii.gz" c1_file.nii.gz c2_file.nii.gz c3_file.nii.gz mask.nii.gz
         #        gray_matter_mask = which("gray_matter_mask")
-        gray_matter_mask = which("/home/ycobigo/devel/Python/ASL-ana/new_arch/Image_tools/ITK_tools/bin/gray_matter_mask")
+        gray_matter_mask = which("gray_matter_mask")
         if gray_matter_mask is None:
             raise Exception("Missing gray_matter_mask in the path")
         _log.debug(gray_matter_mask)
@@ -143,7 +143,7 @@ def CBF_gm_ratio( Output, Parameters, GM, WM, CSF, Mask ):
         # 
         # CBF_gm_ratio "la_vie_est_belle.nii.gz" c1_file.nii.gz c2_file.nii.gz c3_file.nii.gz mask.nii.gz
         #        CBF_gm_ratio = which("CBF_gm_ratio")
-        CBF_gm_ratio = which("/home/ycobigo/devel/Python/ASL-ana/new_arch/Image_tools/ITK_tools/bin/CBF_gm_ratio")
+        CBF_gm_ratio = which("CBF_gm_ratio")
         if CBF_gm_ratio is None:
             raise Exception("Missing CBF_gm_ratio in the path")
         _log.debug(CBF_gm_ratio)
