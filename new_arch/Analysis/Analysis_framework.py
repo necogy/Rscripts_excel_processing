@@ -172,7 +172,7 @@ class Perfusion( Production ):
         super( Perfusion, self ).__init__( CSV_file, Procs )
         # attribute
         # Production pipeline
-        self.prod_ = "ASLLL"
+        self.prod_ = "ASL"
         #
         self.production_failed_ = []
 
