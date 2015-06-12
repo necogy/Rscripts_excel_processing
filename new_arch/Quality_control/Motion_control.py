@@ -21,7 +21,7 @@ class Motion_control( Quality_control.Quality_control ):
         super( Motion_control, self ).__init__( Image_name )
     #
     #
-    def MC_flirt( self, Output_file, Threshold8rel = 0.2 ):
+    def MC_flirt( self, Output_file, Threshold_rel = 0.2 ):
         """Create motion correction file. All the images are aligned on the first frame. RMS and plots are saved for further analysise."""
         try:
             #
