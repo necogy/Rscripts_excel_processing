@@ -3,8 +3,6 @@ import sys, os, shutil, datetime
 import csv
 import inspect
 import threading, Queue, time
-import nipype
-import nipype.interfaces.fsl as fsl
 #
 singlelock = threading.Lock()
 #
@@ -381,11 +379,6 @@ class Perfusion( Production ):
                                 #
                                 # file - 6: T1 brain registered T2
                                 T1_brain_T2 = os.path.join(PVE, "T1_brain.nii.gz")
-                                #
-                                maths = fsl.ImageMaths( in_file   =  T1_T2,
-                                                        op_string = "-mas %s"%(T1_brain_map_T2), 
-                                                        out_file  =  T1_brain_T2 )
-                                maths.run()
                                 #
                                 if os.path.exists( T1_brain_T2 ):
                                     estimators[row[0]]["T1_brain_T2"].append( T1_brain_T2 ) 
