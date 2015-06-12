@@ -1,7 +1,6 @@
 #!/usr/bin/python
 #import pdb; pdb.set_trace()
-import sys
-import os
+import sys, os
 import logging
 logging.basicConfig(filename='Analysis_pipeline.log',level=logging.DEBUG)
 
@@ -15,7 +14,7 @@ import Analysis_framework as ana
 ## Pipeline selection
 ##
 ## The user choses the pipeline for analysis. Available:
-##    - Perfusion: Arterial Spin Labeling perfusion
+##    - Perfusion: Arterial Spin Labeling perfusion (ASL)
 ##    - 
 ##    - 
 ##    - 
@@ -30,11 +29,16 @@ prod = ana.Perfusion("/home/ycobigo/study/EPI/ASL-pipeline/Tools/asl.csv",
 ##
 ## The user choses a destination directory for local copy of analysises images
 ## 
+##    - Perfusion: ignore_patterns_ = ( "ASL-MoCo*","DTI*","FLAIR*","GRE*",
+##                                      "rsfMRI*","DWI*" )
+## 
+## 
 #
-# Pattern to ignore within extraction
+#
 if False:
-    prod.ignore_patterns_ = ("ASL-MoCo*","DTI*","FLAIR*",
-                             "GRE*","rsfMRI*","DWI*")
+    # Pattern to ignore within extraction
+    prod.ignore_patterns_ = ( "ASL-MoCo*","DTI*","FLAIR*",
+                              "GRE*","rsfMRI*","DWI*" )
     # extract directory
     Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL"
     # run
@@ -44,9 +48,24 @@ if False:
 ## Run pipeline
 ##
 ## The user runs the pipeline selected
-## 
-if True:
+##
+#
+#
+if False:
     # Where the extraction was done
     Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL"
     # run
     prod.run_pipeline( Copy_dir )
+
+################################################################################
+## Run VBM analysis
+##
+## The user runs the pipeline selected
+##
+#
+#
+if True:
+    # Where the extraction was done
+    Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL"
+    # Study: ["BV","NORM (BV)","SD","R_SD","L_SD","NORM (SD)","PNFA","NORM (PNFA)"]
+    prod.VBM_X_sectional( Copy_dir, "PNFA" )

@@ -765,13 +765,6 @@ class Protocol( object ):
                                         out_data_type = "char",
                                         out_file      = self.gm_mask_)
                 maths.run()
-
-            #
-            # Create a mask only for the gray matter
-            # WARNING: visualization purposes
-            #
-
-            if False:
                 #
                 # extraction of T1 brain
                 maths = fsl.ImageMaths( in_file   = T1_in_T2,
@@ -780,6 +773,12 @@ class Protocol( object ):
                                                                   "T1_brain.nii.gz") )
                 maths.run();
 
+            #
+            # Create a mask only for the gray matter
+            # WARNING: visualization purposes
+            #
+
+            if False:
                 #
                 # Mapping of T1 within MNI152
                 #
@@ -1282,50 +1281,14 @@ class Protocol( object ):
             brain_mask_m0 = os.path.join( self.ASL_dicom_, 
                                           "nii_all", "realigned_stripped", 
                                           "brain_T2_mask_m0.nii.gz" )
+
+            #
             # Low resolution
             Image_tools.CBF_gm_ratio( PVC_LR, parameters, GM_warped_m0, WM_warped_m0, CSF_warped_m0, brain_mask_m0)
-
-#            maths = fsl.ImageMaths( in_file   =  WM_warped_m0, 
-#                                    op_string = "-mul 0.4",
-#                                    out_file  =  PVC_LR )
-#            maths.run()
-#            #
-#            maths = fsl.ImageMaths( in_file   =  PVC_LR, 
-#                                    op_string = "-add %s"%GM_warped_m0,
-#                                    out_file  =  PVC_LR )
-#            maths.run()
 
             #
             # High resolution
             Image_tools.CBF_gm_ratio( PVC_HR, parameters, c1_file, c2_file, c3_file, self.brain_mask_)
-#
-#            maths = fsl.ImageMaths( in_file   =  c2_file, 
-#                                    op_string = "-mul 0.4",
-#                                    out_file  =  PVC_HR )
-#            maths.run()
-#            #
-#            maths = fsl.ImageMaths( in_file   =  PVC_HR, 
-#                                    op_string = "-add %s"%c1_file,
-#                                    out_file  =  PVC_HR )
-#            maths.run()
-
-#            #
-#            # M0 ratio
-#            #
-#            
-#            #
-#            # Low resolution
-#            M0_PVC_LR     = os.path.join( self.ACPC_Alignment_, "m0_PVC_LR.nii.gz" )
-#            #
-#            self.Ratio_M0_( Image_output = M0_PVC_LR, Mask = brain_mask_m0,
-#                            GM = GM_warped_m0, WM = WM_warped_m0, CSF = CSF_warped_m0 )
-#
-#            #
-#            # High resolution
-#            M0_PVC_HR = os.path.join( self.ACPC_Alignment_, "m0_PVC_HR.nii.gz" )
-#            #
-#            self.Ratio_M0_( Image_output = M0_PVC_HR, Mask = self.brain_mask_,
-#                            GM = c1_file, WM = c2_file, CSF = c2_file )
 
             #
             # Cerebral blood flow within the gray matter
