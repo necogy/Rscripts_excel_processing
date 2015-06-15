@@ -1,0 +1,6 @@
+mkdir build
+cd build
+cmake -DITK_DIR=/home/ycobigo/devel/CPP/ITK/install-4.7.0-static/lib/cmake/ITK-4.7/ ../
+
+./gray_matter_mask "la_vie_est_belle.nii.gz" c1_file.nii.gz c2_file.nii.gz c3_file.nii.gz mask.nii.gz
+

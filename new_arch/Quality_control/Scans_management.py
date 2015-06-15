@@ -7,6 +7,7 @@ from functools import partial
 #
 import neuroimaging_qc as niqc
 import Image_tools
+import MAC_tools as MAC
 
 _log = logging.getLogger("__Scans_management__")
 
@@ -83,8 +84,21 @@ class Scans_management( object ):
         # Output files
         # self.PID_path_ = os.path.join( "${block}", self.PIDN_, self.scan_date_,"${SOURCEID}_${LASTNAME},${FIRSTNAME}" )
         self.PID_path_ = ""
-        self.Q_path_   = os.path.join( os.sep, "Volumes","Imaging432A","images432A","PIDN", self.PID_path_ )
-        self.R_path_   = os.path.join( os.sep, "mnt","tank2","macdata","projects","images", self.PID_path_ )
+        if True:
+            print "-----------------------------------------------------------"
+            print "-----------------------------------------------------------"
+            print "-----                                                 -----"
+            print "-----          THIS IS A DEVELOPMENT VERSION          -----"
+            print "-----                                                 -----"
+            print "-----              TURNE INTO PRODUCTION              -----"
+            print "-----                                                 -----"
+            print "-----------------------------------------------------------"
+            print "-----------------------------------------------------------"
+            #
+            self.R_path_ = os.path.join( os.sep, "home","quality","prod", self.PID_path_ )
+        else:
+            self.R_path_ = os.path.join( os.sep, "mnt","images", self.PID_path_ )
+            
     #
     #
     def new_scans(self):
@@ -104,14 +118,14 @@ class Scans_management( object ):
                         # project and PIDN
                         self.lava_access_( project, scan )
                         #
-                        # date
+                        # date: PIND/{2013-07-01,2012-10-25,..}
                         dates   = []
                         level_1 = os.path.join( self.main_new_scans_directory_, scan )
                         for dirs in os.listdir( level_1 ):
                             dates.append( dirs )
                         # loop over the dates
                         for date in dates:
-                            # if date is new process the scan 20130122
+                            # if date is new, process the scan 20130122
                             if True:
                                 self.scan_date_ = "%s-%s-%s"%(date[0:4],date[4:6],date[6:8])
                                 print self.scan_date_
@@ -181,26 +195,129 @@ class Scans_management( object ):
     def create_source_id_( self ):
         """Create a unique source id."""
         try:
+            return "NIFD151X3"
             #
-            # Load csv file
-            reader = csv.reader( self.source_id_csv_ )
-            # 
-            for row in reader:
-                if "SourceID" in row[0]:
-                    pass
+            # make a list out of generator(csv)
+            reader    = csv.reader( self.source_id_csv_ )
+            your_list = list( reader )
+            pre_list  = []
+            #
+            # creating a short list of same PIDN for the last row
+            for row in your_list:
                 if row[1] == self.PIDN_:
-                    # check if the scan date exist
-                    # generate a new source ID
-                    # add the new line in the CSV file
-                    print row
+                    pre_list.append(row)
+            
+            #
+            # Copy the head line of the cvs file for the update list
+            new_list = []
+            for row in your_list:
+                #
+                # Header for the new output list
+                if "SourceID/ADID" in row[0]:
+                    new_list.append( row )
+                    count = 0
+                #
+                # new PIDN created in the output list, attached on the last line
+                elif row == your_list[-1] and row[1] != self.PIDN_ and count == 0:
+                    # ToDo define item first, otherwise you will have ref problem
+                    # items = []
+                    match = re.match(r"([a-z]+)([0-9]+)", row[0].split('-')[0], re.I)
+                    if match:
+                        items = match.groups()
+                    else:
+                        # ToDo
+                        print "if there is no match, do we raise an exception?"
+                    # 
+                    self.SourceID_ = self.study_ + str( 1 + int(items[1]) ) + '-1' #ToDo ref problem with items
+                    new_list.append( row )
+                    new_list.append( [self.SourceID_, self.PIDN_, self.scan_date_] )
+                #
+                # appending the last one
+                elif row == pre_list[-1] and row[1] == self.PIDN_ and count == 0:
+                    print 'last row', row
+                    self.SourceID_ = row[0].split('-')[0] + '-' + str(1+int(row[0].split('-')[1]))
+                    new_list.append( row )
+                    new_list.append( [self.SourceID_,self.PIDN_,self.scan_date_] )
+                    count = row[0].split('-')[1]
+                #
+                #
+                elif row[1] == self.PIDN_:
+                    # ToDo: this part has a problem
+                    pass
+                    # Date format: ['2014-04-14']
+                    row_date = row[2].split('/')
+                    # manage the row_date for getting rid of '0' of both month/date
+                    # do the same to input_date if the input_date contains '0'
+                    # ToDo show a model of date you are changing
+                    if row_date[1][0] == '0' and row_date[2][0] == '0':
+                        row_date[1] = row_date[1][1]
+                        row_date[2] = row_date[2][1]
+                    elif row_date[1][0] == '0':
+                        row_date[1] = row_date[1][1]
+                    elif row_date[2][0] == '0':
+                        row_date[2] = row_date[2][1]
+                    else:
+                        pass
 
+                    #ToDo: you don't need to add a try
+                    #ToDo: there is, already, a general one
+                    #ToDo: just raise an exception
+                    try:
+                        # ToDo allocate a type to the variable: list string...
+                        input_date
+                    except NameError:
+                        input_date = self.scan_date_.split('/')
+                    else:
+                        # ToDo which line is important?
+                        pass
+                    
+                    # normal situation: adding the item after the current row
+                    if int(row_date[2]) < int(input_date[2]) or \
+                       (int(row_date[2]) == int(input_date[2]) and int(row_date[0]) < int(input_date[0])) or \
+                       (int(row_date[2]) == int(input_date[2]) and int(row_date[0]) == int(input_date[0]) and int(row_date[1]) < int(input_date[1])):
+                        if int(row[0].split('-')[1]) != count:
+                            print int(row[0].split('-')[1]), count
+                            print 'no insertion', row[0]
+                            new_list.append( row )
+                        # not quite possible to solve this problem by iterating, no way to go back.
+                        elif int(row[0].split('-')[1]) == count:
+                            print row[0].split('-')[1],"previous row minus 1"
+
+                    # rare cases: inserting row
+                    else:
+                        if count == 0:
+                            self.SourceID_ = row[0] # taking over the row's source_id
+                            print 'new_input self.SourceID',self.SourceID_
+                            count = row[0].split('-')[1]
+                            # appending twice: the inserting and the current row
+                            new_list.append([self.SourceID_,self.PIDN_, self.scan_date_,'','', self.Last_Name_,self.First_Name_])
+                            # the current row takes the new created (time point +1) source_id
+                            row[0] = row[0].split('-')[0] + '-' + str(1+int(row[0].split('-')[1]))
+                            new_list.append(row)
+                            print 'updated current-row',row[0]
+                        else:
+                            # the current row takes the new created source_id
+                            row[0] = row[0].split('-')[0] + '-' + str(1+int(row[0].split('-')[1]))
+                            new_list.append(row)
+                            print 'updated following current row', row[0]
+                            # updating the input_date: important
+                            input_date = row[2].split('/')
+                else:
+                    new_list.append(row)
+
+                #
+                # write the output
+                with open("output.csv", "wb") as f:
+                    writer = csv.writer(f)
+                    writer.writerows(new_list)
             #
             #
             self.source_id_csv_.close()
 
             #
             # Return the new Source Id
-            return "NIFD151X3"
+            
+            #return self.SourceID_
             #
             #
         except Exception as inst:
@@ -353,7 +470,7 @@ class Scans_management( object ):
                     target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
                     shutil.move( zip_file, target_zip_file );
                     self.protocols_["DTI-v2"][1].append( target_zip_file )
-                    self.protocols_["DTI-v2"][3].append( "%s %s"%(self.md5sum_(target_zip_file),
+                    self.protocols_["DTI-v2"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
                                                                   target_zip_file) )
             # "DTI-v4" protocol
             if self.protocols_["DTI-v4"][0]:
@@ -790,7 +907,7 @@ class Scans_management( object ):
                 target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
                 shutil.move( zip_file, target_zip_file );
                 self.protocols_[Protocol][1].append( target_zip_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(self.md5sum_(target_zip_file),
+                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
                                                               target_zip_file) )
         #
         #
@@ -834,7 +951,7 @@ class Scans_management( object ):
                 target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
                 shutil.move( zip_file, target_zip_file );
                 self.protocols_[Protocol][1].append( target_zip_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(self.md5sum_(target_zip_file),
+                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
                                                               target_zip_file) )
         
             #
@@ -847,7 +964,7 @@ class Scans_management( object ):
                 target_niftii_file = os.path.join( self.DICOM_path_, os.path.basename(nifti_file) )
                 shutil.move( nifti_file, target_niftii_file );
                 self.protocols_[Protocol][2].append( target_niftii_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(self.md5sum_(target_niftii_file),
+                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_niftii_file),
                                                               target_niftii_file) )
         
             #
