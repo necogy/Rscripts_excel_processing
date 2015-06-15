@@ -153,33 +153,6 @@ class Scans_management( object ):
                                 if len(files) == 1:
                                     # create a Source ID
                                     self.sourceID_ = self.create_source_id_()
-                                    #
-                                    # create the path for the copy
-                                    if  not os.path.exists( os.path.join( self.R_path_, self.PIDN_block_) ):
-                                        raise Exception( "New major PIND blocks must be built for PIDN %s %s."%(self.PIDN_, self.PIDN_block_) )
-                                    #
-                                    self.R_path_ = os.path.join( self.R_path_, self.PIDN_block_, self.PIDN_ )
-                                    # if PIDN does not exist: create
-                                    if not os.path.exists( self.R_path_ ):
-                                        os.mkdir( self.R_path_ )
-                                    # Check the scan date does not already exist
-                                    self.R_path_ = os.path.join( self.R_path_, self.scan_date_ )
-                                    if not os.path.exists( self.R_path_ ):
-                                        os.mkdir( self.R_path_ )
-                                    else:
-                                        raise Exception( "%s scan date already exist for PIDN: %s."%(self.scan_date_,
-                                                                                                      self.PIDN_) )
-                                    # PID path
-                                    self.R_path_ = os.path.join( self.R_path_, "%s_%s,%s"%(self.sourceID_, 
-                                                                                           self.Last_Name_,
-                                                                                           self.First_Name_) )
-                                    # Check the PID path does not already exist
-                                    if not os.path.exists( self.R_path_ ):
-                                        os.mkdir( self.R_path_ )
-                                    else:
-                                        raise Exception( "PID path already exist for PIDN: %s."%(self.scan_date_,
-                                                                                                 self.PIDN_) )
-                                    
                                     # process the scans
                                     self.scan_process( os.path.join(level_2, files[0]) )
                                 else:
@@ -206,6 +179,34 @@ class Scans_management( object ):
         """Scan process the new scans listed from self.new_scans."""
         try:
             #
+            # create the path for the copy
+            if  not os.path.exists( os.path.join( self.R_path_, self.PIDN_block_) ):
+                raise Exception( "New major PIND blocks must be built for PIDN %s %s."%(self.PIDN_, 
+                                                                                        self.PIDN_block_) )
+            #
+            self.R_path_ = os.path.join( self.R_path_, self.PIDN_block_, self.PIDN_ )
+            # if PIDN does not exist: create
+            if not os.path.exists( self.R_path_ ):
+                os.mkdir( self.R_path_ )
+            # Check the scan date does not already exist
+            self.R_path_ = os.path.join( self.R_path_, self.scan_date_ )
+            if not os.path.exists( self.R_path_ ):
+                os.mkdir( self.R_path_ )
+            else:
+                raise Exception( "%s scan date already exist for PIDN: %s."%(self.scan_date_,
+                                                                             self.PIDN_) )
+            # PID path
+            self.R_path_ = os.path.join( self.R_path_, "%s_%s,%s"%(self.sourceID_, 
+                                                                   self.Last_Name_,
+                                                                   self.First_Name_) )
+            # Check the PID path does not already exist
+            if not os.path.exists( self.R_path_ ):
+                os.mkdir( self.R_path_ )
+            else:
+                raise Exception( "PID path %s already exist for PIDN: %s."%(self.R_path_,
+                                                                            self.PIDN_) )
+                                    
+
             # ToDo make a select on the lava string 
             # "scansSummary"
             # ASL | ASL-MoCo | DTI-v2 | DTI-v4 | DWI-RPD-ADC | DWI-RPD-B0 | DWI-RPD-B2000 | ...
