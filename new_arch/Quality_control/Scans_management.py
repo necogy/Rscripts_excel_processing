@@ -47,18 +47,17 @@ class Scans_management( object ):
         self.source_id_csv_ = open(tempo_file, 'rt')
         #
         self.study_      = "" # 
-        self.sourceID_   = "NIFD151-3"  # Prod by XL Scan Tracking file
+        self.sourceID_   = "" # Prod by XL Scan Tracking file
         self.PIDN_       = "" # LAVA
+        self.PIDN_block_ = "" # 
         self.First_Name_ = "" # LAVA
         self.Last_Name_  = "" # LAVA
         self.scan_date_  = "" # 
         self.Your_Name_  = "Yann Cobigo"
-        #
-        self.sourceIDX_   = "NIFD151X3"  # 
 
         #
         # Dicoms
-        self.DICOM_path_ = os.path.join( os.sep, "home","quality","subjects", "test1" )
+        self.R_path_ = os.path.join( os.sep, "home","quality","subjects", "test1" )
 
         #
         #
@@ -81,10 +80,22 @@ class Scans_management( object ):
         }
 
         #
-        # Output files
-        # self.PID_path_ = os.path.join( "${block}", self.PIDN_, self.scan_date_,"${SOURCEID}_${LASTNAME},${FIRSTNAME}" )
-        self.PID_path_ = ""
-        if True:
+        # WARNING: this attribute control the output path.
+        # The value of this attribute has to be carfully selected.
+        self.PRODUCTION_ = False
+        #
+        if self.PRODUCTION_:
+            #
+            # PRODUCTION MODE
+            print "-----------------------------------------------------------"
+            print "-----------------------------------------------------------"
+            print "-----          Scan management in production          -----"
+            print "-----      Images will be copied in the R: drive      -----"
+            print "-----------------------------------------------------------"
+            print "-----------------------------------------------------------"
+        else:
+            #
+            # DEVELOPPEMENT MODE
             print "-----------------------------------------------------------"
             print "-----------------------------------------------------------"
             print "-----                                                 -----"
@@ -94,10 +105,6 @@ class Scans_management( object ):
             print "-----                                                 -----"
             print "-----------------------------------------------------------"
             print "-----------------------------------------------------------"
-            #
-            self.R_path_ = os.path.join( os.sep, "home","quality","prod", self.PID_path_ )
-        else:
-            self.R_path_ = os.path.join( os.sep, "mnt","images", self.PID_path_ )
             
     #
     #
@@ -115,7 +122,15 @@ class Scans_management( object ):
                 for project in self.projects_:
                     if project in scan:
                         #
-                        # project and PIDN
+                        # Path for image production
+                        if self.PRODUCTION_:
+                            self.R_path_ = os.path.join( os.sep, "mnt","images" )
+                        else:
+                            self.R_path_ = os.path.join( os.sep, "home","quality","prod" )
+
+                        #
+                        # project and PIDN. Also the PIDN blocks it belongs
+                        # self.study_, self.PIDN_, self.PIDN_block_
                         self.lava_access_( project, scan )
                         #
                         # date: PIND/{2013-07-01,2012-10-25,..}
@@ -127,7 +142,7 @@ class Scans_management( object ):
                         for date in dates:
                             # if date is new, process the scan 20130122
                             if True:
-                                self.scan_date_ = "%s-%s-%s"%(date[0:4],date[4:6],date[6:8])
+                                self.scan_date_ = "%s-%s-%s"%(date[0:4], date[4:6], date[6:8])
                                 print self.scan_date_
                                 # Process the scan if we have only one scan
                                 level_2 = os.path.join( level_1, date )
@@ -137,16 +152,44 @@ class Scans_management( object ):
                                     files.append(count)
                                 if len(files) == 1:
                                     # create a Source ID
-                                    self.sourceIDX_ = self.create_source_id_()
-                                    # process the scans
-                                    if self.sourceIDX_:
-                                        self.scan_process( os.path.join(level_2, files[0]) )
+                                    self.sourceID_ = self.create_source_id_()
+                                    #
+                                    # create the path for the copy
+                                    if  not os.path.exists( os.path.join( self.R_path_, self.PIDN_block_) ):
+                                        raise Exception( "New major PIND blocks must be built for PIDN %s %s."%(self.PIDN_, self.PIDN_block_) )
+                                    #
+                                    self.R_path_ = os.path.join( self.R_path_, self.PIDN_block_, self.PIDN_ )
+                                    # if PIDN does not exist: create
+                                    if not os.path.exists( self.R_path_ ):
+                                        os.mkdir( self.R_path_ )
+                                    # Check the scan date does not already exist
+                                    self.R_path_ = os.path.join( self.R_path_, self.scan_date_ )
+                                    if not os.path.exists( self.R_path_ ):
+                                        os.mkdir( self.R_path_ )
                                     else:
-                                        _log.warning( "Scan with the PIDN %s and the date %s already exist"%(self.PIDN_, date) )
+                                        raise Exception( "%s scan date already exist for PIDN: %s."%(self.scan_date_,
+                                                                                                      self.PIDN_) )
+                                    # PID path
+                                    self.R_path_ = os.path.join( self.R_path_, "%s_%s,%s"%(self.sourceID_, 
+                                                                                           self.Last_Name_,
+                                                                                           self.First_Name_) )
+                                    # Check the PID path does not already exist
+                                    if not os.path.exists( self.R_path_ ):
+                                        os.mkdir( self.R_path_ )
+                                    else:
+                                        raise Exception( "PID path already exist for PIDN: %s."%(self.scan_date_,
+                                                                                                 self.PIDN_) )
+                                    
+                                    # process the scans
+                                    self.scan_process( os.path.join(level_2, files[0]) )
                                 else:
                                     raise Exception( "Directory %s contains more than one directory."%level_2 )
+
             #
-            #
+            # Clean temporary directories
+            self.clean_tempdir()
+        #
+        #
         except Exception as inst:
             print inst
             _log.error(inst)
@@ -453,7 +496,7 @@ class Scans_management( object ):
                 print tempo_dir
                 # 
                 os.chdir( tempo_dir )
-                zip_file = "%s_%s.zip"%("DTI-v2", self.sourceIDX_)
+                zip_file = "%s_%s.zip"%("DTI-v2", self.sourceID_)
                 zip_file = os.path.join(tempo_dir, zip_file)
                 # create the zip file
                 zf = zipfile.ZipFile( zip_file, mode='w' )
@@ -467,7 +510,7 @@ class Scans_management( object ):
                 if not os.path.exists( zip_file ):
                     raise Exception( "%s file does not exist."%zip_file )
                 else:
-                    target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
+                    target_zip_file = os.path.join( self.R_path_, os.path.basename(zip_file) )
                     shutil.move( zip_file, target_zip_file );
                     self.protocols_["DTI-v2"][1].append( target_zip_file )
                     self.protocols_["DTI-v2"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
@@ -796,9 +839,9 @@ class Scans_management( object ):
             print tempo_dir
             # Name the zip file
             if Dir_num:
-                zip_file = "%s_%s_%s.zip"%(Protocol, Dir_num, self.sourceIDX_)
+                zip_file = "%s_%s_%s.zip"%(Protocol, Dir_num, self.sourceID_)
             else:
-                zip_file = "%s_%s.zip"%(Protocol, self.sourceIDX_)
+                zip_file = "%s_%s.zip"%(Protocol, self.sourceID_)
             # create in the temporary directory
             zip_file = os.path.join(tempo_dir, zip_file)
             # create the zip file
@@ -850,15 +893,15 @@ class Scans_management( object ):
             for dicom in os.listdir( Directory ):
                 shutil.copy( os.path.join(Directory, dicom), os.path.join(tempo_dir, dicom) )
             #
-            cmd = 'dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n *'
+            cmd = "dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n -o %s *"%(tempo_dir)
             Image_tools.generic_unix_cmd(cmd)
             #
             for file_name in os.listdir( tempo_dir ):
                 if file_name.startswith("o") and file_name.endswith(".nii"):
                     if Dir_num:
-                        nifti_file = "%s_%s_%s.nii"%(Protocol, Dir_num, self.sourceIDX_)
+                        nifti_file = "%s_%s_%s.nii"%(Protocol, Dir_num, self.sourceID_)
                     else:
-                        nifti_file = "%s_%s.nii"%(Protocol, self.sourceIDX_)
+                        nifti_file = "%s_%s.nii"%(Protocol, self.sourceID_)
                     shutil.move( file_name, nifti_file )
                 if not file_name.startswith("o") and file_name.endswith(".nii"):
                     os.remove( os.path.join(tempo_dir, file_name) )
@@ -904,7 +947,7 @@ class Scans_management( object ):
             if not os.path.exists( zip_file ):
                 raise Exception( "%s file does not exist."%zip_file )
             else:
-                target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
+                target_zip_file = os.path.join( self.R_path_, os.path.basename(zip_file) )
                 shutil.move( zip_file, target_zip_file );
                 self.protocols_[Protocol][1].append( target_zip_file )
                 self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
@@ -948,7 +991,7 @@ class Scans_management( object ):
             if not os.path.exists( zip_file ):
                 raise Exception( "%s file does not exist."%zip_file )
             else:
-                target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
+                target_zip_file = os.path.join( self.R_path_, os.path.basename(zip_file) )
                 shutil.move( zip_file, target_zip_file );
                 self.protocols_[Protocol][1].append( target_zip_file )
                 self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
@@ -961,7 +1004,7 @@ class Scans_management( object ):
             if not os.path.exists( nifti_file ):
                 raise Exception( "%s file does not exist."%nifti_file )
             else:
-                target_niftii_file = os.path.join( self.DICOM_path_, os.path.basename(nifti_file) )
+                target_niftii_file = os.path.join( self.R_path_, os.path.basename(nifti_file) )
                 shutil.move( nifti_file, target_niftii_file );
                 self.protocols_[Protocol][2].append( target_niftii_file )
                 self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_niftii_file),
@@ -985,7 +1028,7 @@ class Scans_management( object ):
     #
     #
     def lava_access_( self, Project, Scan ):
-        """KNECT API for LAVA queries"""
+        """KNECT API for LAVA queries. This function queries data from LAVA and create the PID_path where to save the data"""
         #
         try:
             #
@@ -1009,6 +1052,13 @@ class Scans_management( object ):
             # formating the name
             self.First_Name_ = "%s%s"%(firstName[0],firstName[1:].lower())
             self.Last_Name_  = "%s%s"%(lastName[0],lastName[1:].lower())
+
+            #
+            # PIDN block
+            if self.PIDN_ < 10000.:
+                self.PIDN_block_ = "%s000-%s999"%( self.PIDN_[0:1], self.PIDN_[0:1] )
+            else:
+                self.PIDN_block_ = "%s000-%s999"%( self.PIDN_[0:2], self.PIDN_[0:2] )
         #
         #
         except Exception as inst:
@@ -1030,6 +1080,27 @@ class Scans_management( object ):
             for buf in iter(partial(f.read, 128), b''):
                 d.update(buf)
             return d.hexdigest()
+    #
+    #
+    #
+    def clean_tempdir( self ):
+        """Clean temporary (/tmp) area."""
+        try:
+            #
+            #
+            pass
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
     #
     #
     #
