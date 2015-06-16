@@ -65,19 +65,7 @@ class Scans_management( object ):
         # 
         # protocols dictionary
         # "proto":"True", "zip_file", "nii_file", "md5 signatures"
-        self.protocols_ = {
-            "T2":[False,[],[],[]],
-            "T2_3DC":[False,[],[],[]],
-            "FLAIR":[False,[],[],[]],
-            "FLAIR_3DC":[False,[],[],[]],
-            "T1-LONG":[False,[],[],[]],
-            "T1-LONG-3DC":[False,[],[],[]],
-            "T1-SHORT":[False,[],[],[]],
-            "T1-SHORT-3DC":[False,[],[],[]],
-            "PASL":[False,[],[],[]],
-            "DTI-v2":[False,[],[],[]],
-            "DTI-v4":[False,[],[],[]]
-        }
+        self.protocols_ = {}
 
         #
         # WARNING: this attribute control the output path.
@@ -205,7 +193,24 @@ class Scans_management( object ):
             else:
                 raise Exception( "PID path %s already exist for PIDN: %s."%(self.R_path_,
                                                                             self.PIDN_) )
-                                    
+
+            #
+            # QC: json output
+            # "proto":"True", "zip_file", "nii_file", "md5 signatures"
+            self.protocols_ = {
+                "T2":[False,[],[],[]],
+                "T2_3DC":[False,[],[],[]],
+                "FLAIR":[False,[],[],[]],
+                "FLAIR_3DC":[False,[],[],[]],
+                "T1-LONG":[False,[],[],[]],
+                "T1-LONG-3DC":[False,[],[],[]],
+                "T1-SHORT":[False,[],[],[]],
+                "T1-SHORT-3DC":[False,[],[],[]],
+                "PASL":[False,[],[],[]],
+                "DTI-v2":[False,[],[],[]],
+                "DTI-v4":[False,[],[],[]]
+            }
+
 
             # ToDo make a select on the lava string 
             # "scansSummary"
@@ -220,7 +225,20 @@ class Scans_management( object ):
             self.T1_short_3DC( Scans_dir )
             self.pulsed_ASL( Scans_dir )
             self.DTI( Scans_dir )
+
             #
+            # Dump QC results
+            #
+
+            #
+            # JSON
+            os.mkdir( os.path.join(self.R_path_, "QC") )
+            QC_JSON = os.path.join( self.R_path_, "QC", "QC.json" )
+            with open( QC_JSON, 'w') as outfile:
+                json.dump( self.protocols_, 
+                           outfile, indent=2, separators=(',',': '), sort_keys=True )
+
+
             print  self.protocols_
         #
         #
@@ -1072,15 +1090,6 @@ class Scans_management( object ):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             quit(-1)
-    #
-    #
-    # TODO: This function should be in a tool library
-    def md5sum_(self, File_name ):
-        with open(File_name, mode='rb') as f:
-            d = hashlib.md5()
-            for buf in iter(partial(f.read, 128), b''):
-                d.update(buf)
-            return d.hexdigest()
     #
     #
     #

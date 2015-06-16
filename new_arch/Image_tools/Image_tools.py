@@ -50,7 +50,7 @@ def generic_unix_cmd( Command ):
         if error: 
             raise Exception(error)
         if output: 
-            _log.info(output)
+            _log.debug(output)
         if proc.returncode != 0:
             raise Exception( Command + ': exited with error\n' + error )
         
@@ -60,7 +60,6 @@ def generic_unix_cmd( Command ):
     #
     #
     except Exception as inst:
-        print inst
         _log.error(inst)
         quit(-1)
     except IOError as e:
@@ -69,8 +68,6 @@ def generic_unix_cmd( Command ):
     except:
         print "Unexpected error:", sys.exc_info()[0]
         quit(-1)
-
-
 #
 # 
 #
@@ -107,7 +104,7 @@ def natural_gray_matter( Output, GM, WM, CSF, Mask ):
             raise Exception(error)
         if output: 
             _log.debug("gray_matter_mask tool pass")
-            _log.info(output)
+            _log.debug(output)
         if proc.returncode != 0:
             raise Exception( cmd + ': exited with error\n' + error )
     #
@@ -157,7 +154,7 @@ def CBF_gm_ratio( Output, Parameters, GM, WM, CSF, Mask ):
             raise Exception(error)
         if output: 
             _log.debug("CBF_gm_ratio tool pass")
-            _log.info(output)
+            _log.debug(output)
         if proc.returncode != 0:
             raise Exception( cmd + ': exited with error\n' + error )
     #
@@ -217,7 +214,6 @@ class Seek_files( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             quit(-1)
         except IOError as e:
@@ -252,7 +248,6 @@ class Seek_files( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             quit(-1)
         except IOError as e:
@@ -279,7 +274,6 @@ class Seek_files( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             quit(-1)
         except IOError as e:
@@ -304,7 +298,6 @@ class Seek_files( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             quit(-1)
         except IOError as e:
@@ -329,7 +322,6 @@ class Seek_files( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             quit(-1)
         except IOError as e:
@@ -352,7 +344,6 @@ class Seek_files( object ):
         #
         #
         except Exception as inst:
-            print inst
             _log.error(inst)
             quit(-1)
         except IOError as e:
