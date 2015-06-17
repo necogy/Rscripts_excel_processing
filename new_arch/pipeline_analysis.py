@@ -23,8 +23,8 @@ import Analysis_framework as ana
 ## 
 #
 # Argument: CVS file is the base of analysis
-prod = ana.WM_hyperintensity("/home/ycobigo/study/Structural/WhiteMatterHyperintensity/wmh.csv", 
-                             Procs = 8)
+csv_file = "/home/ycobigo/study/Structural/WhiteMatterHyperintensity/wmh.csv"
+prod = ana.WM_hyperintensity( csv_file, Procs = 8 )
 
 ################################################################################
 ## Image extraction
@@ -34,14 +34,16 @@ prod = ana.WM_hyperintensity("/home/ycobigo/study/Structural/WhiteMatterHyperint
 ##    - Perfusion: ignore_patterns_ = ( "ASL-MoCo*","DTI*","FLAIR*","GRE*",
 ##                                      "rsfMRI*","DWI*" )
 ## 
-##    - WMH: ignore_patterns_ = ( "ASL*","DTI*","GRE*","rsfMRI*","DWI*" )
+##    - WMH: ignore_patterns_ = ( "ASL*","DTI*","GRE*","rsfMRI*","DWI*", "PD*", 
+##                                "T2*", "mwc*", "smwc*", "wMP*" )
 ## 
 ## 
 #
 #
 if True:
     # Pattern to ignore within extraction
-    prod.ignore_patterns_ = ( "ASL*","DTI*","GRE*","rsfMRI*","DWI*" )
+    prod.ignore_patterns_ = ( "ASL*","DTI*","GRE*","rsfMRI*","DWI*", "PD*", 
+                              "T2*", "mwc*", "smwc*", "wMP*" )
     # extract directory
     Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/WMH/Raw-WMH"
     # run
@@ -54,9 +56,9 @@ if True:
 ##
 #
 #
-if False:
+if True:
     # Where the extraction was done
-    Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL"
+    Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/WMH/Raw-WMH"
     # run
     prod.run_pipeline( Copy_dir )
 
@@ -69,6 +71,6 @@ if False:
 #
 if False:
     # Where the extraction was done
-    Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/ASL/Raw-ASL"
+    Copy_dir = "/mnt/macdata/groups/imaging_core/yann/study/WMH/Raw-WMH"
     # Study: ["BV","NORM (BV)","SD","R_SD","L_SD","NORM (SD)","PNFA","NORM (PNFA)"]
     prod.VBM_X_sectional( Copy_dir, "PNFA" )

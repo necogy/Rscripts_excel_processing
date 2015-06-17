@@ -32,6 +32,7 @@ class Production( object ):
 
     
     Attributes:
+    file_csv_:file        - CSV file
     csv_reader_:csv       - CSV reader
     procs_:int            - number of processors
     ignore_patterns_:list - list of reg-exp for files to ignore
@@ -45,8 +46,8 @@ class Production( object ):
         try:
             #
             # public variables
-            file_csv = open(CSV_file, 'rt')
-            self.csv_reader_ = csv.reader( file_csv )
+            self.file_csv_   = open(CSV_file, 'rt')
+            self.csv_reader_ = csv.reader( self.file_csv_ )
             #
             self.procs_           = Procs
             self.ignore_patterns_ = ()
@@ -84,7 +85,9 @@ class Production( object ):
 
             #
             # Extraction loop
-            # creates CSV reader
+            # Check the file is at the beginning
+            self.file_csv_.seek(0)
+            #
             for row in self.csv_reader_:
                 print "%s - %s - %s"%(row[0], row[2], row[6])
                 if not "PIDN" in row[0]:
@@ -101,7 +104,8 @@ class Production( object ):
                             os.mkdir( os.path.join( Directory, row[0]) )
                         # create the scan date
                         if not os.path.exists( os.path.join( Directory, row[0], row[2]) ):
-                            shutil.copytree( dir, os.path.join(Directory, row[0], row[2]), ignore=shutil.ignore_patterns( *self.ignore_patterns_ ) )
+                            shutil.copytree( dir, os.path.join(Directory, row[0], row[2]), 
+                                             ignore=shutil.ignore_patterns( *self.ignore_patterns_ ) )
                     else:
                         _log.warning( "Patient missing: %s"%(row[0]) )
         #
@@ -130,7 +134,9 @@ class Production( object ):
                 t = threading.Thread( target = self.run_ )
                 t.daemon = True
                 t.start()
-            # Stack the items
+            # Go back the beginning
+            self.file_csv_.seek(0)
+            #
             for row in self.csv_reader_:
                 dir = os.path.join( Directory, row[0], row[2])
                 if os.path.exists( dir ):
@@ -285,6 +291,9 @@ class Perfusion( Production ):
             #
             estimators        = {}
             production_failed = []
+            # Go back to the beginning
+            self.file_csv_.seek(0)
+            #
             for row in self.csv_reader_:
                 if Study in row[1]:
                     #

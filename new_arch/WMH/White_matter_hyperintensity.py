@@ -236,7 +236,8 @@ class Protocol( object ):
             #
             if T1_file.endswith(".nii.gz"):
                 os.system('gunzip %s'%self.T1_file_[0] )
-                T1_file = "%s"%(self.T1_file_[0][:-3])
+                self.T1_file_[0] = "%s"%(self.T1_file_[0][:-3])
+                T1_file          = self.T1_file_[0]
 
             #
             # Run Spm_NewSegment on the T1 
@@ -329,7 +330,7 @@ class Protocol( object ):
             #
             flt = fsl.FLIRT()
             flt.inputs.in_file         = os.path.join( self.FLAIR_directory_, self.FLAIR_file_[0] )
-            flt.inputs.reference       = os.path.join( self.PVE_Segmentation_, self.T1_file_[0][:-3] )
+            flt.inputs.reference       = os.path.join( self.PVE_Segmentation_, self.T1_file_[0] )
             flt.inputs.out_file        = FLAIR_in_T1
             flt.inputs.out_matrix_file = matrix_FLAIR_in_T1
             flt.inputs.dof             = 6
@@ -397,7 +398,8 @@ class Protocol( object ):
             # Turn around R: drive symbolic links issue
             os.mkdir( os.path.join(self.FLAIR_directory_,  "output") )
             os.mkdir( os.path.join(self.priors_directory_, "output") )
-            #
+            # Implementation of MAC ANTs function
+            # turn around the thread-not-safe nipype implementation
             Image_tools.ANTs_Atropos( Input = FLAIR_in_T1_unb, 
                                       Mask = self.brain_mask_, 
                                       Number_of_tissue_classes = 4, 
