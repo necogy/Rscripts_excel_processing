@@ -10,7 +10,21 @@ import Image_tools
 import MAC_tools as MAC
 
 _log = logging.getLogger("__Scans_management__")
-
+#
+# Color in terminal
+# 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+#
+#
+#
 class Scans_management( object ):
     """Scan management processing script.
     
@@ -61,7 +75,7 @@ class Scans_management( object ):
 
         #
         #
-        self.projects_ = {"NIFD":"", "PPGAAAA":"", "ADRCAAAA":"", "HBAAAA":"", "FRTNIAAAA":"", "HVAAAA":"", "EPILAAAA":"", "INFAAAA":"", "TPI4RTAAAA":"", "TPIADAAAA":"", "RPDAAAA":"", "NRSAAAA":""}
+        self.projects_ = {"NIFD":"", "PPGAAA":"", "ADRCAAAA":"", "HBAAAA":"", "FRTNIAAAA":"", "HVAAAA":"", "EPILAAAA":"", "INFAAAA":"", "TPI4RTAAAA":"", "TPIADAAAA":"", "RPDAAAA":"", "NRSAAAA":""}
         # 
         # protocols dictionary
         # "proto":"True", "zip_file", "nii_file", "md5 signatures"
@@ -75,24 +89,24 @@ class Scans_management( object ):
         if self.PRODUCTION_:
             #
             # PRODUCTION MODE
-            print "-----------------------------------------------------------"
-            print "-----------------------------------------------------------"
-            print "-----          Scan management in production          -----"
-            print "-----      Images will be copied in the R: drive      -----"
-            print "-----------------------------------------------------------"
-            print "-----------------------------------------------------------"
+            print bcolors.OKGREEN + "-----------------------------------------------------------"
+            print bcolors.OKGREEN + "-----------------------------------------------------------"
+            print bcolors.OKGREEN + "-----          Scan management in production          -----"
+            print bcolors.OKGREEN + "-----      Images will be copied in the R: drive      -----"
+            print bcolors.OKGREEN + "-----------------------------------------------------------"
+            print bcolors.OKGREEN + "-----------------------------------------------------------" + bcolors.ENDC
         else:
             #
             # DEVELOPPEMENT MODE
-            print "-----------------------------------------------------------"
-            print "-----------------------------------------------------------"
-            print "-----                                                 -----"
-            print "-----          THIS IS A DEVELOPMENT VERSION          -----"
-            print "-----                                                 -----"
-            print "-----              TURNE INTO PRODUCTION              -----"
-            print "-----                                                 -----"
-            print "-----------------------------------------------------------"
-            print "-----------------------------------------------------------"
+            print bcolors.WARNING + "-----------------------------------------------------------"
+            print bcolors.WARNING + "-----------------------------------------------------------"
+            print bcolors.WARNING + "-----                                                 -----"
+            print bcolors.WARNING + "-----          THIS IS A DEVELOPMENT VERSION          -----"
+            print bcolors.WARNING + "-----                                                 -----"
+            print bcolors.WARNING + "-----              TURNE INTO PRODUCTION              -----"
+            print bcolors.WARNING + "-----                                                 -----"
+            print bcolors.WARNING + "-----------------------------------------------------------"
+            print bcolors.WARNING + "-----------------------------------------------------------" + bcolors.ENDC
             
     #
     #
@@ -208,10 +222,11 @@ class Scans_management( object ):
                 "T1-SHORT-3DC":[False,[],[],[]],
                 "PASL":[False,[],[],[]],
                 "DTI-v2":[False,[],[],[]],
-                "DTI-v4":[False,[],[],[]]
+                "DTI-v4":[False,[],[],[]],
+                "RSfMRI":[False,[],[],[]]
             }
 
-
+            #
             # ToDo make a select on the lava string 
             # "scansSummary"
             # ASL | ASL-MoCo | DTI-v2 | DTI-v4 | DWI-RPD-ADC | DWI-RPD-B0 | DWI-RPD-B2000 | ...
@@ -225,6 +240,7 @@ class Scans_management( object ):
             self.T1_short_3DC( Scans_dir )
             self.pulsed_ASL( Scans_dir )
             self.DTI( Scans_dir )
+            self.Resting_state( Scans_dir )
 
             #
             # Dump QC results
@@ -470,7 +486,7 @@ class Scans_management( object ):
         """Pulsed Arterial Spin Labeling (perfusion) MoCo"""
         try:
             #
-            # Check on ASL directory
+            # Check on DTI directory
             self.protocols_["DTI-v2"][0] = True
             self.protocols_["DTI-v4"][0] = True
             protocol_dir = {}
@@ -530,7 +546,7 @@ class Scans_management( object ):
                     raise Exception( "%s file does not exist."%zip_file )
                 else:
                     target_zip_file = os.path.join( self.R_path_, os.path.basename(zip_file) )
-                    shutil.move( zip_file, target_zip_file );
+                    shutil.move( zip_file, target_zip_file )
                     self.protocols_["DTI-v2"][1].append( target_zip_file )
                     self.protocols_["DTI-v2"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
                                                                   target_zip_file) )
@@ -553,7 +569,95 @@ class Scans_management( object ):
     #
     #
     def Resting_state( self, Scans ):
-        return self.protocol_name_
+        """Resting state protocol"""
+        try:
+            #
+            # Check on Resting state and GRE-fields maps directory
+            self.protocols_["RSfMRI"][0] = True
+            protocol_dir = {}
+            protocol_dir["RS"]        = []
+            protocol_dir["GRE-Field"] = []
+            # 
+            for dir_name in os.listdir( Scans ):
+                # 8-RestingStatePHYSIO_eyesclosed_wholebrain
+                if "Resting" in dir_name and "hole" in dir_name and "rain" in dir_name:
+                    protocol_dir["RS"].append( os.path.join(Scans, dir_name) )
+                # 13-gre_field_mapping_RS
+                # 14-gre_field_mapping_RS
+                if "gre_field_mapping" in dir_name and "RS" in dir_name:
+                    protocol_dir["GRE-Field"].append( os.path.join(Scans, dir_name) )
+                #
+            # Check if we found a directory
+            if not protocol_dir["RS"] or not protocol_dir["GRE-Field"] :
+                self.protocols_["RSfMRI"][0] = False
+                _log.warning("Resting state directory does not exist.")
+
+            #
+            # DICOMs zipping
+            #
+
+            if self.protocols_["RSfMRI"][0]:
+                #
+                # rsfMRI-raw
+                rsfMRI = self.zip_DICOMs_( "rsfMRI-raw-v1", 
+                                           protocol_dir["RS"][0], "")
+
+                #
+                # GRE-fields
+                files_to_zip = []
+                # Phase map
+                files_to_zip.append( self.zip_DICOMs_( "GRE-Field-Map-Phase-raw-v1", 
+                                                       protocol_dir["GRE-Field"][0], "") )
+                # Magnitude map
+                files_to_zip.append( self.zip_DICOMs_( "GRE-Field-Map-Magnitude-raw-v1", 
+                                                       protocol_dir["GRE-Field"][1], "") )
+
+                #
+                # create temporary directory to store zip files
+                tempo_dir = tempfile.mkdtemp()
+                # TODO: log as warning
+                print tempo_dir
+                # 
+                os.chdir( tempo_dir )
+                zip_file = "%s_%s.zip"%("GRE-Field-Map-raw-v1", self.sourceID_)
+                zip_file = os.path.join(tempo_dir, zip_file)
+                # create the zip file
+                zf = zipfile.ZipFile( zip_file, mode='w' )
+                for file_name in files_to_zip:
+                    shutil.move( file_name, tempo_dir );
+                    zf.write( os.path.basename(file_name) )
+                #
+                #if not zf.test(): # check if the zip is valid
+                zf.close()
+                
+                #
+                # Record results
+                if not os.path.exists( zip_file ):
+                    raise Exception( "%s file does not exist."%zip_file )
+                else:
+                    target_zip_files = []
+                    target_zip_files.append( os.path.join(self.R_path_, os.path.basename(rsfMRI)) )
+                    target_zip_files.append( os.path.join(self.R_path_, os.path.basename(zip_file)) )
+                    #
+                    shutil.move( rsfMRI,   target_zip_files[0] )
+                    shutil.move( zip_file, target_zip_files[1] )
+                    #
+                    for zip_file in target_zip_files:
+                        self.protocols_["RSfMRI"][1].append( zip_file )
+                        self.protocols_["RSfMRI"][3].append( "%s %s"%(MAC.Utils().md5sum(zip_file),
+                                                                      zip_file) )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
     
     
     def T1_long( self, Scans ):
