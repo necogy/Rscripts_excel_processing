@@ -1,11 +1,13 @@
 import os, sys
-import shutil, tempfile, zipfile, csv
+import shutil, tempfile, zipfile, csv, json
 import logging
 import hashlib
 #
 from functools import partial
 #
+import neuroimaging_qc as niqc
 import Image_tools
+import MAC_tools as MAC
 
 _log = logging.getLogger("__Scans_management__")
 
@@ -18,6 +20,23 @@ class Scans_management( object ):
     """
     def __init__( self ):
         """Return a new Scans_management instance."""
+
+        #
+        # KNECT API 
+        #
+        json_data = open( "/home/quality/QC/knect.json" )
+        knect_connect = json.load( json_data )
+        print knect_connect
+        self.knect_username_ = knect_connect["knect_username"]
+        self.knect_password_ = knect_connect["knect_password"]
+        #
+        # must initialize with LDAP auth credentials, auth service URL, and workspace service URL
+        niqc.Init( self.knect_username_, self.knect_password_, 
+                   auth_url = 'https://knect.ucsf.edu/auth',
+                   service_url = 'https://knect.ucsf.edu/neuroimaging/qc' )
+        # successful auth will save a knect_auth_token in the library
+        knect_auth_token = niqc.knect_auth_token
+
         #
         # New scans directory
         self.main_new_scans_directory_ = os.path.join( os.sep, "mnt","macdata","groups","imaging_core","SNC-PACS-GW1-NEWDICOMS")
@@ -27,24 +46,23 @@ class Scans_management( object ):
         tempo_file = os.path.join(os.sep, "home","quality","devel","Python","imaging-core","new_arch","Quality_control","SourceID","Scan_Tracking_08_06_2014.csv")
         self.source_id_csv_ = open(tempo_file, 'rt')
         #
-        self.study_      = "NIFD"       # 
+        self.study_      = "" # 
         self.sourceID_   = "NIFD151-3"  # Prod by XL Scan Tracking file
-        self.PIDN_       = "16781"      # LAVA
-        self.First_Name_ = "Dianne"     # LAVA
-        self.Last_Name_  = "Graydon"    # LAVA
-        self.scan_date_  = "2015-02-24" # 
+        self.PIDN_       = "" # LAVA
+        self.First_Name_ = "" # LAVA
+        self.Last_Name_  = "" # LAVA
+        self.scan_date_  = "" # 
         self.Your_Name_  = "Yann Cobigo"
         #
         self.sourceIDX_   = "NIFD151X3"  # 
 
         #
         # Dicoms
-#        self.DICOM_path_ = os.path.join( os.sep, "home","ycobigo","subjects", "%s,%s"%(self.Last_Name_,self.First_Name_) )
         self.DICOM_path_ = os.path.join( os.sep, "home","quality","subjects", "test1" )
 
         #
         #
-        self.projects_ = {"NIFD":"", "PPGAAAA":"", "ADRC":"", "HB":"", "FRTNI":"", "HVAAAA":"", "EPIL":"", "INF":"", "TPI4RT":"", "TPIAD":"", "RPD":"", "NRS":""}
+        self.projects_ = {"NIFD":"", "PPGAAAA":"", "ADRCAAAA":"", "HBAAAA":"", "FRTNIAAAA":"", "HVAAAA":"", "EPILAAAA":"", "INFAAAA":"", "TPI4RTAAAA":"", "TPIADAAAA":"", "RPDAAAA":"", "NRSAAAA":""}
         # 
         # protocols dictionary
         # "proto":"True", "zip_file", "nii_file", "md5 signatures"
@@ -57,15 +75,30 @@ class Scans_management( object ):
             "T1-LONG-3DC":[False,[],[],[]],
             "T1-SHORT":[False,[],[],[]],
             "T1-SHORT-3DC":[False,[],[],[]],
-            "PASL":[False,[],[],[]]
+            "PASL":[False,[],[],[]],
+            "DTI-v2":[False,[],[],[]],
+            "DTI-v4":[False,[],[],[]]
         }
 
         #
         # Output files
         # self.PID_path_ = os.path.join( "${block}", self.PIDN_, self.scan_date_,"${SOURCEID}_${LASTNAME},${FIRSTNAME}" )
         self.PID_path_ = ""
-        self.Q_path_   = os.path.join( os.sep, "Volumes","Imaging432A","images432A","PIDN", self.PID_path_ )
-        self.R_path_   = os.path.join( os.sep, "mnt","tank2","macdata","projects","images", self.PID_path_ )
+        if True:
+            print "-----------------------------------------------------------"
+            print "-----------------------------------------------------------"
+            print "-----                                                 -----"
+            print "-----          THIS IS A DEVELOPMENT VERSION          -----"
+            print "-----                                                 -----"
+            print "-----              TURNE INTO PRODUCTION              -----"
+            print "-----                                                 -----"
+            print "-----------------------------------------------------------"
+            print "-----------------------------------------------------------"
+            #
+            self.R_path_ = os.path.join( os.sep, "home","quality","prod", self.PID_path_ )
+        else:
+            self.R_path_ = os.path.join( os.sep, "mnt","images", self.PID_path_ )
+            
     #
     #
     def new_scans(self):
@@ -81,18 +114,18 @@ class Scans_management( object ):
             for scan in self.new_scans_:
                 for project in self.projects_:
                     if project in scan:
+                        #
                         # project and PIDN
-                        self.study_ = project
-                        self.PIDN_  = scan[len(project):]
-                        print self.study_, " ", self.PIDN_
-                        # date
+                        self.lava_access_( project, scan )
+                        #
+                        # date: PIND/{2013-07-01,2012-10-25,..}
                         dates   = []
                         level_1 = os.path.join( self.main_new_scans_directory_, scan )
                         for dirs in os.listdir( level_1 ):
                             dates.append( dirs )
                         # loop over the dates
                         for date in dates:
-                            # if date is new process the scan 20130122
+                            # if date is new, process the scan 20130122
                             if True:
                                 self.scan_date_ = "%s-%s-%s"%(date[0:4],date[4:6],date[6:8])
                                 print self.scan_date_
@@ -130,16 +163,19 @@ class Scans_management( object ):
         """Scan process the new scans listed from self.new_scans."""
         try:
             #
-            #
+            # ToDo make a select on the lava string 
+            # "scansSummary"
+            # ASL | ASL-MoCo | DTI-v2 | DTI-v4 | DWI-RPD-ADC | DWI-RPD-B0 | DWI-RPD-B2000 | ...
             self.T2( Scans_dir )
             self.T2_3DC( Scans_dir )
             self.FLAIR( Scans_dir )
             self.FLAIR_3DC( Scans_dir )
-            #self.T1_long( Scans_dir )
+            self.T1_long( Scans_dir )
             self.T1_long_3DC( Scans_dir )
             self.T1_short( Scans_dir )
             self.T1_short_3DC( Scans_dir )
             self.pulsed_ASL( Scans_dir )
+            self.DTI( Scans_dir )
             #
             print  self.protocols_
         #
@@ -159,26 +195,129 @@ class Scans_management( object ):
     def create_source_id_( self ):
         """Create a unique source id."""
         try:
+            return "NIFD151X3"
             #
-            # Load csv file
-            reader = csv.reader( self.source_id_csv_ )
-            # 
-            for row in reader:
-                if "SourceID" in row[0]:
-                    pass
+            # make a list out of generator(csv)
+            reader    = csv.reader( self.source_id_csv_ )
+            your_list = list( reader )
+            pre_list  = []
+            #
+            # creating a short list of same PIDN for the last row
+            for row in your_list:
                 if row[1] == self.PIDN_:
-                    # check if the scan date exist
-                    # generate a new source ID
-                    # add the new line in the CSV file
-                    print row
+                    pre_list.append(row)
+            
+            #
+            # Copy the head line of the cvs file for the update list
+            new_list = []
+            for row in your_list:
+                #
+                # Header for the new output list
+                if "SourceID/ADID" in row[0]:
+                    new_list.append( row )
+                    count = 0
+                #
+                # new PIDN created in the output list, attached on the last line
+                elif row == your_list[-1] and row[1] != self.PIDN_ and count == 0:
+                    # ToDo define item first, otherwise you will have ref problem
+                    # items = []
+                    match = re.match(r"([a-z]+)([0-9]+)", row[0].split('-')[0], re.I)
+                    if match:
+                        items = match.groups()
+                    else:
+                        # ToDo
+                        print "if there is no match, do we raise an exception?"
+                    # 
+                    self.SourceID_ = self.study_ + str( 1 + int(items[1]) ) + '-1' #ToDo ref problem with items
+                    new_list.append( row )
+                    new_list.append( [self.SourceID_, self.PIDN_, self.scan_date_] )
+                #
+                # appending the last one
+                elif row == pre_list[-1] and row[1] == self.PIDN_ and count == 0:
+                    print 'last row', row
+                    self.SourceID_ = row[0].split('-')[0] + '-' + str(1+int(row[0].split('-')[1]))
+                    new_list.append( row )
+                    new_list.append( [self.SourceID_,self.PIDN_,self.scan_date_] )
+                    count = row[0].split('-')[1]
+                #
+                #
+                elif row[1] == self.PIDN_:
+                    # ToDo: this part has a problem
+                    pass
+                    # Date format: ['2014-04-14']
+                    row_date = row[2].split('/')
+                    # manage the row_date for getting rid of '0' of both month/date
+                    # do the same to input_date if the input_date contains '0'
+                    # ToDo show a model of date you are changing
+                    if row_date[1][0] == '0' and row_date[2][0] == '0':
+                        row_date[1] = row_date[1][1]
+                        row_date[2] = row_date[2][1]
+                    elif row_date[1][0] == '0':
+                        row_date[1] = row_date[1][1]
+                    elif row_date[2][0] == '0':
+                        row_date[2] = row_date[2][1]
+                    else:
+                        pass
 
+                    #ToDo: you don't need to add a try
+                    #ToDo: there is, already, a general one
+                    #ToDo: just raise an exception
+                    try:
+                        # ToDo allocate a type to the variable: list string...
+                        input_date
+                    except NameError:
+                        input_date = self.scan_date_.split('/')
+                    else:
+                        # ToDo which line is important?
+                        pass
+                    
+                    # normal situation: adding the item after the current row
+                    if int(row_date[2]) < int(input_date[2]) or \
+                       (int(row_date[2]) == int(input_date[2]) and int(row_date[0]) < int(input_date[0])) or \
+                       (int(row_date[2]) == int(input_date[2]) and int(row_date[0]) == int(input_date[0]) and int(row_date[1]) < int(input_date[1])):
+                        if int(row[0].split('-')[1]) != count:
+                            print int(row[0].split('-')[1]), count
+                            print 'no insertion', row[0]
+                            new_list.append( row )
+                        # not quite possible to solve this problem by iterating, no way to go back.
+                        elif int(row[0].split('-')[1]) == count:
+                            print row[0].split('-')[1],"previous row minus 1"
+
+                    # rare cases: inserting row
+                    else:
+                        if count == 0:
+                            self.SourceID_ = row[0] # taking over the row's source_id
+                            print 'new_input self.SourceID',self.SourceID_
+                            count = row[0].split('-')[1]
+                            # appending twice: the inserting and the current row
+                            new_list.append([self.SourceID_,self.PIDN_, self.scan_date_,'','', self.Last_Name_,self.First_Name_])
+                            # the current row takes the new created (time point +1) source_id
+                            row[0] = row[0].split('-')[0] + '-' + str(1+int(row[0].split('-')[1]))
+                            new_list.append(row)
+                            print 'updated current-row',row[0]
+                        else:
+                            # the current row takes the new created source_id
+                            row[0] = row[0].split('-')[0] + '-' + str(1+int(row[0].split('-')[1]))
+                            new_list.append(row)
+                            print 'updated following current row', row[0]
+                            # updating the input_date: important
+                            input_date = row[2].split('/')
+                else:
+                    new_list.append(row)
+
+                #
+                # write the output
+                with open("output.csv", "wb") as f:
+                    writer = csv.writer(f)
+                    writer.writerows(new_list)
             #
             #
             self.source_id_csv_.close()
 
             #
             # Return the new Source Id
-            return "NIFD151X3"
+            
+            #return self.SourceID_
             #
             #
         except Exception as inst:
@@ -265,18 +404,92 @@ class Scans_management( object ):
             quit(-1)
     #
     #
-    def DTIV1( self, Scans ):
-        return self.protocol_name_
-    
-    
-    def DTIV2( self, Scans ):
-        return self.protocol_name_
-    
-    
-    def NIFD_DTI( self, Scans ):
-        return self.protocol_name_
-    
-    
+    def DTI( self, Scans ):
+        """Pulsed Arterial Spin Labeling (perfusion) MoCo"""
+        try:
+            #
+            # Check on ASL directory
+            self.protocols_["DTI-v2"][0] = True
+            self.protocols_["DTI-v4"][0] = True
+            protocol_dir = {}
+            protocol_dir["DTI-v2"] = []
+            protocol_dir["DTI-v4"] = []
+            #
+            for dir_name in os.listdir( Scans ):
+                if "ep2d-advdiff-511E_b" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
+                    protocol_dir["DTI-v2"].append( os.path.join(Scans, dir_name) )
+                #
+                if "NIFD" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
+                    protocol_dir["DTI-v4"].append( os.path.join(Scans, dir_name) )
+                #
+           # Check if we found a directory
+            if not protocol_dir["DTI-v2"]:
+                self.protocols_["DTI-v2"][0] = False
+                _log.warning("DTI directory does not exist.")
+            #
+            if not protocol_dir["DTI-v4"]:
+                self.protocols_["DTI-v4"][0] = False
+                _log.warning("DTI directory does not exist.")
+
+            #
+            # DICOMs zipping and change into nifti
+            #
+
+            #
+            # "DTI-v2" protocol
+            if self.protocols_["DTI-v2"][0]:
+                files_to_zip = []
+                for dir_name in protocol_dir["DTI-v2"]:
+                    if "b0" in dir_name:
+                        files_to_zip.append( self.zip_DICOMs_("DTI-b0-v2", dir_name, "") )
+                    elif "b2000_64" in dir_name:
+                        files_to_zip.append( self.zip_DICOMs_("DTI-64-v2", dir_name, "") )
+                    else:
+                        raise Exception( "Error in the DTI directory selection: %s."%dir_name )
+                #
+                # create temporary directory to store zip files
+                tempo_dir = tempfile.mkdtemp()
+                # TODO: log as warning
+                print tempo_dir
+                # 
+                os.chdir( tempo_dir )
+                zip_file = "%s_%s.zip"%("DTI-v2", self.sourceIDX_)
+                zip_file = os.path.join(tempo_dir, zip_file)
+                # create the zip file
+                zf = zipfile.ZipFile( zip_file, mode='w' )
+                for file_name in files_to_zip:
+                    shutil.move( file_name, tempo_dir );
+                    zf.write( os.path.basename(file_name) )
+                #
+                #if not zf.test(): # check if the zip is valid
+                zf.close()
+                #
+                if not os.path.exists( zip_file ):
+                    raise Exception( "%s file does not exist."%zip_file )
+                else:
+                    target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
+                    shutil.move( zip_file, target_zip_file );
+                    self.protocols_["DTI-v2"][1].append( target_zip_file )
+                    self.protocols_["DTI-v2"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
+                                                                  target_zip_file) )
+            # "DTI-v4" protocol
+            if self.protocols_["DTI-v4"][0]:
+                for dir_name in protocol_dir["DTI-v4"]:
+                    self.zip_protocol_("DTI-v4", dir_name, len(protocol_dir["DTI-v4"]) is 1 )
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
     def Resting_state( self, Scans ):
         return self.protocol_name_
     
@@ -555,12 +768,14 @@ class Scans_management( object ):
     #
     #
     def zip_DICOMs_( self, Protocol, Directory, Dir_num = ""):
-        """Zip file function"""
+        """Zip file function for DICOM files."""
         _log.info("%s sequence(s) found - zipping DICOM"%(Protocol))
         #
         try:
             #
-            # 
+            # Get the target directory name
+            Up_directory = os.path.split( Directory )
+            #
             os.chdir( Directory )
             # Gather the DICOMs list
             dicom_list = [];
@@ -588,16 +803,25 @@ class Scans_management( object ):
             zip_file = os.path.join(tempo_dir, zip_file)
             # create the zip file
             zf = zipfile.ZipFile( zip_file, mode='w' )
+
             #
+            # Recreate the directory structure
+            #
+            
+            #
+            # Create the dicom directoy in the temp directory
+            os.mkdir( os.path.join(tempo_dir, Up_directory[1]) )
+            # Copy DICOM files in the new directory and zip
+            os.chdir( tempo_dir )
             for file_name in dicom_list:
-                zf.write( file_name )
+                shutil.copy( os.path.join(Directory, file_name), 
+                             os.path.join(tempo_dir, Up_directory[1]) )
+                zf.write( os.path.join(Up_directory[1], file_name) )
+
             #
             #if not zf.test(): # check if the zip is valid
             zf.close()
             return zip_file
-            #else:
-            #    raise Exception( "Zipping process failed for protocol %s."%Protocol )
-
         except Exception as inst:
             print inst
             _log.error(inst)
@@ -608,8 +832,6 @@ class Scans_management( object ):
         except:
             print "Unexpected error:", sys.exc_info()[0]
             quit(-1)
-        
-
     #
     #
     def dcm2nii_protocol_( self, Protocol, Directory, Dir_num = "" ):
@@ -685,7 +907,7 @@ class Scans_management( object ):
                 target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
                 shutil.move( zip_file, target_zip_file );
                 self.protocols_[Protocol][1].append( target_zip_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(self.md5sum_(target_zip_file),
+                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
                                                               target_zip_file) )
         #
         #
@@ -729,7 +951,7 @@ class Scans_management( object ):
                 target_zip_file = os.path.join( self.DICOM_path_, os.path.basename(zip_file) )
                 shutil.move( zip_file, target_zip_file );
                 self.protocols_[Protocol][1].append( target_zip_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(self.md5sum_(target_zip_file),
+                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
                                                               target_zip_file) )
         
             #
@@ -742,12 +964,51 @@ class Scans_management( object ):
                 target_niftii_file = os.path.join( self.DICOM_path_, os.path.basename(nifti_file) )
                 shutil.move( nifti_file, target_niftii_file );
                 self.protocols_[Protocol][2].append( target_niftii_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(self.md5sum_(target_niftii_file),
+                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_niftii_file),
                                                               target_niftii_file) )
         
             #
             #
             return nifti_file
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    def lava_access_( self, Project, Scan ):
+        """KNECT API for LAVA queries"""
+        #
+        try:
+            #
+            #
+            self.study_ = Project
+            self.PIDN_  = Scan[len(Project):]
+            print self.study_, " ", self.PIDN_
+            
+            #
+            # lava query 
+            #
+
+            #
+            # Name of the patient
+            inquiry_params = {'service_username':self.knect_username_, 'pidn':self.PIDN_}
+            # load in json
+            patient_lava = json.loads( niqc.get_patient(inquiry_params) )
+            # name of the patient
+            firstName = patient_lava["patient"]["firstName"]
+            lastName  = patient_lava["patient"]["lastName"]
+            # formating the name
+            self.First_Name_ = "%s%s"%(firstName[0],firstName[1:].lower())
+            self.Last_Name_  = "%s%s"%(lastName[0],lastName[1:].lower())
         #
         #
         except Exception as inst:
