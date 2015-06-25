@@ -40,7 +40,7 @@ class Scans_management( object ):
         #
         json_data = open( "/home/quality/QC/knect.json" )
         knect_connect = json.load( json_data )
-        print knect_connect
+        #
         self.knect_username_ = knect_connect["knect_username"]
         self.knect_password_ = knect_connect["knect_password"]
         #
@@ -56,18 +56,24 @@ class Scans_management( object ):
         self.main_new_scans_directory_ = os.path.join( os.sep, "mnt","macdata","groups","imaging_core","SNC-PACS-GW1-NEWDICOMS")
         self.new_scans_                = []
         #
+        # Scan status: Done, Running, Failed
+        self.json_scan_status_ = "/home/quality/QC/scan_status.json"
+        json_scan_status_file  = open( self.json_scan_status_ , 'r' )
+        self.scan_status_      = json.load( json_scan_status_file )
+        #
         #
         tempo_file = os.path.join(os.sep, "home","quality","devel","Python","imaging-core","new_arch","Quality_control","SourceID","Scan_Tracking_08_06_2014.csv")
         self.source_id_csv_ = open(tempo_file, 'rt')
         #
-        self.study_      = "" # 
-        self.sourceID_   = "" # Prod by XL Scan Tracking file
-        self.PIDN_       = "" # LAVA
-        self.PIDN_block_ = "" # 
-        self.First_Name_ = "" # LAVA
-        self.Last_Name_  = "" # LAVA
-        self.scan_date_  = "" # 
-        self.Your_Name_  = "Yann Cobigo"
+        self.study_       = "" # 
+        self.sourceID_    = "" # Prod by XL Scan Tracking file
+        self.PIDN_        = "" # LAVA
+        self.PIDN_block_  = "" # 
+        self.First_Name_  = "" # LAVA
+        self.Last_Name_   = "" # LAVA
+        self.scan_date_   = "" # 
+        self.dicoms_date_ = "" # 
+        self.Your_Name_   = "Yann Cobigo"
 
         #
         # Dicoms
@@ -75,7 +81,7 @@ class Scans_management( object ):
 
         #
         #
-        self.projects_ = {"NIFD":"", "PPGAAA":"", "ADRCAAAA":"", "HBAAAA":"", "FRTNIAAAA":"", "HVAAAA":"", "EPILAAAA":"", "INFAAAA":"", "TPI4RTAAAA":"", "TPIADAAAA":"", "RPDAAAA":"", "NRSAAAA":""}
+        self.projects_ = {"NIFD":"", "PPGAAA":"", "ADRCAAAA":"", "HBAAAA":"", "FRTNIAAAA":"", "HVAAAA":"", "EPILAAAA":"", "INFAAAA":"", "TPI4RTAAAA":"", "TPIADAAAA":"", "RPDAAAA":"", "NRSAAAA":"", "DCAAAAA":"","GeschlabAAAA":""}
         # 
         # protocols dictionary
         # "proto":"True", "zip_file", "nii_file", "md5 signatures"
@@ -114,10 +120,25 @@ class Scans_management( object ):
         """New scans list the new scans arrived in the folder and check if the copy process is over."""
         try:
             #
-            # Probe the new scans
-            for scan in os.listdir( self.main_new_scans_directory_ ):
-                self.new_scans_.append( scan )
+            # Check for new scans and check the copy is done
+            # Here we will have Prob new scan
 
+            
+            #
+            # Probe the scans label 'New'
+            for scan in os.listdir( self.main_new_scans_directory_ ):
+                for date in os.listdir( os.path.join(self.main_new_scans_directory_, scan) ):
+                    scan_to_check = "%s/%s"%(scan,date)
+                    if scan_to_check in self.scan_status_.keys():
+                        if self.scan_status_[scan_to_check] == "New":
+                            self.scan_status_[scan_to_check] = "Running"
+                            self.new_scans_.append( scan_to_check )
+            # Update the scan status
+            print self.scan_status_
+            with open( self.json_scan_status_, 'w') as outfile:
+                json.dump( self.scan_status_, outfile,
+                           indent = 2, separators = (',',': '), sort_keys = True )
+            
             #
             # Is it one of our project?
             for scan in self.new_scans_:
@@ -133,36 +154,99 @@ class Scans_management( object ):
                         #
                         # project and PIDN. Also the PIDN blocks it belongs
                         # self.study_, self.PIDN_, self.PIDN_block_
-                        self.lava_access_( project, scan )
+                        self.lava_access_( project, scan.split("/")[0] )
                         #
                         # date: PIND/{2013-07-01,2012-10-25,..}
-                        dates   = []
                         level_1 = os.path.join( self.main_new_scans_directory_, scan )
-                        for dirs in os.listdir( level_1 ):
-                            dates.append( dirs )
-                        # loop over the dates
-                        for date in dates:
-                            # if date is new, process the scan 20130122
-                            if True:
-                                self.scan_date_ = "%s-%s-%s"%(date[0:4], date[4:6], date[6:8])
-                                print self.scan_date_
-                                # Process the scan if we have only one scan
-                                level_2 = os.path.join( level_1, date )
-                                # check we have only one file/dir in the date directory
-                                files = []
-                                for count in os.listdir( level_2 ):
-                                    files.append(count)
-                                if len(files) == 1:
-                                    # create a Source ID
-                                    self.sourceID_ = self.create_source_id_()
-                                    # process the scans
-                                    self.scan_process( os.path.join(level_2, files[0]) )
-                                else:
-                                    raise Exception( "Directory %s contains more than one directory."%level_2 )
+#                        dates   = []
+#                        for dirs in os.listdir( level_1 ):
+#                            dates.append( dirs )
+#                        # loop over the dates
+#                        for date in dates:
+                        # if date is new, process the scan 20130122
+                        self.dicoms_date_ = scan.split("/")[1]
+                        self.scan_date_   = "%s-%s-%s"%(self.dicoms_date_[0:4], 
+                                                        self.dicoms_date_[4:6], 
+                                                        self.dicoms_date_[6:8])
+                        print self.scan_date_
+                        # Process the scan if we have only one scan
+#                        level_2 = os.path.join( level_1, date )
+                        # check we have only one file/dir in the date directory
+                        files = []
+                        for count in os.listdir( level_1 ):
+                            files.append(count)
+                        if len(files) == 1:
+                            # create a Source ID
+                            self.sourceID_ = self.create_source_id_()
+                            # process the scans
+                            self.scan_process( os.path.join(level_1, files[0]) )
+                        else:
+                            raise Exception( "Directory %s contains more than one directory."%level_1 )
+                
+                #
+                # Update the scan status
+                self.scan_status_[scan] = "Done"
+                with open( self.json_scan_status_, 'w') as outfile:
+                    json.dump( self.scan_status_, outfile,
+                               indent = 2, separators = (',',': '), sort_keys = True )
+
 
             #
             # Clean temporary directories
-            self.clean_tempdir()
+            self.clean_tempdir_()
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    def manual_new_scans_(self, Scan):
+        """New scans list the new scans arrived in the folder and check if the copy process is over."""
+        try:
+            #
+            # Probe the new scans
+            for scan in os.listdir( self.main_new_scans_directory_ ):
+                self.new_scans_.append( scan )
+
+            #
+            # Path for image production
+            if self.PRODUCTION_:
+                self.R_path_ = os.path.join( os.sep, "mnt","images" )
+            else:
+                self.R_path_ = os.path.join( os.sep, "home","quality","prod" )
+
+            #
+            # date: PIND/{2013-07-01,2012-10-25,..}
+            level_1 = os.path.join( self.main_new_scans_directory_, Scan )
+            print self.scan_date_
+            # Process the scan if we have only one scan
+            date = self.dicoms_date_
+            self.scan_date_ = "%s-%s-%s"%(date[0:4], date[4:6], date[6:8])
+            level_2 = os.path.join( level_1, date )
+            # check we have only one file/dir in the date directory
+            files = []
+            for count in os.listdir( level_2 ):
+                files.append(count)
+            #
+            if len(files) == 1:
+                # create a Source ID
+                self.sourceID_ = self.create_source_id_()
+                # process the scans
+                self.scan_process( os.path.join(level_2, files[0]) )
+            else:
+                raise Exception( "Directory %s contains more than one directory."%level_2 )
+
+            #
+            # Clean temporary directories
+            self.clean_tempdir_()
         #
         #
         except Exception as inst:
@@ -215,14 +299,18 @@ class Scans_management( object ):
                 "T2":[False,[],[],[]],
                 "T2_3DC":[False,[],[],[]],
                 "FLAIR":[False,[],[],[]],
-                "FLAIR_3DC":[False,[],[],[]],
-                "T1-LONG":[False,[],[],[]],
-                "T1-LONG-3DC":[False,[],[],[]],
+                "FLAIR-3DC":[False,[],[],[]],
+                "MP-LAS":[False,[],[],[]],
+                "MP-LAS-long-3DC":[False,[],[],[]],
                 "T1-SHORT":[False,[],[],[]],
                 "T1-SHORT-3DC":[False,[],[],[]],
-                "PASL":[False,[],[],[]],
+                "ASL-raw-v1":[False,[],[],[]],
+                "ASL-MoCo-v1":[False,[],[],[]],
                 "DTI-v2":[False,[],[],[]],
                 "DTI-v4":[False,[],[],[]],
+                "DWI-RPD-ADC":[False,[],[],[]],
+                "DWI-RPD-B0":[False,[],[],[]],
+                "DWI-RPD-B2000":[False,[],[],[]],
                 "RSfMRI":[False,[],[],[]]
             }
 
@@ -239,6 +327,7 @@ class Scans_management( object ):
             self.T1_short( Scans_dir )
             self.T1_short_3DC( Scans_dir )
             self.pulsed_ASL( Scans_dir )
+            self.pulsed_ASL_MoCo( Scans_dir )
             self.DTI( Scans_dir )
             self.Resting_state( Scans_dir )
 
@@ -254,7 +343,8 @@ class Scans_management( object ):
                 json.dump( self.protocols_, 
                            outfile, indent=2, separators=(',',': '), sort_keys=True )
 
-
+            #
+            # ToDo remove
             print  self.protocols_
         #
         #
@@ -419,7 +509,7 @@ class Scans_management( object ):
         try:
             #
             # Check on ASL directory
-            self.protocols_["PASL"][0] = True
+            self.protocols_["ASL-raw-v1"][0] = True
             protocol_dir = []
             #
             for dir_name in os.listdir( Scans ):
@@ -427,13 +517,13 @@ class Scans_management( object ):
                     protocol_dir.append( os.path.join(Scans, dir_name) )
             # Check if we found a directory
             if not protocol_dir:
-                self.protocols_["PASL"][0] = False
-                _log.warning("PASL directory does not exist.")
+                self.protocols_["ASL-raw-v1"][0] = False
+                _log.warning("ASL-raw-v1 directory does not exist.")
             #
             # DICOMs zipping and change into nifti
-            if self.protocols_["PASL"][0]:
+            if self.protocols_["ASL-raw-v1"][0]:
                 for dir_name in protocol_dir:
-                    self.zip_protocol_("PASL", dir_name, len(protocol_dir) is 1 )
+                    self.zip_protocol_("ASL-raw-v1", dir_name, len(protocol_dir) is 1 )
         #
         #
         except Exception as inst:
@@ -449,25 +539,45 @@ class Scans_management( object ):
     #
     #
     def pulsed_ASL_MoCo( self, Scans ):
-        """Pulsed Arterial Spin Labeling (perfusion) MoCo"""
+        """Pulsed Arterial Spin Labeling (perfusion) MoCo is a sequence following the ASL-raw-v1 protocol."""
         try:
             #
             # Check on ASL directory
-            self.protocols_["PASL_MoCo"][0] = True
+            self.protocols_["ASL-MoCo-v1"][0] = True
             protocol_dir = []
+
             #
+            # Get pASL sequence
+            ASL_raw = []
+            ASL_seq = 0
             for dir_name in os.listdir( Scans ):
-                if "pASL_" in dir_name and "MoCo" in dir_name:
+                if "pASL_" in dir_name and "MoCo" not in dir_name:
+                    ASL_raw.append(dir_name)
+            # Check we have only 1 ASL_raw
+            if len(ASL_raw) == 1:
+                if ASL_raw[0][:2].isdigit():
+                    ASL_seq = int(ASL_raw[0][:2])
+                elif ASL_raw[0][:1].isdigit():
+                    ASL_seq = int(ASL_raw[0][:1])
+#                # increment the sequence to the next sequence
+#                ASL_seq += 1
+            else:
+                raise  Exception( "More than one ASL sequence has been found." )
+            
+            #
+            # Precess ASL MoCo
+            for dir_name in os.listdir( Scans ):
+                if str( ASL_seq + 1 ) in dir_name and "MoCo" in dir_name:
                     protocol_dir.append( os.path.join(Scans, dir_name) )
             # Check if we found a directory
             if not protocol_dir:
-                self.protocols_["PASL_MoCo"][0] = False
+                self.protocols_["ASL-MoCo-v1"][0] = False
                 _log.warning("PASL directory does not exist.")
             #
             # DICOMs zipping and change into nifti
-            if self.protocols_["PASL_MoCo"][0]:
+            if self.protocols_["ASL-MoCo-v1"][0]:
                 for dir_name in protocol_dir:
-                    self.zip_protocol_("PASL_MoCo", dir_name, len(protocol_dir) is 1 )
+                    self.zip_protocol_("ASL-MoCo-v1", dir_name, len(protocol_dir) is 1 )
         #
         #
         except Exception as inst:
@@ -483,15 +593,22 @@ class Scans_management( object ):
     #
     #
     def DTI( self, Scans ):
-        """Pulsed Arterial Spin Labeling (perfusion) MoCo"""
+        """Diffusion tensor imaging."""
         try:
             #
             # Check on DTI directory
             self.protocols_["DTI-v2"][0] = True
             self.protocols_["DTI-v4"][0] = True
+            self.protocols_["DWI-RPD-ADC"][0] = True
+            self.protocols_["DWI-RPD-B0"][0] = True
+            self.protocols_["DWI-RPD-B2000"][0] = True
+            #
             protocol_dir = {}
             protocol_dir["DTI-v2"] = []
             protocol_dir["DTI-v4"] = []
+            protocol_dir["DWI-RPD-ADC"] = []
+            protocol_dir["DWI-RPD-B0"] = []
+            protocol_dir["DWI-RPD-B2000"] = []
             #
             for dir_name in os.listdir( Scans ):
                 if "ep2d-advdiff-511E_b" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
@@ -500,14 +617,30 @@ class Scans_management( object ):
                 if "NIFD" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
                     protocol_dir["DTI-v4"].append( os.path.join(Scans, dir_name) )
                 #
-           # Check if we found a directory
+                if "DIFFUSION" in dir_name and "SCAN_TRACE_P2" in dir_name and "ADC" not in dir_name:
+                    protocol_dir["DWI-RPD-B0"].append( os.path.join(Scans, dir_name) )
+                    protocol_dir["DWI-RPD-B2000"].append( os.path.join(Scans, dir_name) )
+                #
+                if "DIFFUSION" in dir_name and "SCAN_TRACE_P2" in dir_name and "ADC" in dir_name:
+                    protocol_dir["DWI-RPD-ADC"].append( os.path.join(Scans, dir_name) )
+            #
+            # Check if we found a directory
             if not protocol_dir["DTI-v2"]:
                 self.protocols_["DTI-v2"][0] = False
-                _log.warning("DTI directory does not exist.")
+                _log.warning("DTI v2 directory does not exist.")
             #
             if not protocol_dir["DTI-v4"]:
                 self.protocols_["DTI-v4"][0] = False
-                _log.warning("DTI directory does not exist.")
+                _log.warning("DTI v4 directory does not exist.")
+            #
+            if not protocol_dir["DWI-RPD-B0"] or not protocol_dir["DWI-RPD-B2000"]:
+                self.protocols_["DWI-RPD-B0"][0]    = False
+                self.protocols_["DWI-RPD-B2000"][0] = False
+                _log.warning("Diffusion weighted images directory does not exist.")
+            #
+            if not protocol_dir["DWI-RPD-ADC"]:
+                self.protocols_["DWI-RPD-ADC"][0] = False
+                _log.warning("Diffusion weighted images with ADC sequence directory does not exist.")
 
             #
             # DICOMs zipping and change into nifti
@@ -550,10 +683,51 @@ class Scans_management( object ):
                     self.protocols_["DTI-v2"][1].append( target_zip_file )
                     self.protocols_["DTI-v2"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
                                                                   target_zip_file) )
+            #
             # "DTI-v4" protocol
             if self.protocols_["DTI-v4"][0]:
                 for dir_name in protocol_dir["DTI-v4"]:
                     self.zip_protocol_("DTI-v4", dir_name, len(protocol_dir["DTI-v4"]) is 1 )
+
+            #
+            # "DWI-RPD-B0" and "DWI-RPD-B2000" protocols
+            if self.protocols_["DWI-RPD-B0"][0]:
+                files_to_zip = []
+                # Warning those are the same sequence
+                files_to_zip.append( self.zip_DICOMs_(Protocol  = "DWI-RPD-B0", 
+                                                      Directory = protocol_dir["DWI-RPD-B0"][0], 
+                                                      Dir_num   = "",
+                                                      Range     = range(0, 21+1)) ) # 22 firsts: 0 - 21
+                #
+                files_to_zip.append( self.zip_DICOMs_(Protocol  = "DWI-RPD-B2000", 
+                                                      Directory = protocol_dir["DWI-RPD-B2000"][0], 
+                                                      Dir_num   = "",
+                                                      Range     = range(22, 43+1)) ) # 22 - 44
+                #
+                if not os.path.exists( files_to_zip[0] ) or not os.path.exists( files_to_zip[1] ):
+                    raise Exception( "%s and %s files doe not exist."%(files_to_zip[0], 
+                                                                       files_to_zip[1]) )
+                else:
+                    # DWI-RPD-B0
+                    target_zip_file = os.path.join( self.R_path_, os.path.basename(files_to_zip[0]) )
+                    shutil.move( files_to_zip[0], target_zip_file )
+                    self.protocols_["DWI-RPD-B0"][1].append( target_zip_file )
+                    self.protocols_["DWI-RPD-B0"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
+                                                                      target_zip_file) )
+                    # DWI-RPD-B2000
+                    target_zip_file = os.path.join( self.R_path_, os.path.basename(files_to_zip[1]) )
+                    shutil.move( files_to_zip[1], target_zip_file )
+                    self.protocols_["DWI-RPD-B2000"][1].append( target_zip_file )
+                    self.protocols_["DWI-RPD-B2000"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
+                                                                         target_zip_file) )
+                # Nifti file
+#HERE                DWI_RPD_nifti = self.dcm2nii_protocol_()
+
+            #
+            # "DWI-RPD-ADC" protocol
+            if self.protocols_["DWI-RPD-ADC"][0]:
+                for dir_name in protocol_dir["DWI-RPD-ADC"]:
+                    self.process_protocol_("DWI-RPD-ADC", dir_name, len(protocol_dir["DTI-v4"]) is 1 )
         #
         #
         except Exception as inst:
@@ -665,7 +839,7 @@ class Scans_management( object ):
         try:
             #
             # Check on T1 directory
-            self.protocols_["T1-LONG"][0] = True
+            self.protocols_["MP-LAS"][0] = True
             protocol_dir = []
             #
             for dir_name in os.listdir( Scans ):
@@ -673,13 +847,13 @@ class Scans_management( object ):
                     protocol_dir.append( os.path.join(Scans, dir_name) )
             # Check if we found a directory
             if not protocol_dir:
-                self.protocols_["T1-LONG"][0] = False
-                _log.warning("T1-LONG directory does not exist.")
+                self.protocols_["MP-LAS"][0] = False
+                _log.warning("MP-LAS directory does not exist.")
             #
             # DICOMs zipping and change into nifti
-            if self.protocols_["T1-LONG"][0]:
+            if self.protocols_["MP-LAS"][0]:
                 for dir_name in protocol_dir:
-                    self.process_protocol_("T1-LONG", dir_name, len(protocol_dir) is 1 )
+                    self.process_protocol_("MP-LAS", dir_name, len(protocol_dir) is 1 )
         #
         #
         except Exception as inst:
@@ -699,7 +873,7 @@ class Scans_management( object ):
         try:
             #
             # Check on T1 directory
-            self.protocols_["T1-LONG-3DC"][0] = True
+            self.protocols_["MP-LAS-long-3DC"][0] = True
             protocol_dir = []
             #
             for dir_name in os.listdir( Scans ):
@@ -707,13 +881,13 @@ class Scans_management( object ):
                     protocol_dir.append( os.path.join(Scans, dir_name) )
             # Check if we found a directory
             if not protocol_dir:
-                self.protocols_["T1-LONG-3DC"][0] = False
-                _log.warning("T1-LONG-3DC directory does not exist.")
+                self.protocols_["MP-LAS-long-3DC"][0] = False
+                _log.warning("MP-LAS-long-3DC directory does not exist.")
             #
             # DICOMs zipping and change into nifti
-            if self.protocols_["T1-LONG-3DC"][0]:
+            if self.protocols_["MP-LAS-long-3DC"][0]:
                 for dir_name in protocol_dir:
-                    self.process_protocol_("T1-LONG-3DC", dir_name, len(protocol_dir) is 1 )
+                    self.process_protocol_("MP-LAS-long-3DC", dir_name, len(protocol_dir) is 1 )
         #
         #
         except Exception as inst:
@@ -836,7 +1010,7 @@ class Scans_management( object ):
         try:
             #
             # Check on FLAIR directory
-            self.protocols_["FLAIR_3DC"][0] = True
+            self.protocols_["FLAIR-3DC"][0] = True
             protocol_dir = []
             #
             for dir_name in os.listdir( Scans ):
@@ -844,13 +1018,13 @@ class Scans_management( object ):
                     protocol_dir.append( os.path.join(Scans, dir_name) )
             # Check if we found a directory
             if not protocol_dir:
-                self.protocols_["FLAIR_3DC"][0] = False
+                self.protocols_["FLAIR-3DC"][0] = False
                 _log.warning("FLAIR 3DC directory does not exist.")
             #
             # DICOMs zipping and change into nifti
-            if self.protocols_["FLAIR_3DC"][0]:
+            if self.protocols_["FLAIR-3DC"][0]:
                 for dir_name in protocol_dir:
-                    self.process_protocol_("FLAIR_3DC", dir_name, len(protocol_dir) is 1 )
+                    self.process_protocol_("FLAIR-3DC", dir_name, len(protocol_dir) is 1 )
         #
         #
         except Exception as inst:
@@ -933,7 +1107,7 @@ class Scans_management( object ):
             quit(-1)
     #
     #
-    def zip_DICOMs_( self, Protocol, Directory, Dir_num = ""):
+    def zip_DICOMs_( self, Protocol, Directory, Dir_num = "", Range = range(0)):
         """Zip file function for DICOM files."""
         _log.info("%s sequence(s) found - zipping DICOM"%(Protocol))
         #
@@ -977,13 +1151,17 @@ class Scans_management( object ):
             #
             # Create the dicom directoy in the temp directory
             os.mkdir( os.path.join(tempo_dir, Up_directory[1]) )
-            # Copy DICOM files in the new directory and zip
+            #
             os.chdir( tempo_dir )
-            for file_name in dicom_list:
+            # If no Range is given create the Range
+            if not Range:
+                Range = range( len(dicom_list) )
+            # Copy DICOM files in the new directory and zip within a range
+            for i in Range:
+                file_name = dicom_list[i]
                 shutil.copy( os.path.join(Directory, file_name), 
                              os.path.join(tempo_dir, Up_directory[1]) )
                 zf.write( os.path.join(Up_directory[1], file_name) )
-
             #
             #if not zf.test(): # check if the zip is valid
             zf.close()
@@ -1007,6 +1185,7 @@ class Scans_management( object ):
         try:
             #
             # create temporary directory to store zip files
+            niftis     = []
             nifti_file = ""
             tempo_dir = tempfile.mkdtemp()
             # TODO: log as warning
@@ -1016,18 +1195,34 @@ class Scans_management( object ):
             for dicom in os.listdir( Directory ):
                 shutil.copy( os.path.join(Directory, dicom), os.path.join(tempo_dir, dicom) )
             #
-            cmd = "dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n -o %s *"%(tempo_dir)
+            cmd = "dcm2nii -a n -d n -e n -g n -i n -p n -f y -v n -o %s *"%( tempo_dir )
             Image_tools.generic_unix_cmd(cmd)
             #
             for file_name in os.listdir( tempo_dir ):
-                if file_name.startswith("o") and file_name.endswith(".nii"):
-                    if Dir_num:
-                        nifti_file = "%s_%s_%s.nii"%(Protocol, Dir_num, self.sourceID_)
-                    else:
-                        nifti_file = "%s_%s.nii"%(Protocol, self.sourceID_)
-                    shutil.move( file_name, nifti_file )
-                if not file_name.startswith("o") and file_name.endswith(".nii"):
-                    os.remove( os.path.join(tempo_dir, file_name) )
+                if file_name.endswith(".nii"):
+                    niftis.append(file_name)
+            #
+            #
+            if len( niftis ) > 1:
+                for file_name in niftis:
+                    if file_name.startswith("o") and file_name.endswith(".nii"):
+                        if Dir_num:
+                            nifti_file = "%s_%s_%s.nii"%(Protocol, Dir_num, self.sourceID_)
+                        else:
+                            nifti_file = "%s_%s.nii"%(Protocol, self.sourceID_)
+                        #
+                        shutil.move( file_name, nifti_file )
+                    if not file_name.startswith("o") and file_name.endswith(".nii"):
+                        os.remove( os.path.join(tempo_dir, file_name) )
+            elif len( niftis ) == 1:
+                if Dir_num:
+                    nifti_file = "%s_%s_%s.nii"%(Protocol, Dir_num, self.sourceID_)
+                else:
+                    nifti_file = "%s_%s.nii"%(Protocol, self.sourceID_)
+                #
+                shutil.move( niftis[0], nifti_file )
+            else:
+                raise Exception( "No nifti was generated for %s in %s."%(Protocol, tempo_dir) )
             #
             #
             return os.path.join( tempo_dir, nifti_file )
@@ -1122,7 +1317,68 @@ class Scans_management( object ):
         
             #
             # nifti file
-            nifti_file = self. dcm2nii_protocol_(Protocol, Directory, dir_num)
+            nifti_file = self.dcm2nii_protocol_(Protocol, Directory, dir_num)
+            #
+            if not os.path.exists( nifti_file ):
+                raise Exception( "%s file does not exist."%nifti_file )
+            else:
+                target_niftii_file = os.path.join( self.R_path_, os.path.basename(nifti_file) )
+                shutil.move( nifti_file, target_niftii_file );
+                self.protocols_[Protocol][2].append( target_niftii_file )
+                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_niftii_file),
+                                                              target_niftii_file) )
+        
+            #
+            #
+            return nifti_file
+        #
+        #
+        except Exception as inst:
+            print inst
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+    #
+    #
+    def process_EPI_( self, Protocol, Directory, Unique, DCM_list = [] ):
+        """Convert dicoms to nifti file and dicoms zip function using a list of DICOMs."""
+        _log.info("%s sequence(s) found - process sequence(s)"%(Protocol))
+        #
+        try:
+            #
+            # Multiple cases
+            dir_num = ""
+            base_name = os.path.basename( Directory )
+            #
+            if not Unique:
+                if base_name[:2].isdigit():
+                    dir_num = base_name[:2]
+                elif base_name[:1].isdigit():
+                    dir_num = base_name[:1]
+                else:
+                    raise Exception( "No multiple cases for the protocol %s."%Protocol )
+
+            #
+            # Zip dicoms
+            zip_file = self.zip_DICOMs_(Protocol, Directory, dir_num) 
+            #
+            if not os.path.exists( zip_file ):
+                raise Exception( "%s file does not exist."%zip_file )
+            else:
+                target_zip_file = os.path.join( self.R_path_, os.path.basename(zip_file) )
+                shutil.move( zip_file, target_zip_file );
+                self.protocols_[Protocol][1].append( target_zip_file )
+                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
+                                                              target_zip_file) )
+        
+            #
+            # nifti only the dicom 1
+            nifti_file = self.dcm2nii_protocol_(Protocol, Directory, dir_num )
             #
             if not os.path.exists( nifti_file ):
                 raise Exception( "%s file does not exist."%nifti_file )
@@ -1197,7 +1453,7 @@ class Scans_management( object ):
     #
     #
     #
-    def clean_tempdir( self ):
+    def clean_tempdir_( self ):
         """Clean temporary (/tmp) area."""
         try:
             #
@@ -1220,4 +1476,8 @@ class Scans_management( object ):
     #
     def run( self ):
         self.new_scans()
-
+    #
+    #
+    #
+    def manual( self, Scan ):
+        self.manual_new_scans_(Scan)
