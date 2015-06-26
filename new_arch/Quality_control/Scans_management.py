@@ -5,6 +5,9 @@ import hashlib
 #
 from functools import partial
 #
+import nipype
+import nipype.interfaces.fsl as fsl
+#
 import neuroimaging_qc as niqc
 import Image_tools
 import MAC_tools as MAC
@@ -134,7 +137,6 @@ class Scans_management( object ):
                             self.scan_status_[scan_to_check] = "Running"
                             self.new_scans_.append( scan_to_check )
             # Update the scan status
-            print self.scan_status_
             with open( self.json_scan_status_, 'w') as outfile:
                 json.dump( self.scan_status_, outfile,
                            indent = 2, separators = (',',': '), sort_keys = True )
@@ -158,19 +160,12 @@ class Scans_management( object ):
                         #
                         # date: PIND/{2013-07-01,2012-10-25,..}
                         level_1 = os.path.join( self.main_new_scans_directory_, scan )
-#                        dates   = []
-#                        for dirs in os.listdir( level_1 ):
-#                            dates.append( dirs )
-#                        # loop over the dates
-#                        for date in dates:
                         # if date is new, process the scan 20130122
                         self.dicoms_date_ = scan.split("/")[1]
                         self.scan_date_   = "%s-%s-%s"%(self.dicoms_date_[0:4], 
                                                         self.dicoms_date_[4:6], 
                                                         self.dicoms_date_[6:8])
                         print self.scan_date_
-                        # Process the scan if we have only one scan
-#                        level_2 = os.path.join( level_1, date )
                         # check we have only one file/dir in the date directory
                         files = []
                         for count in os.listdir( level_1 ):
@@ -720,8 +715,37 @@ class Scans_management( object ):
                     self.protocols_["DWI-RPD-B2000"][1].append( target_zip_file )
                     self.protocols_["DWI-RPD-B2000"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
                                                                          target_zip_file) )
+                #
                 # Nifti file
-#HERE                DWI_RPD_nifti = self.dcm2nii_protocol_()
+                nifti_file_4D = self.dcm2nii_protocol_("DWI-RPD-B0", protocol_dir["DWI-RPD-B0"][0], 0)
+                # split nifty into B0 and B2000
+                fsplit = fsl.Split()
+                fsplit.inputs.dimension   = "t"
+                fsplit.inputs.in_file     =  nifti_file_4D
+                fsplit.inputs.output_type = "NIFTI"
+                fsplit.run()
+                # Splitted volumes
+                vol0 = os.path.join( os.path.dirname(nifti_file_4D), "vol0000.nii" )
+                vol1 = os.path.join( os.path.dirname(nifti_file_4D), "vol0001.nii" )
+                # remove the 4D file, but save the name
+                os.remove( nifti_file_4D )
+                # create out new outputs
+                shutil.move( vol0, nifti_file_4D )
+                shutil.move( vol1, nifti_file_4D.replace("B0", "B2000") )
+                vol0 = nifti_file_4D
+                vol1 = nifti_file_4D.replace("B0", "B2000")
+                # DWI-RPD-B0
+                target_file = os.path.join( self.R_path_, os.path.basename(vol0) )
+                shutil.move( vol0, target_file )
+                self.protocols_["DWI-RPD-B0"][2].append( target_file )
+                self.protocols_["DWI-RPD-B0"][3].append( "%s %s"%(MAC.Utils().md5sum(target_file),
+                                                                  target_file) )
+                # DWI-RPD-B2000
+                target_file = os.path.join( self.R_path_, os.path.basename(vol1) )
+                shutil.move( vol1, target_file )
+                self.protocols_["DWI-RPD-B2000"][2].append( target_file )
+                self.protocols_["DWI-RPD-B2000"][3].append( "%s %s"%(MAC.Utils().md5sum(target_file),
+                                                                     target_file) )
 
             #
             # "DWI-RPD-ADC" protocol
@@ -1318,67 +1342,6 @@ class Scans_management( object ):
             #
             # nifti file
             nifti_file = self.dcm2nii_protocol_(Protocol, Directory, dir_num)
-            #
-            if not os.path.exists( nifti_file ):
-                raise Exception( "%s file does not exist."%nifti_file )
-            else:
-                target_niftii_file = os.path.join( self.R_path_, os.path.basename(nifti_file) )
-                shutil.move( nifti_file, target_niftii_file );
-                self.protocols_[Protocol][2].append( target_niftii_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_niftii_file),
-                                                              target_niftii_file) )
-        
-            #
-            #
-            return nifti_file
-        #
-        #
-        except Exception as inst:
-            print inst
-            _log.error(inst)
-            quit(-1)
-        except IOError as e:
-            print "I/O error({0}): {1}".format(e.errno, e.strerror)
-            quit(-1)
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            quit(-1)
-    #
-    #
-    def process_EPI_( self, Protocol, Directory, Unique, DCM_list = [] ):
-        """Convert dicoms to nifti file and dicoms zip function using a list of DICOMs."""
-        _log.info("%s sequence(s) found - process sequence(s)"%(Protocol))
-        #
-        try:
-            #
-            # Multiple cases
-            dir_num = ""
-            base_name = os.path.basename( Directory )
-            #
-            if not Unique:
-                if base_name[:2].isdigit():
-                    dir_num = base_name[:2]
-                elif base_name[:1].isdigit():
-                    dir_num = base_name[:1]
-                else:
-                    raise Exception( "No multiple cases for the protocol %s."%Protocol )
-
-            #
-            # Zip dicoms
-            zip_file = self.zip_DICOMs_(Protocol, Directory, dir_num) 
-            #
-            if not os.path.exists( zip_file ):
-                raise Exception( "%s file does not exist."%zip_file )
-            else:
-                target_zip_file = os.path.join( self.R_path_, os.path.basename(zip_file) )
-                shutil.move( zip_file, target_zip_file );
-                self.protocols_[Protocol][1].append( target_zip_file )
-                self.protocols_[Protocol][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
-                                                              target_zip_file) )
-        
-            #
-            # nifti only the dicom 1
-            nifti_file = self.dcm2nii_protocol_(Protocol, Directory, dir_num )
             #
             if not os.path.exists( nifti_file ):
                 raise Exception( "%s file does not exist."%nifti_file )
