@@ -1,0 +1,6 @@
+mkdir build
+cd build
+cmake -DITK_DIR=/home/ycobigo/devel/CPP/ITK/install-4.7.0-static/lib/cmake/ITK-4.7/ ../
+
+./tissue_volume c1_file.nii.gz
+
