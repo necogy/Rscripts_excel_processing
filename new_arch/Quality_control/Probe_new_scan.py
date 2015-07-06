@@ -46,8 +46,9 @@ class Probe_new_scan( object ):
             list_exp = []
             #
             for experiment_PIDN in os.listdir( self.scans_dir_ ):
-                for date in os.listdir( os.path.join(self.scans_dir_, experiment_PIDN) ):
-                    list_exp.append( "%s/%s"%(experiment_PIDN, date) )
+                if os.path.isdir( os.path.join(self.scans_dir_, experiment_PIDN) ):
+                    for date in os.listdir( os.path.join(self.scans_dir_, experiment_PIDN) ):
+                        list_exp.append( "%s/%s"%(experiment_PIDN, date) )
 
             #
             # For new scans set 'Copy_check' status to the scan

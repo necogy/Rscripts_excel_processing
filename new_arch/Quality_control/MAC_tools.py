@@ -87,7 +87,7 @@ class Scan_directory( object ):
             sub_dir_to_protocols = ""
             protocols_dir        = []
             protocols_container  = {}
-            print "In MAC", self.new_scan_
+
             #
             #
             for root, subdirs, files in os.walk( self.new_scan_ ):

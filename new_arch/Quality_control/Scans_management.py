@@ -11,6 +11,7 @@ import nipype.interfaces.fsl as fsl
 import neuroimaging_qc as niqc
 import Image_tools
 import MAC_tools as MAC
+import Probe_new_scan as Pns
 
 _log = logging.getLogger("__Scans_management__")
 #
@@ -134,8 +135,8 @@ class Scans_management( object ):
         try:
             #
             # Check for new scans and check the copy is done
-            # Here we will have Prob new scan
-
+            pns = Pns.Probe_new_scan( self.main_new_scans_directory_ )
+            pns.run()
             
             #
             # Probe the scans label 'New'
@@ -1477,7 +1478,7 @@ class Scans_management( object ):
 
             #
             # PIDN block
-            if self.PIDN_ < 10000.:
+            if int(self.PIDN_) < 10000:
                 self.PIDN_block_ = "%s000-%s999"%( self.PIDN_[0:1], self.PIDN_[0:1] )
             else:
                 self.PIDN_block_ = "%s000-%s999"%( self.PIDN_[0:2], self.PIDN_[0:2] )
