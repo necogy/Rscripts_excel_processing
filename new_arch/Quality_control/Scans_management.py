@@ -84,7 +84,7 @@ class Scans_management( object ):
 
         #
         #
-        self.projects_ = {"ADNI":"","ADNID":"","NIFD":"", "PPGAAA":"", "ADRCAAAA":"", "HBAAAA":"", "FRTNIAAAA":"", "HVAAAA":"", "EPILAAAA":"", "INFAAAA":"", "TPI4RTAAAA":"", "TPIADAAAA":"", "RPDAAAA":"", "NRSAAAA":"", "DCAAAAA":"","Geschlab":""}
+        self.projects_ = {"ADNI":"","ADNID":"","NIFD":"", "PPG":"", "ADRC":"", "HB":"", "FRTNI":"", "HV":"", "EPIL":"", "INF":"", "TPI4RT":"", "TPIAD":"", "RPD":"", "NRS":"", "DCA":"","Geschlab":""}
         # 
         # protocols dictionary
         # "proto":"True", "zip_file", "nii_file", "md5 signatures"
@@ -130,12 +130,13 @@ class Scans_management( object ):
             #
             # Probe the scans label 'New'
             for scan in os.listdir( self.main_new_scans_directory_ ):
-                for date in os.listdir( os.path.join(self.main_new_scans_directory_, scan) ):
-                    scan_to_check = "%s/%s"%(scan,date)
-                    if scan_to_check in self.scan_status_.keys():
-                        if self.scan_status_[scan_to_check] == "New":
-                            self.scan_status_[scan_to_check] = "Running"
-                            self.new_scans_.append( scan_to_check )
+                if os.path.isdir( os.path.join(self.main_new_scans_directory_, scan) ):
+                    for date in os.listdir( os.path.join(self.main_new_scans_directory_, scan) ):
+                        scan_to_check = "%s/%s"%(scan,date)
+                        if scan_to_check in self.scan_status_.keys():
+                            if self.scan_status_[scan_to_check] == "New":
+                                self.scan_status_[scan_to_check] = "Running"
+                                self.new_scans_.append( scan_to_check )
             # Update the scan status
             with open( self.json_scan_status_, 'w') as outfile:
                 json.dump( self.scan_status_, outfile,
@@ -187,7 +188,7 @@ class Scans_management( object ):
 
                 #
                 # Link with Lava
-                self.update_lava_()
+                #self.update_lava_()
 
             #
             # Clean temporary directories
@@ -313,9 +314,12 @@ class Scans_management( object ):
                 "ASL-ADNI":[False,[],[],[]],
                 "ASL-MoCo-v1":[False,[],[],[]],
                 "ASL-MoCo-ADNI":[False,[],[],[]],
+                "DTI-v1":[False,[],[],[]],
                 "DTI-v2":[False,[],[],[]],
                 "DTI-v4":[False,[],[],[]],
                 "ADNI-DTI":[False,[],[],[]],
+                "DWI_Geschwind":[False,[],[],[]],
+                "DWI_ADC_Geschwind":[False,[],[],[]],
                 "DWI-RPD-ADC":[False,[],[],[]],
                 "DWI-RPD-B0":[False,[],[],[]],
                 "DWI-RPD-B2000":[False,[],[],[]],
@@ -330,7 +334,7 @@ class Scans_management( object ):
             # ASL | ASL-MoCo | DTI-v2 | DTI-v4 | DWI-RPD-ADC | DWI-RPD-B0 | DWI-RPD-B2000 | ...
             self.Structural( Scans_dir )
             self.pulsed_ASL( Scans_dir )
-            self.pulsed_ASL_MoCo( Scans_dir )
+            #self.pulsed_ASL_MoCo( Scans_dir )
             self.DTI( Scans_dir )
             self.Resting_state( Scans_dir )
 
@@ -503,18 +507,16 @@ class Scans_management( object ):
             quit(-1)
     #
     #
-    def Diffusion( self, Scans ):
-        return self.protocol_name_
-    #
-    #
     def pulsed_ASL( self, Scans ):
         """Pulsed Arterial Spin Labeling (perfusion)"""
         try:
             #
             # Check on ASL directory
             protocol_dir = {}
-            protocol_dir["ASL-raw-v1"] = []
-            protocol_dir["ASL-ADNI"]   = []
+            protocol_dir["ASL-raw-v1"]    = []
+            protocol_dir["ASL-ADNI"]      = []
+            protocol_dir["ASL-MoCo-v1"]   = []
+            protocol_dir["ASL-MoCo-ADNI"] = []
 
             #
             #
@@ -534,6 +536,44 @@ class Scans_management( object ):
                 if self.protocols_[protocol][0]:
                     for dir_name in proto_list:
                         self.zip_protocol_(protocol, dir_name, len(proto_list) is 1 )
+
+            #
+            # MoCo
+            if self.protocols_["ASL-raw-v1"][0] or self.protocols_["ASL-ADNI"][0]:
+                #
+                # Get pASL sequence
+                ASL_raw = []
+                ASL_seq = 0
+                for dir_name in os.listdir( Scans ):
+                    if "pASL_" in dir_name and "MoCo" not in dir_name:
+                        ASL_raw.append(dir_name)
+                    # ADNI
+                    if "ASL_PERFUSION" in dir_name or "Axial_ASL" in dir_name:
+                        ASL_raw.append(dir_name)
+                                        
+                # Check we have only 1 ASL_raw
+                if len(ASL_raw) == 1:
+                    ASL_seq = int( self.sequence_number_(ASL_raw[0]) )
+                elif len(ASL_raw) > 1:
+                    raise  Exception( "More than one ASL sequence has been found." )
+                
+                #
+                # Precess ASL MoCo following sequence from ASL
+                for dir_name in os.listdir( Scans ):
+                    if dir_name.startswith( str( ASL_seq + 1 ) ) and "MoCo" in dir_name:
+                        if self.protocols_["ASL-raw-v1"][0]:
+                            protocol_dir["ASL-MoCo-v1"].append( os.path.join(Scans, dir_name) )
+                            self.protocols_["ASL-MoCo-v1"][0] = True
+                        if self.protocols_["ASL-ADNI"][0]:
+                            protocol_dir["ASL-MoCo-ADNI"].append( os.path.join(Scans, dir_name) )
+                            self.protocols_["ASL-MoCo-ADNI"][0] = True
+                
+                #
+                # DICOMs zipping and change into nifti
+                for protocol, proto_list in protocol_dir.iteritems():
+                    if self.protocols_[protocol][0]:
+                        for dir_name in proto_list:
+                            self.zip_protocol_(protocol, dir_name, len(proto_list) is 1 )
         #
         #
         except Exception as inst:
@@ -571,7 +611,7 @@ class Scans_management( object ):
             # Check we have only 1 ASL_raw
             if len(ASL_raw) == 1:
                 ASL_seq = int( self.sequence_number_(ASL_raw[0]) )
-            else:
+            elif len(ASL_raw) > 1:
                 raise  Exception( "More than one ASL sequence has been found." )
             
             #
@@ -611,14 +651,21 @@ class Scans_management( object ):
             #
             # Check on DTI directory
             protocol_dir = {}
-            protocol_dir["DTI-v2"]        = []
-            protocol_dir["DTI-v4"]        = []
-            protocol_dir["DWI-RPD-ADC"]   = []
-            protocol_dir["DWI-RPD-B0"]    = []
-            protocol_dir["DWI-RPD-B2000"] = []
-            protocol_dir["ADNI-DTI"]      = []
+            protocol_dir["DTI-v1"]            = []
+            protocol_dir["DTI-v2"]            = []
+            protocol_dir["DTI-v4"]            = []
+            protocol_dir["DWI_Geschwind"]     = []
+            protocol_dir["DWI_ADC_Geschwind"] = []
+            protocol_dir["DWI-RPD-ADC"]       = []
+            protocol_dir["DWI-RPD-B0"]        = []
+            protocol_dir["DWI-RPD-B2000"]     = []
+            protocol_dir["ADNI-DTI"]          = []
             #
             for dir_name in os.listdir( Scans ):
+                if ("DTI_b0_2.2iso_full_ky_-_10_acqs" in dir_name and "ADC" not in dir_name) or ("DTI_64_2.2iso_full_ky_fov220" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name):
+                    protocol_dir["DTI-v1"].append( os.path.join(Scans, dir_name) )
+                    self.protocols_["DTI-v1"][0] = True
+                #
                 if "ep2d-advdiff-511E_b" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
                     protocol_dir["DTI-v2"].append( os.path.join(Scans, dir_name) )
                     self.protocols_["DTI-v2"][0] = True
@@ -626,6 +673,14 @@ class Scans_management( object ):
                 if "NIFD" in dir_name and "ADC" not in dir_name and "FA" not in dir_name and "ColFA" not in dir_name and "TRACEW" not in dir_name:
                     protocol_dir["DTI-v4"].append( os.path.join(Scans, dir_name) )
                     self.protocols_["DTI-v4"][0] = True
+                # Geschwind
+                if ("DWI_-_" in dir_name or "DWI_WIP_-_" in dir_name) and "ADC" not in dir_name:
+                    protocol_dir["DWI_Geschwind"].append( os.path.join(Scans, dir_name) )
+                    self.protocols_["DWI_Geschwind"][0] = True
+                # Geschwind ADC
+                if ("DWI_-_" in dir_name or "DWI_WIP_-_" in dir_name) and "ADC" in dir_name:
+                    protocol_dir["DWI_ADC_Geschwind"].append( os.path.join(Scans, dir_name) )
+                    self.protocols_["DWI_ADC_Geschwind"][0] = True
                 #
                 if "DIFFUSION" in dir_name and "SCAN_TRACE_P2" in dir_name and "ADC" not in dir_name:
                     protocol_dir["DWI-RPD-B0"].append( os.path.join(Scans, dir_name) )
@@ -645,6 +700,44 @@ class Scans_management( object ):
             #
             # DICOMs zipping and change into nifti
             #
+
+            #
+            # "DTI-v1" protocol
+            if self.protocols_["DTI-v1"][0]:
+                files_to_zip = []
+                for dir_name in protocol_dir["DTI-v1"]:
+                    if "b0" in dir_name:
+                        files_to_zip.append( self.zip_DICOMs_("DTI-b0-v1", dir_name, "") )
+                    elif "64" in dir_name:
+                        files_to_zip.append( self.zip_DICOMs_("DTI-64-v1", dir_name, "") )
+                    else:
+                        raise Exception( "Error in the DTI directory selection: %s."%dir_name )
+                #
+                # create temporary directory to store zip files
+                tempo_dir = tempfile.mkdtemp()
+                # TODO: log as warning
+                print tempo_dir
+                # 
+                os.chdir( tempo_dir )
+                zip_file = "%s_%s.zip"%("DTI-v1", self.sourceID_)
+                zip_file = os.path.join(tempo_dir, zip_file)
+                # create the zip file
+                zf = zipfile.ZipFile( zip_file, mode='w' )
+                for file_name in files_to_zip:
+                    shutil.move( file_name, tempo_dir );
+                    zf.write( os.path.basename(file_name) )
+                #
+                #if not zf.test(): # check if the zip is valid
+                zf.close()
+                #
+                if not os.path.exists( zip_file ):
+                    raise Exception( "%s file does not exist."%zip_file )
+                else:
+                    target_zip_file = os.path.join( self.R_path_, os.path.basename(zip_file) )
+                    shutil.move( zip_file, target_zip_file )
+                    self.protocols_["DTI-v1"][1].append( target_zip_file )
+                    self.protocols_["DTI-v1"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
+                                                                  target_zip_file) )
 
             #
             # "DTI-v2" protocol
@@ -683,6 +776,76 @@ class Scans_management( object ):
                     self.protocols_["DTI-v2"][1].append( target_zip_file )
                     self.protocols_["DTI-v2"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
                                                                   target_zip_file) )
+
+            #
+            # "DTI-v3" protocol: DWI_Geschwind
+            if self.protocols_["DWI_Geschwind"][0]:
+                files_to_zip = []
+                for dir_name in protocol_dir["DWI_Geschwind"]:
+                    files_to_zip.append( self.zip_DICOMs_(dir_name, dir_name, "") )
+                    
+                #
+                # create temporary directory to store zip files
+                tempo_dir = tempfile.mkdtemp()
+                # TODO: log as warning
+                print tempo_dir
+                # 
+                os.chdir( tempo_dir )
+                zip_file = "%s_%s.zip"%("DWI_Geschwind", self.sourceID_)
+                zip_file = os.path.join(tempo_dir, zip_file)
+                # create the zip file
+                zf = zipfile.ZipFile( zip_file, mode='w' )
+                for file_name in files_to_zip:
+                    shutil.move( file_name, tempo_dir );
+                    zf.write( os.path.basename(file_name) )
+                #
+                #if not zf.test(): # check if the zip is valid
+                zf.close()
+                #
+                if not os.path.exists( zip_file ):
+                    raise Exception( "%s file does not exist."%zip_file )
+                else:
+                    target_zip_file = os.path.join( self.R_path_, os.path.basename(zip_file) )
+                    shutil.move( zip_file, target_zip_file )
+                    self.protocols_["DWI_Geschwind"][1].append( target_zip_file )
+                    self.protocols_["DWI_Geschwind"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
+                                                            target_zip_file) )
+
+            #
+            # "DTI-v3" protocol: DWI_Geschwind
+            if self.protocols_["DWI_ADC_Geschwind"][0]:
+                files_to_zip = []
+                for dir_name in protocol_dir["DWI_ADC_Geschwind"]:
+                    files_to_zip.append( self.zip_DICOMs_(dir_name, dir_name, "") )
+                    
+                #
+                # create temporary directory to store zip files
+                tempo_dir = tempfile.mkdtemp()
+                # TODO: log as warning
+                print tempo_dir
+                # 
+                os.chdir( tempo_dir )
+                zip_file = "%s_%s.zip"%("DWI_ADC_Geschwind", self.sourceID_)
+                zip_file = os.path.join(tempo_dir, zip_file)
+                # create the zip file
+                zf = zipfile.ZipFile( zip_file, mode='w' )
+                for file_name in files_to_zip:
+                    shutil.move( file_name, tempo_dir );
+                    zf.write( os.path.basename(file_name) )
+                #
+                #if not zf.test(): # check if the zip is valid
+                zf.close()
+                #
+                if not os.path.exists( zip_file ):
+                    raise Exception( "%s file does not exist."%zip_file )
+                else:
+                    target_zip_file = os.path.join( self.R_path_, os.path.basename(zip_file) )
+                    shutil.move( zip_file, target_zip_file )
+                    self.protocols_["DWI_ADC_Geschwind"][1].append( target_zip_file )
+                    self.protocols_["DWI_ADC_Geschwind"][3].append( "%s %s"%(MAC.Utils().md5sum(target_zip_file),
+                                                                             target_zip_file) )
+
+
             #
             # "DTI-v4" protocol
             if self.protocols_["DTI-v4"][0]:
@@ -823,8 +986,9 @@ class Scans_management( object ):
 
             # 
             for dir_name in os.listdir( Scans ):
-                # 8-RestingStatePHYSIO_eyesclosed_wholebrain
-                if "Resting" in dir_name and "hole" in dir_name and "rain" in dir_name:
+                # 29-RSWholeBrain_aah
+                #  8-RestingStatePHYSIO_eyesclosed_wholebrain
+                if "hole" in dir_name and "rain" in dir_name:
                     protocol_dir["RS"].append( os.path.join(Scans, dir_name) )
                     self.protocols_["RSfMRI"][0] = True
                 # 13-gre_field_mapping_RS
@@ -902,11 +1066,9 @@ class Scans_management( object ):
             #
             #
             if self.protocols_["RS-ADNI"][0] and self.protocols_["RS-MoCo-ADNI"][0]:
-                print "Je passe 3", protocol_dir
                 self.zip_protocol_( "RS-ADNI", 
                                     protocol_dir["RS-ADNI"][0], 
                                     len(protocol_dir["RS-ADNI"]) is 1 )
-                print "Je passe 4"
                 self.zip_protocol_( "RS-MoCo-ADNI", 
                                     protocol_dir["RS-MoCo-ADNI"][0], 
                                     len(protocol_dir["RS-MoCo-ADNI"]) is 1 )
@@ -1229,8 +1391,6 @@ class Scans_management( object ):
             dir_num = ""
             base_name = os.path.basename( Directory )
             #
-            print Directory
-
             if not Unique:
                 dir_num = self.sequence_number_( base_name )
 
