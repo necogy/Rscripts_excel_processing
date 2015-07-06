@@ -83,8 +83,18 @@ class Scans_management( object ):
         self.R_path_ = os.path.join( os.sep, "home","quality","subjects", "test1" )
 
         #
-        #
-        self.projects_ = {"ADNI":"","ADNID":"","NIFD":"", "PPG":"", "ADRC":"", "HB":"", "FRTNI":"", "HV":"", "EPIL":"", "INF":"", "TPI4RT":"", "TPIAD":"", "RPD":"", "NRS":"", "DCA":"","Geschlab":""}
+        # Experiments
+        self.projects_ = {"ADNI":"", "ADNID":"", "ADRC":"", "AIE":"", "ATX":"", 
+                          "DCA":"",
+                          "EPIL":"", 
+                          "FRTNI":"", 
+                          "Geschlab":"",
+                          "HB":"", "HV":"",  "HVMB":"", 
+                          "INF":"", 
+                          "NIC":"", "NIFD":"", "NIM":"", "NRS":"", 
+                          "PPG":"", 
+                          "RPD":"", 
+                          "TPI4RT":"", "TPIAD":""}
         # 
         # protocols dictionary
         # "proto":"True", "zip_file", "nii_file", "md5 signatures"
@@ -307,8 +317,8 @@ class Scans_management( object ):
                 "MP-LAS":[False,[],[],[]],
                 "T1-ADNI-3DC":[False,[],[],[]], 
                 "MP-LAS-long-3DC":[False,[],[],[]],
-                "T1-SHORT":[False,[],[],[]],
-                "T1-SHORT-3DC":[False,[],[],[]],
+                "MP-LAS-short":[False,[],[],[]],
+                "MP-LAS-short-3DC":[False,[],[],[]],
                 "Hippo-ADNI":[False,[],[],[]],
                 "ASL-raw-v1":[False,[],[],[]],
                 "ASL-ADNI":[False,[],[],[]],
@@ -1097,8 +1107,8 @@ class Scans_management( object ):
             # T1
             protocol_dir = {}
             protocol_dir["MP-LAS"]          = []
-            protocol_dir["T1-SHORT"]        = []
-            protocol_dir["T1-SHORT-3DC"]    = []
+            protocol_dir["MP-LAS-short"]        = []
+            protocol_dir["MP-LAS-short-3DC"]    = []
             protocol_dir["T1-ADNI"]         = []
             protocol_dir["MP-LAS-long-3DC"] = []
             protocol_dir["T1-ADNI-3DC"]     = []
@@ -1126,14 +1136,16 @@ class Scans_management( object ):
                 if "T1_mprage" in dir_name and "DIS3D" not in dir_name and "short" not in dir_name:
                     protocol_dir["MP-LAS"].append( os.path.join(Scans, dir_name) )
                     self.protocols_["MP-LAS"][0] = True
-                # T1 short
-                if "T1_mprage_short_" in dir_name and "DIS3D" not in dir_name:
-                    protocol_dir["T1-SHORT"].append( os.path.join(Scans, dir_name) )
-                    self.protocols_["T1-SHORT"][0] = True
-                # T1 short 3D
-                if "T1_mprage_short_" in dir_name and "DIS3D" in dir_name:
-                    protocol_dir["T1-SHORT-3DC"].append( os.path.join(Scans, dir_name) )
-                    self.protocols_["T1-SHORT-3DC"][0] = True
+                # T1 short MP-LAS-short-3DC
+                # T1_mprage_short_13 -> 13-T1_mprage_short
+                if "T1_mprage_short" in dir_name and "DIS3D" not in dir_name:
+                    protocol_dir["MP-LAS-short"].append( os.path.join(Scans, dir_name) )
+                    self.protocols_["MP-LAS-short"][0] = True
+                # T1 short 3D MP-LAS-short-3DC_
+                # T1_mprage_short_S13_DIS3D_16 -> 16-T1_mprage_short_S13_DIS3D
+                if "T1_mprage_short" in dir_name and "DIS3D" in dir_name:
+                    protocol_dir["MP-LAS-short-3DC"].append( os.path.join(Scans, dir_name) )
+                    self.protocols_["MP-LAS-short-3DC"][0] = True
                 # ADNI
                 if "MPRAGE" in dir_name and "DIS3D" not in dir_name and "GRAPPA2" not in dir_name:
                     protocol_dir["T1-ADNI"].append( os.path.join(Scans, dir_name) )
@@ -1513,8 +1525,11 @@ class Scans_management( object ):
         """Check the project and scans. Sometime projects can be unclear."""
         try:
             #
-            #
+            # ADNI
             if ( "ADNID" in Scan and Project == "ADNI"):
+                return False
+            # HV
+            elif ( "HVMB" in Scan and Project == "HV"):
                 return False
             else:
                 if ( Project in Scan ):
