@@ -8,30 +8,31 @@ import subprocess
 import logging
 #
 import Deformation
+import Image_tools
 
 #
 _log = logging.getLogger("__EPI_distortion_correction__")
-#
-# Global functions
-def which(program):
-    """ This function meemic the UNIX command 'which' new Python interpretor carries this command in the shutil library"""
-    #
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-    #
-    #
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path     = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if is_exe( exe_file ):
-                return exe_file
-    #
-    return None
+##
+## Global functions
+#def which(program):
+#    """ This function meemic the UNIX command 'which' new Python interpretor carries this command in the shutil library"""
+#    #
+#    def is_exe(fpath):
+#        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+#    #
+#    #
+#    fpath, fname = os.path.split(program)
+#    if fpath:
+#        if is_exe(program):
+#            return program
+#    else:
+#        for path in os.environ["PATH"].split(os.pathsep):
+#            path     = path.strip('"')
+#            exe_file = os.path.join(path, program)
+#            if is_exe( exe_file ):
+#                return exe_file
+#    #
+#    return None
 #
 # Class EPI_distortion_correction
 #
@@ -66,9 +67,9 @@ class EPI_distortion_correction( Deformation.Deformation ):
             # Configuration file for EPI distortion correction program
             if Parameters_file == None:
                 self.parameters_         = None
-                self.affine_iterations_  = 500    
+                self.affine_iterations_  = 50    
                 self.scale_levels_       = 3        
-                self.diff_eq_iterations_ = 2000
+                self.diff_eq_iterations_ = 500
                 self.alpha_              = 0.1    
                 self.delta_affine_       = 0.1
                 self.delta_diffeo_       = 0.05
@@ -210,7 +211,7 @@ class EPI_distortion_correction( Deformation.Deformation ):
         try:
             #
             #
-            if not ( file_name.endswith(".nii") or file_name.endswith(".nii.gz") ):
+            if not ( file_name.endswith(".nii") ):
                 raise Exception("get_image_dimaension needs nifti file format.") 
             #
             # extract XLM information from input file using fslhd
@@ -266,7 +267,7 @@ class EPI_distortion_correction( Deformation.Deformation ):
             #
             # Check we have ITK convert between file executable
             #        ConvertBetweenFileFormats = which("ConvertBetweenFileFormats")
-            ConvertBetweenFileFormats = which("/home/ycobigo/devel/CPP/ITK/InsightApplications-3.20.0/build/ConvertBetweenFileFormats/ConvertBetweenFileFormats")
+            ConvertBetweenFileFormats = Image_tools.which("ConvertBetweenFileFormats")
             if ConvertBetweenFileFormats is None:
                 raise Exception("Missing ConvertBetweenFileFormats in the path")
             _log.debug(ConvertBetweenFileFormats)
@@ -428,7 +429,7 @@ class EPI_distortion_correction( Deformation.Deformation ):
         try:
             #
             # Check we have the Utha algorithm between file executable
-            EPIDistortionCorrection = which("/home/ycobigo/devel/CPP/UtahDiffusionProcessing/bin/bin/EPIDistortionCorrection")
+            EPIDistortionCorrection = Image_tools.which("EPIDistortionCorrection")
             if EPIDistortionCorrection is None:
                 raise Exception("Missing EPIDistortionCorrection in the path")
             _log.debug(EPIDistortionCorrection)
@@ -476,7 +477,7 @@ class EPI_distortion_correction( Deformation.Deformation ):
         try:
             #
             # Check we have the Utha algorithm between file executable
-            TransformDWI = which("/home/ycobigo/devel/CPP/UtahDiffusionProcessing/bin/bin/TransformDWI")
+            TransformDWI = Image_tools.which("TransformDWI")
             if TransformDWI is None:
                 raise Exception("Missing TransformDWI in the path")
             _log.debug(TransformDWI)

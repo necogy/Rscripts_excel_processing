@@ -37,8 +37,8 @@ for subject = 1:size(scans_to_process,2)
     WMchangemap = strrep(changemap, '*', '2');
     
     
-    wmvol= spm_read_vols(spm_vol(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1,  WMchangemap));
-    gmvol= spm_read_vols(spm_vol(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1,  GMchangemap));
+    wmvol= spm_read_vols(spm_vol(fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1,  WMchangemap)));
+    gmvol= spm_read_vols(spm_vol(fullfile(scans_to_process(subject).Fullpath, scans_to_process(subject).Date1,  GMchangemap)));
     
     
     %add them
