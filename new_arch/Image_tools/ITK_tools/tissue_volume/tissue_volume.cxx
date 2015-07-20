@@ -125,10 +125,12 @@ int main(int argc, char const *argv[]){
       while( !imageIterator_tissue.IsAtEnd() )
 	{
 	  if( static_cast<int>( imageIterator_mask.Value() ) == ROI || ROI == 0 )
-	    {
-	      tissue_volume += imageIterator_tissue.Value();
-	      num_voxels_ROI++;
-	    }
+	    if ( imageIterator_tissue.Value() > 0. )
+	      {
+		//std::cout << imageIterator_tissue.Value() << std::endl;
+		tissue_volume += imageIterator_tissue.Value();
+		num_voxels_ROI++;
+	      }
 	  //
 	  ++imageIterator_tissue;
 	  ++imageIterator_mask;
