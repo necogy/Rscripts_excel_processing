@@ -53,8 +53,12 @@ class Protocol( object ):
     ACPC_Alignment_  :string - ACPC aligned T2 directory
     PVE_Segmentation_:string - PVE T1 directory 
     ASL_dicom_       :string - ASL dicom directory
-    exec_path_       :string - path where the pipeline is run
-
+    T2_file_         :list   - T2 list. 0 nii; or (0,1) = (hdr,img)
+    T1_file_         :list   - T1 list. 0 nii; or (0,1) = (hdr,img)     
+    ASL_file_        :list   - ASL list. 0 zip
+    brain_mask_      :string - brain binary mask
+    brain_prob_      :string - brain probability mask
+    gm_mask_         :string - gray matter mask
     """
     def __init__( self ):
         """Return a new Protocol instance (constructor)."""
@@ -1500,4 +1504,3 @@ class Protocol( object ):
         #
         if self.status_:
             _log.info("Protocol ASL - Partial volume correction -- pass")
-            

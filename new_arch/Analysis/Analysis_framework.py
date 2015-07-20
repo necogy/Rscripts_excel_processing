@@ -12,7 +12,8 @@ _log = logging.getLogger("__Analysis_tools__")
 #
 #
 #
-import Arterial_Spin_Labeling
+import Arterial_Spin_Labeling 
+import White_matter_hyperintensity
 import Analysis_tools
 #
 #
@@ -31,6 +32,7 @@ class Production( object ):
 
     
     Attributes:
+    file_csv_:file        - CSV file
     csv_reader_:csv       - CSV reader
     procs_:int            - number of processors
     ignore_patterns_:list - list of reg-exp for files to ignore
@@ -44,8 +46,8 @@ class Production( object ):
         try:
             #
             # public variables
-            file_csv = open(CSV_file, 'rt')
-            self.csv_reader_ = csv.reader( file_csv )
+            self.file_csv_   = open(CSV_file, 'rt')
+            self.csv_reader_ = csv.reader( self.file_csv_ )
             #
             self.procs_           = Procs
             self.ignore_patterns_ = ()
@@ -83,7 +85,9 @@ class Production( object ):
 
             #
             # Extraction loop
-            # creates CSV reader
+            # Check the file is at the beginning
+            self.file_csv_.seek(0)
+            #
             for row in self.csv_reader_:
                 print "%s - %s - %s"%(row[0], row[2], row[6])
                 if not "PIDN" in row[0]:
@@ -100,7 +104,8 @@ class Production( object ):
                             os.mkdir( os.path.join( Directory, row[0]) )
                         # create the scan date
                         if not os.path.exists( os.path.join( Directory, row[0], row[2]) ):
-                            shutil.copytree( dir, os.path.join(Directory, row[0], row[2]), ignore=shutil.ignore_patterns( *self.ignore_patterns_ ) )
+                            shutil.copytree( dir, os.path.join(Directory, row[0], row[2]), 
+                                             ignore=shutil.ignore_patterns( *self.ignore_patterns_ ) )
                     else:
                         _log.warning( "Patient missing: %s"%(row[0]) )
         #
@@ -129,13 +134,18 @@ class Production( object ):
                 t = threading.Thread( target = self.run_ )
                 t.daemon = True
                 t.start()
-            # Stack the items
+            # Go back the beginning
+            self.file_csv_.seek(0)
+            #
             for row in self.csv_reader_:
                 dir = os.path.join( Directory, row[0], row[2])
                 if os.path.exists( dir ):
                     for patient in os.listdir( dir ):
                         if self.prod_ == "ASL":
                             self.queue_.put( [Arterial_Spin_Labeling.Protocol(),
+                                              os.path.join(dir, patient)] )
+                        if self.prod_ == "WMH":
+                            self.queue_.put( [White_matter_hyperintensity.Protocol(),
                                               os.path.join(dir, patient)] )
                         else:
                             raise Exception( "Protocol %s is not yet implemented."%(self.prod_) )
@@ -281,6 +291,9 @@ class Perfusion( Production ):
             #
             estimators        = {}
             production_failed = []
+            # Go back to the beginning
+            self.file_csv_.seek(0)
+            #
             for row in self.csv_reader_:
                 if Study in row[1]:
                     #
@@ -563,6 +576,57 @@ class Perfusion( Production ):
                            self.GM_1_list_ )
             template.modulation( os.path.join(self.ana_res_, "GM_dir"), 
                                  self.GM_1_list_ )
+        #
+        #
+        except Exception as inst:
+            _log.error(inst)
+            quit(-1)
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            quit(-1)
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            quit(-1)
+
+################################################################################
+## 
+## Image treatment pipeline -- White matter hyper-intensity -- 
+## 
+################################################################################
+
+class WM_hyperintensity( Production ):
+    """ This class runs the white matter hyperintensity pipeline.
+    
+    """
+    #
+    #
+    def __init__( self,  CSV_file, Procs = 8 ):
+        """Return a new WM_hyperintensity instance."""
+        super( WM_hyperintensity, self ).__init__( CSV_file, Procs )
+        # attribute
+        # Production pipeline
+        self.prod_ = "WMH"
+        #
+        self.production_failed_ = []
+    #
+    #
+    #
+    def run_( self ):
+        """Run the pipeline."""
+        try:
+
+            # 
+            # Loop on the tasks
+            while True:
+                #
+                # Strategy pipeline
+                [wmh, patient_dir] = self.queue_.get()
+                wmh.patient_dir_   = patient_dir
+                wmh.run()
+                
+                #
+                # job is done
+                self.queue_.task_done()
         #
         #
         except Exception as inst:
