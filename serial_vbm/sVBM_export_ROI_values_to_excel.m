@@ -20,7 +20,7 @@ function  ROIsheet = sVBM_export_ROI_values_to_excel(scans_to_process,metric)
 % Author: Suneth Attygalle
 % Created 04/20/2015
 % Revisions:
-
+scandatafolder = fileparts(scans_to_process(1).Fullpath);
 switch lower(metric) % this should be class
     case 'sum'
         metricrow = 2;
@@ -57,16 +57,16 @@ for nSubject = 1:numSubjects
         ROI = [scans_to_process(nSubject).Timepoint{nTimepoint}.Datenum - 693960, ROI] ; %date
         ROI = [str2num(scans_to_process(nSubject).PIDN), ROI]; %PIDN
         
-        ROImat = [ROImat; ROI];
+        ROImat = [ROImat,ROI];
     end
     
   
 end
-
+ROIsheet = ROImat
 %add labels
-headings = ['PIDN', 'date', 'daysfrombaseline'  scans_to_process(nSubject).Timepoint{nTimepoint}.ROI(1, :)];
-xlswrite(fullfile(fileparts(scandatafolder), 'ROIextraction_labels.xlsx'),headings)
-xlswrite(fullfile(fileparts(scandatafolder), 'ROIextractions.xlsx'),ROImat)
+% headings = ['PIDN', 'date', 'daysfrombaseline'  scans_to_process(nSubject).Timepoint{nTimepoint}.ROI(1, :)];
+% xlswrite(fullfile(fileparts(scandatafolder), ['ROIextraction_labels_' date '.xlsx']),headings)
+% xlswrite(fullfile(fileparts(scandatafolder), ['ROIextractions_' date '.xlsx']),ROImat)
 
 
 
