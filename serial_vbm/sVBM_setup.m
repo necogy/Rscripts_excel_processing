@@ -97,6 +97,7 @@ scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs,extract
 metric = 'sum'; % available options: 'mean', 'median', 'sum', 'svd', 'peak' 
 scantype = 'timepoint';
 ROIextractions = sVBM_export_ROI_values(scans_to_process,metric,scantype);
+ROIextractions = sVBM_export_ROI_values_to_excel(scans_to_process,metric);
 
 ROIsheet = sVBM_export_ROI_values_to_excel(scans_to_process,metric)
 

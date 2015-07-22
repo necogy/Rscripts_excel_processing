@@ -9,7 +9,7 @@ logging.basicConfig(filename='Quality_control.log',level=logging.DEBUG)
 import Probe_new_scan as Pns
 #
 
-fullpath = os.path.join(os.path.sep,'home','quality','subjects', 'scans')
+fullpath = os.path.join( os.sep, "mnt","macdata","groups","imaging_core","SNC-PACS-GW1-NEWDICOMS" )
 
 pns = Pns.Probe_new_scan( fullpath )
 pns.run()

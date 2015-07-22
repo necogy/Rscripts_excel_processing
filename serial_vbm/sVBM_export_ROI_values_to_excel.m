@@ -68,5 +68,7 @@ ROIsheet = ROImat
 % xlswrite(fullfile(fileparts(scandatafolder), ['ROIextraction_labels_' date '.xlsx']),headings)
 % xlswrite(fullfile(fileparts(scandatafolder), ['ROIextractions_' date '.xlsx']),ROImat)
 
+xlswrite(fullfile(PathName, FileName),ROImat)
+xlswrite(fullfile(PathName, [FileName(1:end-5), '_labels.xlsx']),headings)
 
 

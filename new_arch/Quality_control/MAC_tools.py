@@ -55,14 +55,14 @@ class Scan_directory( object ):
       protocols_dir_:List              - list of protocol directories
       protocols_container_: dictionary - for each protocol: list of tuple {DICOM:MD5_signature}
     """
-    def __init__( self, New_scan ):
+    def __init__( self, Scan ):
         """."""
         try:
             #
             #
-            self.new_scan_ = New_scan
+            self.new_scan_ = Scan
             #
-            self.sub_dir_to_protocols_ = New_scan
+            self.sub_dir_to_protocols_ = Scan
             self.protocols_dir_        = []
             self.protocols_container_  = {}
             
@@ -107,6 +107,7 @@ class Scan_directory( object ):
                         
             #
             #
+            print self.new_scan_
             return ( sub_dir_to_protocols, protocols_dir, protocols_container )
         #
         #
@@ -135,7 +136,8 @@ class Scan_directory( object ):
             while copy_not_done:
                 #
                 # Wait a bit
-                time.sleep( 5*60 )
+#                time.sleep( 5*60 )
+                time.sleep( 0 )
                 # retrive all scan files information
                 ( sub_dir_to_protocols_2, protocols_dir_2, protocols_container_2 ) = self.load_directory()
                 
@@ -154,7 +156,7 @@ class Scan_directory( object ):
                                                   protocols_container_2 )
                 else:
                     #
-                    # Two for loop embeded: break_loops will stop the second loop
+                    # Two 'for' loop embeded: break_loops will stop the second loop
                     # Here we have the same number of directoies in protocols_dir_{1,2}
                     break_loops = False
                     for protocol in protocols_container_2:
@@ -193,7 +195,7 @@ class Scan_directory( object ):
                             _log.warning( "Copy of %s is not yet achieved!"%(self.new_scan_) )
  
             #
-            # We can attribute the containers in privet members
+            # We can attribute the containers in privat members
             ( self.sub_dir_to_protocols_, 
               self.protocols_dir_, 
               self.protocols_container_ ) = ( sub_dir_to_protocols_1, 
