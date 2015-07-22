@@ -108,9 +108,8 @@ sVBM_plot_timeseries(scans_to_process, 'median');
 sVBM_plot_timeseries(scans_to_process, 'svd');
 %sVBM_plot_timeseries(scans_to_process2, 'peak') % peak is noisy
 
-
-
-
+%% get timepoint GM/WM/CSF vols (timepoints should already be segmented)
+scans_to_process = sVBM_get_timepoint_tissue_volumes(scans_to_process);
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Extra stuff that may or may not work:
