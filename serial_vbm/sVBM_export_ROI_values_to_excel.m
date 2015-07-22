@@ -62,11 +62,17 @@ for nSubject = 1:numSubjects
     
   
 end
+<<<<<<< HEAD
 ROIsheet = ROImat
 %add labels
 % headings = ['PIDN', 'date', 'daysfrombaseline'  scans_to_process(nSubject).Timepoint{nTimepoint}.ROI(1, :)];
 % xlswrite(fullfile(fileparts(scandatafolder), ['ROIextraction_labels_' date '.xlsx']),headings)
 % xlswrite(fullfile(fileparts(scandatafolder), ['ROIextractions_' date '.xlsx']),ROImat)
+=======
+[FileName,PathName] = uiputfile('*.xlsx','File name for extractions','ROIextractions.xlsx');
+%add labels
+headings = ['PIDN', 'date', 'daysfrombaseline'  scans_to_process(nSubject).Timepoint{nTimepoint}.ROI(1, :)];
+>>>>>>> 1a99b95bda2f95568f10c8c3e659d2ac67c4af80
 
 xlswrite(fullfile(PathName, FileName),ROImat)
 xlswrite(fullfile(PathName, [FileName(1:end-5), '_labels.xlsx']),headings)
