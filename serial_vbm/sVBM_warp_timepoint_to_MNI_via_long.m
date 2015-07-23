@@ -37,10 +37,11 @@ for subject = 1:size(scans_to_process,2) % for every subject
         
         c1file = ['c1' basefile];
         c2file = ['c2' basefile];
+        c3file = ['c3' basefile];
         
         files{1} = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, c1file);
         files{2} = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, c2file);
-        files{3} = img;
+        files{3} = fullfile(scans_to_process(subject).Timepoint{timepoint}.Fullpath, c3file);
 
         
         avgfilename =['u_rc1avg_' strrep(scans_to_process(subject).Timepoint{1}.File.name, 'img', 'nii')];
@@ -75,6 +76,7 @@ for subject = 1:size(scans_to_process,2) % for every subject
         clear files
         clear c1file
         clear c2file
+        clear c3file
         clear img
         clear basefile
         clear avgfilename
