@@ -17,9 +17,7 @@ clear
 %% 1. Initialize: 
 clear
 % a. Load parameters:
-%LONG_config %<-------------- OPEN THIS and replace with paths specific to your study
-%path to data:
-scandatafolder = fullfile('R:\groups\rosen\longitudinalVBM\SD_floor_project\test_timepointwarping02_2015\');
+LONG_config %<-------------- OPEN THIS and replace with paths specific to your study
 
 %path to spm12 folder:
 spmpath = fileparts(which('spm'));
@@ -27,7 +25,7 @@ spmpath = fileparts(which('spm'));
 %path to dartel template for your study (or where a dartel template will
 %be created if it doesn't exist yet):
 templatepath = 'path_to_dartel_template'; % set this to the new template folder name.
-templatepath='R:\groups\rosen\longitudinalVBM\SD_floor_project';
+% e.g templatepath='R:\groups\rosen\longitudinalVBM\SD_floor_project';
 
 %path to ROIs to use to extract mean/median change values from a specific
 %ROI:

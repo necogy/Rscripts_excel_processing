@@ -7,7 +7,7 @@
 scandatafolder = 'pathto/images_dir';
 
 %path to spm12 folder:
-spmpath = 'spm23path';
+% spmpath = 'spm12path'; this is automatically determined in LONG_setup
 
 %path to dartel template for your study (or where a dartel template will
 %be created if it doesn't exist yet):
@@ -15,4 +15,6 @@ templatepath = 'path_to_dartel_template'; % set this to the new template folder 
 
 %path to ROIs to use to extract mean/median change values from a specific
 %ROI:
-pathtoROIs = 'path_to_ROIs_for_extraction';% set this to the new template folder name. Make sure the ROIs are in the same space as your images to extract from
+% Make sure the ROIs are in the same space as your images to extract from
+pathtoROIs = 'path_to_ROIs_for_extraction';% set this to the new template folder name. 
+
