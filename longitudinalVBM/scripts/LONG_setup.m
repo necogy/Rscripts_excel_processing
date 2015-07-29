@@ -1,35 +1,33 @@
 %% LONG_setup
 % Sets up Longitudinal VBM using the second revision of the
-% pipeline. Set all of your paths first in LONG_config.  Create a copy of this file if you make edits to for a specific data
+% pipeline. 
+% Set all of your paths first in LONG_config.  
+% Create a copy of LONG_config if you make edits to for a specific data
 % set.
 
-%make sure to add spm12 folder and longitudinalVBM folder with subfolders
-%to matlab path.
+%  make sure to add spm12 folder and longitudinalVBM folder with subfolders
+% to matlab path.
 
-%use image_finder.sh to pull images into the correct folder structure, or
-%do it yourself as follows /14929/2015-01-01/MP-LAS.nii , /14929/2015-09-31/MP-LAS.nii
+% use image_finder.sh to pull images into the correct folder structure, or
+% do it yourself as follows /14929/2015-01-01/MP-LAS.nii , /14929/2015-09-31/MP-LAS.nii
 
 % enable cell evaluation in matlab settings for easier use of this script
-clear
+%
+
+% code by Suneth Attygale 2014-2015 based on Richard Binney's SPM12b
+% pipeline
 
 %% steps to run:
 
 %% 1. Initialize: 
 clear
+clear classes
+
 % a. Load parameters:
 LONG_config %<-------------- OPEN THIS and replace with paths specific to your study
 
-%path to spm12 folder:
+% path to spm12 folder:
 spmpath = fileparts(which('spm'));
-
-%path to dartel template for your study (or where a dartel template will
-%be created if it doesn't exist yet):
-templatepath = 'path_to_dartel_template'; % set this to the new template folder name.
-% e.g templatepath='R:\groups\rosen\longitudinalVBM\SD_floor_project';
-
-%path to ROIs to use to extract mean/median change values from a specific
-%ROI:
-pathtoROIs = 'path_to_ROIs_for_extraction';% set this to the new template folder name. Make sure the ROIs are in the same space as your images to extract from
 
 % b. Load Data
 scans_to_process = LONG_load_inputfile( scandatafolder );
