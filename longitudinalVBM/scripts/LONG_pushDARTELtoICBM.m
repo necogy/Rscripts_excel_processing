@@ -1,4 +1,26 @@
 function LONG_pushDARTELtoICBM(scans_to_process, templatepath)
+%LONG_pushDARTELtoICBM - warp longitudinal images from dartel to ICBM
+%
+% Syntax:  scans_to_process = LONG_pushDARTELtoICBM(scans_to_process, templatepath)
+%
+% Inputs: scans_to_process - array of objects of class LONG_participant,
+%           templatepath - path to dartel template 
+%
+% Outputs: scans_to_process - updated array with run status
+%
+% Other m-files required: SPM12
+% Subfunctions:
+%
+% MAT-files required: none
+%
+% See also:
+%
+% To Do: 
+%
+% Author: Suneth Attygalle
+% Created: 
+% Revisions:
+
 spm('defaults', 'PET');
 spm_jobman('initcfg')
 imageprefixes = {'wl_c1avg_jd','wl_c1avg_dv','wl_c2avg_jd','wl_c2avg_dv', 'wdv_', 'wjd_' };

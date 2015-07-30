@@ -78,10 +78,6 @@ LONG_pushDARTELtoICBM(scans_to_process, templatepath);
 %% WARP MNI ROIs to DARTEL
 SA_SPM12_warpMNI_ROIstoDARTEL(fullfile(templatepath, 'y_Template_6_2mni.nii'),fullfile(templatepath, 'Template_6.nii'), pathtoROIs)
 
-
-%% %%%%% up to here revised 03/5/15
-
-
 %% SMOOTHING: pick one of the two following smoothing methods:
 
 %% Smooth individual participant change maps images for stats 
@@ -91,7 +87,10 @@ scans_to_process = LONG_smooth_changemaps(scans_to_process, fwhm);
 %% T-Spoon for stats ( you might not want to use this vs normal smoothing)
 % T-spoon smoothing is an improved algorithm for smoothing that reduces the
 % effect of smoothing the brain outside of the actual brain
-scans_to_process = LONG_tspoon_changemaps(scans_to_process);
+% scans_to_process = LONG_tspoon_changemaps(scans_to_process); this is
+% implemented incorrectly, contact Gabe Marx for working version.
+
+%%%
 
 
 %% extract mean/median change values in ROIs and save to scans_to_process
@@ -117,8 +116,8 @@ scans_to_process = LONG_run_segmentation( scans_to_process, 'time1', spmpath );
 scans_to_process = LONG_run_segmentation( scans_to_process, 'time2', spmpath ); 
 
 %% %%%%%%% USE STEPS BELOW AT YOUR OWN RISK, not all fully vetted %%%%%%%%%%%%%
-templatepath = 'R:\groups\rosen\longitudinalVBM\SD_floor_project';
-scans_to_process = LONG_sequential_warp_to_MNI(scans_to_process, templatepath);
+
+scans_to_process = LONG_sequential_warp_to_MNI(scans_to_process, templatepath); % ugly way of of normalizing images.
 
 
 %% Transform time1 and time2 data to mni using intermediate longitudinal image warp
@@ -130,8 +129,7 @@ scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time2'
 scans_to_process = LONG_extractROIsinDARTEL(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); % appears to not be complete
 
 %% extract mean/median change values from warped timepoints (MNI) and save to scans_to_process
-%pathtoROIs = fullfile( SAreturnDriveMap('R'),'groups','rosen','longitudinalVBM','ROIs');
-pathtoROIs = 'R:\groups\rosen\longitudinalVBM\SD_floor_project\ROIs15'
+
 scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time1'); %extract ROI values and add to scans_to_process structure
 scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time2'); %extract ROI values and add to scans_to_process structure
 

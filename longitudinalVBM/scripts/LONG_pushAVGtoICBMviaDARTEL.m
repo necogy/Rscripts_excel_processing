@@ -1,5 +1,6 @@
 function LONG_pushAVGtoICBMviaDARTEL(scans_to_process, templatepath)
-%LONG_pushAVGtoICBMviaDARTEL - warp longitudinal images from subject to DARTEL
+%LONG_pushAVGtoICBMviaDARTEL - warp longitudinal images from subject avg to
+%ICBM
 %
 % Syntax:  scans_to_process = LONG_pushAVGtoICBMviaDARTEL( scans_to_process)
 %

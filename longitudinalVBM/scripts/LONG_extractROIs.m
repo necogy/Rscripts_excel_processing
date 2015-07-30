@@ -1,5 +1,5 @@
 function scans_to_process = LONG_extractROIs(scans_to_process, changemapprefix, pathtoROIs, ROIprefix)
-%LONG_extractROIs - apply t-spoon smoothing to change maps
+%LONG_extractROIs -extract values from ROIs
 %
 % Syntax:  scans_to_process =  LONG_extractROIs( scans_to_process,pathtoROIs )
 %
