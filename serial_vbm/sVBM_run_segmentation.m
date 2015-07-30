@@ -86,7 +86,7 @@ for subject = 1:size(scans_to_process,2) % for every subject
                 %volumes found but reprocess set to 1 or no volumes found
                 if reprocess == 1 || size(d,1) ~= 3
                      disp(['Now segmenting average image for: ' num2str(scans_to_process(subject).PIDN )])
-                segmenttimepoint(volume) % call subfunction to process that subject
+                segmenttimepoint(volume, dartelimport) % call subfunction to process that subject
        
  
                 else
