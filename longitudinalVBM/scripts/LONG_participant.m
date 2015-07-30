@@ -1,6 +1,9 @@
 classdef LONG_participant
     %LONG_participant participant info for longitudinal processing
-    %   Detailed explanation goes here
+    % takes two  inputs PIDN and datapath to automatically get date, times,
+    % etc for two time point  longitudinal processing and stores extracted
+    % values.
+
     
     properties
         PIDN

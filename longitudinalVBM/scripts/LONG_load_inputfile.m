@@ -1,6 +1,7 @@
 function scans_to_process = LONG_load_inputfile( scandatafolder )
 %LONG_load_inputfile - Set up patient dataset to input into longitudinal processing
-% Creates an array of objects of the class LONG_participant
+% Creates an array of objects of the class LONG_participant,
+% LONG_particpant will automatically populate 
 %
 % Syntax:  participants_to_process = LONG_load_inputfile( scandatafolder )
 %
@@ -32,7 +33,7 @@ d=SAdir(fullfile(datapath), '\d');
 allparticipants =LONG_participant.empty(size(d,1),0);
 
 for i = 1:size(d,1)
-    allparticipants(i) = LONG_participant(d(i).name, datapath);
+    allparticipants(i) = LONG_participant(d(i).name, datapath); % LONG_participant class will load data for each subject.
 end
 
 scans_to_process = allparticipants;

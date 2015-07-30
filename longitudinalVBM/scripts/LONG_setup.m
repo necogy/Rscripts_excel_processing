@@ -34,7 +34,7 @@ scans_to_process = LONG_load_inputfile( scandatafolder );
 
 %% PREPROCESSING (Steps 2-6)
 
-%% 2. Longitudinal registration to generate subject average images 
+%% 2. Longitudinal registration to generate subject average images, and deformations to the subject average 
 scans_to_process = LONG_run_registration( scans_to_process ); 
 
 %% 3. Segment mean images generated from longitudinal toolbox 
@@ -43,8 +43,8 @@ scans_to_process = LONG_run_segmentation( scans_to_process, 'mean', spmpath );
 %% rigidly realign and reslice mean images for DARTEL
 % this step doesn't work because the new segment doesn't create the
 % appropriate fields, but it might work in future SPM versions
-%voxelsize =1;
-%scans_to_process = LONG_DARTELimport( scans_to_process, voxelsize ); 
+% voxelsize =1;
+% scans_to_process = LONG_DARTELimport( scans_to_process, voxelsize ); 
 
 %% 4. Inter-subject registration of mean images using Dartel (requires template)
 % or create a new one
@@ -63,12 +63,11 @@ scans_to_process = LONG_DARTELregistration_to_existing(scans_to_process, templat
 %% 5. multiply segmented mean images with longitudinal change maps
 scans_to_process = LONG_multiply_segments_with_change(scans_to_process); %this works but needs refactoring to speed it up
 
-%% 6. Transform longitudinal images to group DARTEL space
+%% 6. Transform longitudinal images to group DARTEL space (no Affine regularization)
 scans_to_process = LONG_DARTEL_to_MNI(scans_to_process, templatepath);
 
 %% 7. Generate population to ICBM registration deformation field
 SA_SPM12_generateDARTELToICBM(fullfile(templatepath, 'Template_6.nii')); % generates dartel pop to ICBM deformation field using SPM12
-
 
 %% push dartel images to ICBM using combined deformation from sub avg to dartel to icbm
 LONG_pushAVGtoICBMviaDARTEL(scans_to_process, templatepath)
