@@ -1,4 +1,6 @@
-% sVBM_get_timepoint_tissue_volumes - get timepoint volumes from c1/c2 files
+function  scans_to_process = sVBM_get_SPM12TIV(scans_to_process)
+% sVBM_get_SPM12TIV - get timepoint volumes from mwc1/mwc2/3 files and add
+% to scans_to_proces.timepoint{}.GM_vol etc
 % structure
 %
 % Syntax:  scans_to_process = sVBM_export_ROI_values_to_excel(scans_to_process)
@@ -20,7 +22,7 @@
 % Revisions:
 
 numSubjects =  size(scans_to_process,2);
-mask = fullfile(fileparts(which('spm')), 'tpm', 'mask_ICV.nii')
+mask = fullfile(fileparts(which('spm')), 'tpm', 'mask_ICV.nii');
 for nSubject = 1:numSubjects
     nSubject
     numTimepoints = size(scans_to_process(nSubject).Timepoint,2) ;
