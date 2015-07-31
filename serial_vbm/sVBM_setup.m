@@ -112,6 +112,9 @@ sVBM_plot_timeseries(scans_to_process, 'svd');
 scans_to_process = sVBM_get_timepoint_tissue_volumes(scans_to_process);
 
 
+%% get TIV the correct SPM12 way
+scans_to_process = sVBM_get_SPM12TIV(scans_to_process)
+
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Extra stuff that may or may not work:
 
 %% Warp ROIs from Atlas Space to Native Timepoint Space via Longitudinal Image Warp
