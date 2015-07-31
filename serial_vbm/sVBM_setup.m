@@ -80,7 +80,7 @@ sVBM_pushAVGspacetoICBMviaDARTEL(scans_to_process, templatepath, modulationON, s
 %% 7. Segment timepoints
 reprocess = 0;
 dartelimport = 0;
-scans_to_process = sVBM_run_segmentation(scans_to_process(9:80), 'timepoints', reprocess, dartelimport); % (will segment all available timepoints in the directories)
+scans_to_process = sVBM_run_segmentation(scans_to_process, 'timepoints', reprocess, dartelimport); % (will segment all available timepoints in the directories)
 
 %% 8. Transform Timepoint Data to MNI using Intermediate Longitudinal Image Warp
 sVBM_warp_timepoint_to_MNI_via_long(scans_to_process, templatepath);
