@@ -99,7 +99,7 @@ scantype = 'timepoint';
 ROIextractions = sVBM_export_ROI_values(scans_to_process,metric,scantype);
 ROIextractions = sVBM_export_ROI_values_to_excel(scans_to_process,metric);
 
-ROIsheet = sVBM_export_ROI_values_to_excel(scans_to_process,metric)
+ROIsheet = sVBM_export_ROI_values_to_excel(scans_to_process,metric);
 
 %% 10. Generate ROI time series 
 sVBM_plot_timeseries(scans_to_process, 'sum');
