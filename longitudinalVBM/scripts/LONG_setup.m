@@ -129,6 +129,8 @@ scans_to_process = LONG_timepoint_to_MNI(scans_to_process, templatepath, 'time2'
 scans_to_process = LONG_extractROIsinDARTEL(scans_to_process, changemapprefix, pathtoROIs, ROIprefix); % appears to not be complete
 
 %% extract mean/median change values from warped timepoints (MNI) and save to scans_to_process
+%% 
+%% 
 
 scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time1'); %extract ROI values and add to scans_to_process structure
 scans_to_process = LONG_extractMNItimepointROIs(scans_to_process, pathtoROIs, 'time2'); %extract ROI values and add to scans_to_process structure
