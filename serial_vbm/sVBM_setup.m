@@ -96,10 +96,10 @@ scans_to_process=sVBM_extract_changemap_ROIs(scans_to_process,pathtoROIs,extract
 % export them
 metric = 'sum'; % available options: 'mean', 'median', 'sum', 'svd', 'peak' 
 scantype = 'timepoint';
-ROIextractions = sVBM_export_ROI_values(scans_to_process,metric,scantype);
-ROIextractions = sVBM_export_ROI_values_to_excel(scans_to_process,metric);
+%ROIextractions = sVBM_export_ROI_values(scans_to_process,metric,scantype);
+%ROIextractions = sVBM_export_ROI_values_to_excel(scans_to_process,metric);
 
-ROIsheet = sVBM_export_ROI_values_to_excel(scans_to_process,metric);
+ROIsheet = sVBM_export_ROI_values_to_excel(scans_to_process,metric); %% open this and edit if you want the headings or to actualyl write to excel.
 
 %% 10. Generate ROI time series 
 sVBM_plot_timeseries(scans_to_process, 'sum');
@@ -110,7 +110,6 @@ sVBM_plot_timeseries(scans_to_process, 'svd');
 
 %% get timepoint GM/WM/CSF vols (timepoints should already be segmented)
 scans_to_process = sVBM_get_timepoint_tissue_volumes(scans_to_process);
-
 
 %% get TIV the correct SPM12 way
 scans_to_process = sVBM_get_SPM12TIV(scans_to_process);
