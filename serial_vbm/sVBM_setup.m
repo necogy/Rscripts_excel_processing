@@ -109,10 +109,10 @@ sVBM_plot_timeseries(scans_to_process, 'svd');
 %sVBM_plot_timeseries(scans_to_process2, 'peak') % peak is noisy
 
 %% get timepoint GM/WM/CSF vols (timepoints should already be segmented)
-scans_to_process = sVBM_get_timepoint_tissue_volumes(scans_to_process);
+%scans_to_process = sVBM_get_timepoint_tissue_volumes(scans_to_process); %% this method is deprecated since it uses native volumes that are prone to differences in brainstem volumes
 
 %% get TIV the correct SPM12 way
-scans_to_process = sVBM_get_SPM12TIV(scans_to_process);
+scans_to_process = sVBM_get_SPM12TIV(scans_to_process); % this uses normalized images and a ICB mask similar to the tissue volumes SPM12 function.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Extra stuff that may or may not work:
 
